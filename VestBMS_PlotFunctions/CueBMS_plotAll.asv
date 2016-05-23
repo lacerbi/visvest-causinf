@@ -1,0 +1,63 @@
+% VestBMS_PLOTALL Plot all figures.
+%
+function CueBMS_plotAll(plotUnimodal,plotBimodal)
+
+if ~exist('plotUnimodal', 'var') || isempty(plotUnimodal); plotUnimodal = 0; end
+if ~exist('plotBimodal', 'var') || isempty(plotBimodal); plotBimodal = 1; end
+
+
+uni_file = 'vestbms-mfit-uni-500x.mat';
+bim_files = {'vestbms-mfit-bim-50x.mat','vestbms-mfit-bim-estonly-50x.mat'};
+filetype = 'png';
+
+flags = [1 1 0; 0 1 0];
+
+load data.mat;
+
+if plotUnimodal
+    display('Plotting unimodal data');
+    % Load unimodal data
+    unistuff = load(uni_file);
+
+    for iFlag = 1:size(flags,1)
+        % Plot unimodal data
+        CueBMS_plotFigure(2,0,data,unistuff.mbag_uni,unistuff.modelsummary_uni,[],flags(iFlag,:),filetype);
+        CueBMS_plotFigure(3,0,data,unistuff.mbag_uni,unistuff.modelsummary_uni,[],flags(iFlag,:),filetype);
+
+        % Model comparison and analysis for marginal likelihood, BIC and AIC
+        for iMethod = 1:3
+            [~,~,bms] = CueBMS_plotFigure(4,iMethod,[],unistuff.mbag_uni,unistuff.modelsummary_uni,[],flags(iFlag,:),filetype);
+            CueBMS_plotFigure(6,iMethod,[],unistuff.mbag_uni,unistuff.modelsummary_uni,bms,flags(iFlag,:),filetype);
+            CueBMS_plotFigure(8,iMethod,[],unistuff.mbag_uni,unistuff.modelsummary_uni,bms,flags(iFlag,:),filetype);
+        end
+    end
+    clear unistuff;
+end
+
+if plotBimodal
+    display('Plotting bimodal data');
+    % Load bimodal data
+    for ii = 1:length(bim_files)
+        bimstuff{ii} = load(bim_files{ii});
+    end
+
+    % Model comparison and analysis
+    for iFlag = 1:size(flags,1)
+        for iMethod = 1:3
+            
+            
+            
+            [~,~,bms] = CueBMS_plotFigure(5,iMethod,[],bimstuff.mbag,bimstuff.modelsummary,[],flags(iFlag,:),filetype);
+            CueBMS_plotFigure(7,iMethod,[],bimstuff.mbag,bimstuff.modelsummary,bms,flags(iFlag,:),filetype);
+            CueBMS_plotFigure(9,iMethod,[],bimstuff.mbag,bimstuff.modelsummary,bms,flags(iFlag,:),filetype);
+
+            % Plot bimodal data (only for marginal likelihood)
+            if iMethod == 1
+                CueBMS_plotFigure(10,0,data,bimstuff.mbag,bimstuff.modelsummary,bms,flags(iFlag,:),filetype);
+                CueBMS_plotFigure(11,0,data,bimstuff.mbag,bimstuff.modelsummary,bms,flags(iFlag,:),filetype);
+                CueBMS_plotFigure(12,0,data,bimstuff.mbag,bimstuff.modelsummary,bms,flags(iFlag,:),filetype);
+            end
+        end
+    end
+end
+end

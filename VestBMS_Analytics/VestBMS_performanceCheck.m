@@ -1,4 +1,5 @@
 function pp = VestBMS_performanceCheck(data,subjs,pp)
+%VESTBMS_PERFORMANCECHECK Measure subjects' performance in time
 
 if nargin < 2 || isempty(subjs); subjs = {[1:11],[12:14]}; end
 if nargin < 3; pp = []; end

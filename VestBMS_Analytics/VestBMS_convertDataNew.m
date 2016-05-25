@@ -56,7 +56,11 @@ for iSubj = 1:length(subjs)
     else
         dataset = temp.comp_dataset;
     end
+    
     D = [D; dataset(dataset(:,1) == 3 | dataset(:,1) == 4, :)];
+    
+    % Remove missed trials (0 timeout, 4 trial start button)
+    D(D(:, 5) == 0 | D(:, 5) == 4,:) = [];    
         
     % Correct inverted assignement of responses in monkey bisensory data
     if monkeyinverted && nid > 20

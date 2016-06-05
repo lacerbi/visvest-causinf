@@ -10,6 +10,8 @@ switch model(15)
     case 5; string = 'FF';
 end
         
-        
+switch model(1)
+    case 1; string = [string '-C'];
+end
 
 end

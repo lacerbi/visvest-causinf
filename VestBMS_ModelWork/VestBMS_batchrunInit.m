@@ -33,15 +33,18 @@ DATAIDS = [(1:nDatasets)',zeros(nDatasets,1)];
 
 % Default number of samples for unimodal/bimodal trials
 NSAMPLES = [1e4,5e3];
+% NSAMPLES = [1e3,5e3];
 
 % Default optimization steps before starting sampling
 MAXFUNEVALS = 1e3;
+% MAXFUNEVALS = 100;
 
 % Optimization steps when optimizing only
 NITER_OPTIMIZATION = 2e3;
 
 % Number of restarts for optimization
 nOptimizationRestarts = 50;
+% nOptimizationRestarts = 1;
 
 if debug
     nOptimizationRestarts = 10;
@@ -53,7 +56,6 @@ options = setoptions(options,'nstarts',nOptimizationRestarts,1);
 options = setoptions(options,'optfevals',MAXFUNEVALS,1);
 
 dataids = DATAIDS;
-dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DEFAULT MODELS
@@ -106,27 +108,47 @@ switch type
             models = standardbimodalmodels;
             groupcnd = [5 6 7];                        
         end
+        
+%--------------------------------------------------------------------------        
+% BISENSORY ESTIMATION DATA FITS
     
     % Video and vestibular independently proportional from data
-   case {1} % Bimodal standard models
+   case {1} % Bisensory standard models
         
        [options,models,groupcnd] = VestBMS(options,2,0);
        options.jobname = 'vest_bim';
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
     case 2
        [options,models,groupcnd] = VestBMS(options,2,0);
        options.jobname = 'vest_bim_monkey';
        dataids = [12 8; 13 8; 14 8];
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
     case 101 % Bimodal standard models with constant noise
         
        [options,models,groupcnd] = VestBMS(options,2,0);
        models(:,[1 2]) = 1; % Constant noise
        options.jobname = 'vest_bim_const';
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+       
+    % LARGE-DISPARITY TRIALS ONLY   
+       
+    case 201 % Bisensory models
+
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       options.jobname = 'vest_bim_largedisparity';
+       dataids(:,2) = setflag(dataids(:,2), [4,5]);     % No categorical trials, no small disparity
         
+    case 211 % Bisensory models with constant noise
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,[1 2]) = 1; % Constant noise
+       options.jobname = 'vest_bim_const_largedisparity';
+       dataids(:,2) = setflag(dataids(:,2), [4,5]);     % No categorical trials, no small disparity
        
-       
-% UNIMODAL DATA FITS
+%--------------------------------------------------------------------------
+% UNIMODAL ESTIMATION DATA FITS
 % All models have by default: no rescaling, no motor noise, a fixed prior
 % (it is irrelevant), no lapse, and softmax decision making.
                 

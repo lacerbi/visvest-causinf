@@ -204,21 +204,21 @@ switch lower(command)
             end
         end
 
-        % Remove trials with zero disparity (unity trials)
+        % Remove trials with SMALL disparity (5 deg or less)
         if dataflags(5)
-            NUMZERO = 1e-6;
+            DISPARITY = 5;
             % Consider the case of bimodal and bimdisp
-            fun = @(X) logical((size(X,2) == 5) .* (abs(X(:, 3) - X(:, 4)) < NUMZERO) ...
-                + (size(X,2) == 4) .* (abs(X(:, 3)) < NUMZERO));
+            fun = @(X) logical((size(X,2) == 5) .* (abs(X(:, 3) - X(:, 4)) <= DISPARITY) ...
+                + (size(X,2) == 4) .* (abs(X(:, 3)) <= DISPARITY));
             modelstruct.X = removetrials(modelstruct.X,fun,'bimodal');
         end
 
-        % Remove trials with disparity greater than 5 degrees
+        % Remove trials with LARGE disparity (10 deg or more)
         if dataflags(6)
-            MAXDISPARITY = 5.0;
+            DISPARITY = 10;
             % Consider the case of bimodal and bimdisp
-            fun = @(X) logical((size(X,2) == 5) .* (abs(X(:, 3) - X(:, 4)) > MAXDISPARITY) ...
-                + (size(X,2) == 4) .* (abs(X(:, 3)) > MAXDISPARITY));
+            fun = @(X) logical((size(X,2) == 5) .* (abs(X(:, 3) - X(:, 4)) >= DISPARITY) ...
+                + (size(X,2) == 4) .* (abs(X(:, 3)) >= DISPARITY));
             modelstruct.X = removetrials(modelstruct.X,fun,'bimodal');
         end
 

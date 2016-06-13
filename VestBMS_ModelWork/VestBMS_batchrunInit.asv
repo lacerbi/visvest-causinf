@@ -153,20 +153,15 @@ switch type
         
        [options,models,groupcnd] = VestBMS(options,2,0);
        options.jobname = 'vest_unity';
-       models(:,11) = 3;    % Probability matching
-       models(models(:,15) == 5,:) = [];    % Remove forced fusion
-       dataids = [(1:11)', zeros(11,1)];       
+       dataids = [(1:11)'; zeros(11,1)];       
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
               
     case 1101 % Bimodal standard models with constant noise
         
        [options,models,groupcnd] = VestBMS(options,2,0);
        models(:,[1 2]) = 1; % Constant noise
-       models(:,11) = 3;    % Probability matching
-       models(models(:,15) == 5,:) = [];    % Remove forced fusion
        options.jobname = 'vest_unity_const';
-       dataids = [(1:11)', zeros(11,1)];       
-       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
        
 %--------------------------------------------------------------------------

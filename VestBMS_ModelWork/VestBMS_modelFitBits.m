@@ -249,14 +249,18 @@ switch lower(command)
             % Unimodal data
             DD = modelstruct.X.unimodal;
             x = [];
-            for iicnd = 1:4; x = [x; DD{iicnd}(:,2)]; end                
+            for iicnd = 1:4
+                if ~isempty(DD{iicnd}); x = [x; DD{iicnd}(:,2)]; end
+            end                
             infostruct.bincenters_uni = unique(x);
             
             for iicnd = 1:length(DD)
                 xmat = zeros(numel(infostruct.bincenters_uni),numel(respbincenters));
                 for iBin = 1:numel(infostruct.bincenters_uni)
                     for jBin = 1:length(respbincenters)
-                        xmat(iBin,jBin) = sum(DD{iicnd}(:, 2) == infostruct.bincenters_uni(iBin) & DD{iicnd}(:, 3) == respbincenters(jBin));
+                        if ~isempty(DD{iicnd})
+                            xmat(iBin,jBin) = sum(DD{iicnd}(:, 2) == infostruct.bincenters_uni(iBin) & DD{iicnd}(:, 3) == respbincenters(jBin));
+                        end
                     end
                 end
                 modelstruct.X.unibins{iicnd} = xmat;

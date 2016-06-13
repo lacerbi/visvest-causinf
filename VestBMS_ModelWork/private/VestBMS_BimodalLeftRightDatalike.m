@@ -69,6 +69,10 @@ kcommon = priorinfo(end);
 
 MAXRNG = maxranges(1);
 
+% Trials to be computed
+do_estimation = ~isempty(X{2});
+do_unity = ~isempty(X{3});
+
 % Is the internal noise Gaussian?
 if ( ( wlike_vis == 0 && wlike_vest == 0 ) ...
         || ((model(4) == 6 || model(4) == 8)  && model(5) == 6))
@@ -213,11 +217,19 @@ if ~gaussianflag || ~closedformflag
         % extras.postpdfc1 = postpdfc1;
     end
     
-    % Compute posterior probability of rightward motion    
-    postright = bsxfun(@plus, bsxfun(@times, w1, postright_c1), bsxfun(@times, 1-w1, postright_c2));
+    % Bisensory estimation
+    if do_estimation
+        % Compute posterior probability of rightward motion    
+        postright = bsxfun(@plus, bsxfun(@times, w1, postright_c1), bsxfun(@times, 1-w1, postright_c2));
+
+        % Probability of rightward response
+        prright = 1./(1 + ((1-postright)./postright).^beta_softmax); 
+    end
     
-    % Probability of rightward response
-    prright = 1./(1 + ((1-postright)./postright).^beta_softmax); 
+    % Bisensory unity judgement
+    if do_unity
+        prunity = w1;
+    end
 
     % Clean up memory
     clear postright w1 postpdf_c1 postpdf_c2 postright_c1 postright_c2 ...
@@ -337,10 +349,23 @@ xpdf_vest = bsxfun(@rdivide, xpdf_vest, qtrapz(xpdf_vest, 3));
 
 xpdf2 = bsxfun(@times, xpdf_vis, xpdf_vest); % These guys are already normalized (volume element aside)
 
-prmat = zeros(numel(bincenters_vest), 2);
+if do_estimation
+    prmat = zeros(numel(bincenters_vest), 2);
+    prmat(:,2) = qtrapz(qtrapz(bsxfun(@times, xpdf2, prright), 2), 3);
+    prmat(:,1) = 1 - prmat(:,2);
+else
+    prmat = [];
+end
 
-prmat(:,2) = qtrapz(qtrapz(bsxfun(@times, xpdf2, prright), 2), 3);
-prmat(:,1) = 1 - prmat(:,2);
+if do_unity
+    prmat_unity = zeros(numel(bincenters_vest), 2);
+    prmat_unity(:,1) = qtrapz(qtrapz(bsxfun(@times, xpdf2, prunity), 2), 3);
+    prmat_unity(:,2) = 1 - prmat_unity(:,1);
+else
+    prmat_unity = [];
+end
+    
+prmat = [prmat(:); prmat_unity(:)];
 
 % Fix probabilities
 prmat = min(max(prmat,0),1);
@@ -349,19 +374,18 @@ prmat = min(max(prmat,0),1);
 % Finalize log likelihood
 
 prmat = FIXEDLAPSEPDF + (1-FIXEDLAPSEPDF)*prmat;
-prmat = prmat(:);
 
 if nargout > 1
     extras.responsepdf = prmat;
 end
 
-xx = [X{1}; X{2}];
+xx = [X{1}(:); X{2}(:); X{3}(:)];
 
 if sumover
-    loglike = sum(xx(:).*log(prmat));
+    loglike = sum(xx.*log(prmat));
     varargout{1} = loglike;
 else
-    varargout{1} = prmat.^xx(:);
+    varargout{1} = prmat.^xx;
 end
 if nargout > 1; varargout{2} = extras; end
 

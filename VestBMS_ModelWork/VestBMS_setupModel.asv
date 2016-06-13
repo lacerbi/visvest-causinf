@@ -405,7 +405,8 @@ function [mp, outflag] = initModel(model, infostruct)
         case 1 % Unused
         otherwise; error('Unsupported model.');        
     end
-        
+    
+    
     % Decision making model
     switch model(11)
         case 1 % Standard BDT

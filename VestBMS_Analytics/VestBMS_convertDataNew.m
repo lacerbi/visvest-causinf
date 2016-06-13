@@ -12,7 +12,7 @@
 % X(:, 9) Visual response
 % X(:, 10) Categorical response
 
-function [data,bigdata] = VestBMS_convertDataNew(flag)
+function [data,bigdata,X] = VestBMS_convertDataNew(flag)
 
 if nargin < 1 || isempty(flag); flag = 1; end
 
@@ -24,13 +24,14 @@ else
     monkeyinverted = 1; % Monkey data were inverted
 end
 
-
 % All subjects:
 % 9 and 14 have only 2 levels of visual reliability (instead of 3)
 % 5 and 14 only have no bimodal localization trials
 % 7 and 15 are missing
 
 subjs = [1:4 6 8 10:13 16 24 44 45];
+ishuman = [1:4 6 8 10:13 16];
+ismonkey = [24 44 45];
 % bincenters = -45:2.5:45;
 bincenters = [-45,-40,-35,-30:2.5:-2.5,-1.25:0.625:1.25,2.5:2.5:30,35,40,45];
 
@@ -48,7 +49,7 @@ for iSubj = 1:length(subjs)
     end
     D = dataset(dataset(:,1) == 1 | dataset(:,1) == 2, :);
     
-    % Load bimodal data
+    % Load bimodal localization data
     filename = [num2str(nid) filesuffix '.mat'];
     temp = load(filename);
     if isfield(temp,'dataset')
@@ -57,13 +58,21 @@ for iSubj = 1:length(subjs)
         dataset = temp.comp_dataset;
     end
     
+    % Load bimodal unity judgments data (human only)
+    if any(nid == ishuman)
+        filename = [num2str(nid) '_causalinf_cause.mat'];
+        temp = load(filename);
+        temp.dataset(:,1) = 3;  % Unity judgement bisensory data
+        dataset = [dataset; temp.dataset];
+    end
+    
     D = [D; dataset(dataset(:,1) == 3 | dataset(:,1) == 4, :)];
     
     % Remove missed trials (0 timeout, 4 trial start button)
-    D(D(:, 5) == 0 | D(:, 5) == 4,:) = [];    
+    D(D(:, 5) == 0 | D(:, 5) == 4 | D(:, 9) == 0 | D(:, 9) == 4,:) = [];    
         
     % Correct inverted assignement of responses in monkey bisensory data
-    if monkeyinverted && nid > 20
+    if monkeyinverted && any(nid == ismonkey)
         D(D(:,1) == 4, 5) = 3 - D(D(:,1) == 4, 5);
     end    
     

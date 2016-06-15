@@ -195,9 +195,13 @@ if ~gaussianflag || ~closedformflag
 
         case 2  % Generalized Bayesian causal inference
             % likec1 = squeeze(likec1);
-            % postc1 = 1./(1 + likec2*(1-priorc1)./(likec1*priorc1));
-            lratio = log(likec1*priorc1) - log(likec2*(1-priorc1));
-            w1 = 1./(1 + exp(-gamma_causinf.*lratio));
+            postc1 = 1./(1 + likec2*(1-priorc1)./(likec1*priorc1));
+            w1 = 1./(1 + exp(gamma_causinf.*log((1-postc1)./postc1) )*(1-2*postc1)));
+            
+            
+            
+            1/(1 + x)
+            
             
         case 3 % Non-Bayesian, criterion on x
             w1 = abs(bsxfun(@minus, xrange_vis, xrange_vest)) < kcommon;
@@ -209,6 +213,8 @@ if ~gaussianflag || ~closedformflag
             w1 = 1;
             
     end
+    
+    sort(w1(:))'
     
     % NaNs can emerge as 0/0 - assume that the response becomes random
     w1(isnan(w1)) = 0.5;

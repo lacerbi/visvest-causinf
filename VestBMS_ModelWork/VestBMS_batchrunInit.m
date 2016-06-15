@@ -33,17 +33,16 @@ DATAIDS = [(1:nDatasets)',zeros(nDatasets,1)];
 
 % Default number of samples for unimodal/bimodal trials
 NSAMPLES = [1e4,5e3];
-% NSAMPLES = [1e3,5e3];
+NSAMPLES = [0 0];
 
 % Default optimization steps before starting sampling
 MAXFUNEVALS = 1e3;
-% MAXFUNEVALS = 100;
 
 % Optimization steps when optimizing only
 NITER_OPTIMIZATION = 2e3;
 
 % Number of restarts for optimization
-nOptimizationRestarts = 50;
+nOptimizationRestarts = 100;
 % nOptimizationRestarts = 1;
 
 if debug

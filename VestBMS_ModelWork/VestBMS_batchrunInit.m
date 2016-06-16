@@ -117,7 +117,7 @@ switch type
        options.jobname = 'vest_bim';
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
-    case 2
+    case 2  % Monkey only
        [options,models,groupcnd] = VestBMS(options,2,0);
        options.jobname = 'vest_bim_monkey';
        dataids = [12 8; 13 8; 14 8];

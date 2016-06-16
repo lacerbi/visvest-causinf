@@ -36,10 +36,10 @@ NSAMPLES = [1e4,5e3];
 NSAMPLES = [0 0];
 
 % Default optimization steps before starting sampling
-MAXFUNEVALS = 1e3;
+MAXFUNEVALS = 1500;
 
 % Optimization steps when optimizing only
-NITER_OPTIMIZATION = 2e3;
+NITER_OPTIMIZATION = 1500;
 
 % Number of restarts for optimization
 nOptimizationRestarts = 100;

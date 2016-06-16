@@ -42,8 +42,8 @@ MAXFUNEVALS = 1500;
 NITER_OPTIMIZATION = 1500;
 
 % Number of restarts for optimization
-nOptimizationRestarts = 100;
-% nOptimizationRestarts = 1;
+nOptimizationRestarts = 50;
+% nOptimizationRestarts = 100;
 
 if debug
     nOptimizationRestarts = 10;

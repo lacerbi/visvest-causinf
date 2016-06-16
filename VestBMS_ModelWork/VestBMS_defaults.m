@@ -27,7 +27,6 @@ switch lower(command)
         optlist(end+1) = struct('name', 'trimfirstntrials', 'type', 'matrix', 'default', NTRIMTRIALS);
         optlist(end+1) = struct('name', 'trialtypeflags', 'type', 'matrix', 'default', true(1, NTYPES));
         optlist(end+1) = struct('name', 'priorblocks', 'type', 'flag', 'default', 1);
-        optlist(end+1) = struct('name', 'modelsmpl', 'type', 'matrix', 'default', []);
         optlist(end+1) = struct('name', 'nominimize', 'type', 'flag', 'default', 0);
         optlist(end+1) = struct('name', 'discardcategorical', 'type', 'flag', 'default', 1);
         optlist(end+1) = struct('name', 'discardnoncategorical', 'type', 'flag', 'default', 0);

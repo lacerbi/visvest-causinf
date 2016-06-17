@@ -29,5 +29,12 @@ addpath(genpath('/home/la67/${NAME}'));
 cd('${WORKDIR}');
 nsamples=${NSAMPLES}; % MCMC samples
 continueflag=${CONTINUE}; % Continue flag
-ModelWork_batchEval('${PROJECT}',[],'${IID}.job','procid',${IID},'nsamples',nsamples,'continueflag',continueflag);
+loadmbag=${LOADMBAG};
+if loadmbag
+	temp = load('${PROJECT}_${RUN}.mat','mbag');
+	mbag = temp.mbag
+else
+	mbag = [];
+end
+ModelWork_batchEval('${PROJECT}',[],'${IID}.job','procid',${IID},'nsamples',nsamples,'continueflag',continueflag,'mbag',mbag);
 EOF

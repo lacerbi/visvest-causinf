@@ -1,4 +1,4 @@
-% VESTBMS_UNIMODALLEFTRIGHTDATALIKE Calculate log likelihood of unimodal 
+% VESTBMS_UNIMODALLEFTRIGHTDATALIKE Calculate (log) likelihood of unimodal 
 % dataset X under model MODEL and parameter set THETA.
 %
 % X is a unimodal data matrix. Each row is a trial. For a given row, the 

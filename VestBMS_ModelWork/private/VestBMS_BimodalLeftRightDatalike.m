@@ -1,4 +1,4 @@
-% CUEBMS_BIMODALDATALIKE Calculate log likelihood of bimodal dataset X
+% CUEBMS_BIMODALDATALIKE Calculate (log) likelihood of bimodal dataset X
 % under model MODEL and parameter set THETA for binned responses.
 %
 % X is a unimodal data matrix. Each row is a trial. For a given row, the 

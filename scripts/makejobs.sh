@@ -38,3 +38,4 @@ ModelWork_makeJobList('$PROJECT',[],${1},${NREPLICAS},${NPROCS})
 EOF
 
 cd ..
+cd /home/la67/${PROJECT}/scripts

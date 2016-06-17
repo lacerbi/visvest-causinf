@@ -25,8 +25,9 @@ echo ${WORKDIR} ${PROJECT} ${IID}.job
 
 cat<<EOF | matlab -nodisplay
 addpath(genpath('/home/la67/MATLAB'));
-addpath(genpath('/home/la67/${NAME}/matlab'));
+addpath(genpath('/home/la67/${NAME}'));
 cd('${WORKDIR}');
 nsamples=${NSAMPLES}; % MCMC samples
-ModelWork_batchEval('${PROJECT}',[],'${IID}.job','procid',${IID},'nsamples',nsamples);
+continueflag=${CONTINUE}; % Continue flag
+ModelWork_batchEval('${PROJECT}',[],'${IID}.job','procid',${IID},'nsamples',nsamples,'continueflag',continueflag);
 EOF

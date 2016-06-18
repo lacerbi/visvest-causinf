@@ -1,9 +1,6 @@
 #!/bin/sh
-echo "Usage: collectjobs job# [file#]"
-
+echo "Usage: collectjobs job1 [job2...]"
 PROJECT="VestBMS"
-BASEDIR="run${1}"
-cd /scratch/la67/${PROJECT}/${BASEDIR}
 
 module purge
 #. /etc/profile.d/modules.sh
@@ -13,16 +10,15 @@ module load matlab
 source /home/la67/MATLAB/setpath.sh
 export MATLABPATH=${MATLABPATH}
 
-rm *.job
-rm *.o*
-rm *.e*
-rm *.log
-
 cat<<EOF | matlab -nodisplay
-[mbag,modelsummary] = ModelWork_collectFits('$PROJECT','./*',[],[]);
-modelsummary
-save('${PROJECT}_${1}.mat','mbag','modelsummary');
+RUNS=str2num('$@')
+for iRun=1:numel(RUNS)
+	cd(['/scratch/la67/${PROJECT}/run' num2str(RUNS(iRun))]);
+	[mbag,modelsummary] = ModelWork_collectFits('$PROJECT','./*',[],[]);
+	modelsummary
+	filename=['/scratch/la67/${PROJECT}/${PROJECT}_' num2str(RUNS(iRun)) '.mat'];
+	save(filename,'mbag','modelsummary');
+end
 EOF
 
-cd ..
 cd /home/la67/${PROJECT}/scripts

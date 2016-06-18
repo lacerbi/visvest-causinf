@@ -31,7 +31,7 @@ nsamples=${NSAMPLES}; % MCMC samples
 continueflag=${CONTINUE}; % Continue flag
 loadmbag=${LOADMBAG};
 if loadmbag
-	temp = load('${PROJECT}_${RUN}.mat','mbag');
+	temp = load('../${PROJECT}_${RUN}.mat','mbag');
 	mbag = temp.mbag
 else
 	mbag = [];

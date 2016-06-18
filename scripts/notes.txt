@@ -1,0 +1,11 @@
+- optimization runs ongoing: 
+1, 1001 (27), 1101 (19,20,21)
+
+- MCMC sampling runs ongoing:
+101
+1001
+1101
+
+- MCMC sampling runs to go:
+1
+

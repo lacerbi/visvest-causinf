@@ -8,7 +8,7 @@ module purge
 
 # Use Intel compiler
 module load matlab
-export MATLABPATH=${MATLABPATH}:/home/la67/${NAME}/matlab:/home/la67/MATLAB
+export MATLABPATH=${MATLABPATH}:/home/la67/${PROJECT}:/home/la67/MATLAB
 source /home/la67/MATLAB/setpath.sh
 
 #Check if running as an array job
@@ -25,7 +25,7 @@ echo ${WORKDIR} ${PROJECT} ${IID}.job
 
 cat<<EOF | matlab -nodisplay
 addpath(genpath('/home/la67/MATLAB'));
-addpath(genpath('/home/la67/${NAME}'));
+addpath(genpath('/home/la67/${PROJECT}'));
 cd('${WORKDIR}');
 nsamples=${NSAMPLES}; % MCMC samples
 continueflag=${CONTINUE}; % Continue flag

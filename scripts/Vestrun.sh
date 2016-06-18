@@ -14,8 +14,8 @@ MAXID=$(ls -l *.job | wc -l)
 RUNTIME=48:00:00
 MAXRT=NaN
 VERBOSE=1
-NSAMPLES=5000
-CONTINUE=1
+NSAMPLES=0
+CONTINUE=0
 LOADMBAG=0
 
 #Job list is second argument

@@ -16,7 +16,7 @@ MAXRT=NaN
 VERBOSE=1
 NSAMPLES=5000
 CONTINUE=1
-LOADMBAG=1
+LOADMBAG=0
 
 #Job list is second argument
 if [[ ! -z "$2" ]]; then

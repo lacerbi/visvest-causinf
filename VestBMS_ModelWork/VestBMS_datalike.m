@@ -26,7 +26,7 @@ persistent starttrials;
 if isempty(oldparams)
     % Prepare variables to store parameters between function calls
     for iicnd = 1:4; oldparams{iicnd} = zeros(1, 10); end
-    for iicnd = 5:7; oldparams{iicnd} = zeros(1, 20); end
+    for iicnd = 5:7; oldparams{iicnd} = zeros(1, 22); end
     oldloglikes = zeros(1, 7);
     
     % Count expected number of trial types per condition
@@ -141,8 +141,13 @@ for iicnd = 1:length(cnd)
             if isfield(fulltheta,'tau_causinf')
                 theta(16) = fulltheta.tau_causinf;
             end
-                                    
-            priorinfo = [fulltheta.priormu fulltheta.priorsigma fulltheta.pcommon fulltheta.kcommon];
+            
+            % Retrocompatibility
+            if ~isfield(fulltheta,'pcommon_unity'); fulltheta.pcommon_unity = fulltheta.pcommon; end
+            if ~isfield(fulltheta,'kcommon_unity'); fulltheta.kcommon_unity = fulltheta.kcommon; end
+            
+            priorinfo = [fulltheta.priormu fulltheta.priorsigma ...
+                fulltheta.pcommon fulltheta.kcommon fulltheta.pcommon_unity fulltheta.kcommon_unity];
             
             maxranges = infostruct.MAXRNG;
             
@@ -161,7 +166,7 @@ for iicnd = 1:length(cnd)
                 templike = log(templike);
                 loglikes(cnd(iicnd)) = sum(templike);
                 trialloglikes(starttrials(cnd(iicnd)):starttrials(cnd(iicnd)+1)-1) = templike;
-            else
+            else                
                 if all(oldparams{cnd(iicnd)} == [theta priorinfo])
                     % Do not recompute log likelihood if no changes to local
                     % parameter vector

@@ -23,6 +23,7 @@ persistent oldparams;
 persistent oldloglikes;
 persistent oldtrialloglikes;
 persistent starttrials;
+persistent ntrials;
 if isempty(oldparams)
     % Prepare variables to store parameters between function calls
     for iicnd = 1:4; oldparams{iicnd} = zeros(1, 10); end
@@ -31,10 +32,12 @@ if isempty(oldparams)
     
     % Count expected number of trial types per condition
     ntrials = zeros(1, 7);
-    for iicnd = 1:4; ntrials(iicnd) = numel(X.unibins{iicnd}(:)); end
+    % for iicnd = 1:4; ntrials(iicnd) = numel(X.unibins{iicnd}(:)); end
+    for iicnd = 1:4; ntrials(iicnd) = size(X.unimodal{iicnd},1); end
     for iicnd = 5:7
         for iTask = 1:numel(X.bimbins{iicnd-4})
-            ntrials(iicnd) = ntrials(iicnd) + numel(X.bimbins{iicnd-4}{iTask}(:));
+            % ntrials(iicnd) = ntrials(iicnd) + numel(X.bimbins{iicnd-4}{iTask}(:));
+            ntrials(iicnd) = ntrials(iicnd) + size(X.bimodal{iicnd-4}{iTask},1);
         end
     end
     starttrials = [0 cumsum(ntrials)]+1;    
@@ -83,7 +86,7 @@ for iicnd = 1:length(cnd)
             if debug
                 [templike extras{cnd(iicnd)}] = VestBMS_UnimodalLeftRightDatalike( ...
                     X.unibins{cnd(iicnd)},model,theta,priorinfo,infostruct.bincenters_uni,infostruct.MAXRNG,mp.XGRID(cnd(iicnd)),SSCALE,0,randomize);
-                templike = log(templike);
+                % templike = log(templike);
                 loglikes(cnd(iicnd)) = sum(templike);
                 trialloglikes(starttrials(cnd(iicnd)):starttrials(cnd(iicnd)+1)-1) = templike;
             else                
@@ -99,7 +102,7 @@ for iicnd = 1:length(cnd)
                     else
                         templike = [];
                     end                    
-                    templike = log(templike);
+                    % templike = log(templike);
                     loglikes(cnd(iicnd)) = sum(templike);
                     
                     trialloglikes(starttrials(cnd(iicnd)):starttrials(cnd(iicnd)+1)-1) = templike;
@@ -163,7 +166,7 @@ for iicnd = 1:length(cnd)
             if debug
                 [templike extras{cnd(iicnd)}] = VestBMS_BimodalLeftRightDatalike(...
                     X.bimbins{iNoise},model,theta,priorinfo,infostruct.bincenters_bim,maxranges,mp.XGRID(cnd(iicnd)),SSCALE,0,randomize);
-                templike = log(templike);
+                % templike = log(templike);
                 loglikes(cnd(iicnd)) = sum(templike);
                 trialloglikes(starttrials(cnd(iicnd)):starttrials(cnd(iicnd)+1)-1) = templike;
             else                
@@ -175,7 +178,7 @@ for iicnd = 1:length(cnd)
                 else
                     templike = VestBMS_BimodalLeftRightDatalike(...
                         X.bimbins{iNoise},model,theta,priorinfo,infostruct.bincenters_bim,maxranges,mp.XGRID(cnd(iicnd)),SSCALE,0,randomize);
-                    templike = log(templike);
+                    % templike = log(templike);
                     loglikes(cnd(iicnd)) = sum(templike);
                                         
                     trialloglikes(starttrials(cnd(iicnd)):starttrials(cnd(iicnd)+1)-1) = templike;
@@ -196,6 +199,9 @@ end
 
 loglike = sum(loglikes);
 if debug; extras.struct = extras; end
-if ~isempty(trialloglikes); extras.trialloglikes = trialloglikes; end
+if ~isempty(trialloglikes)
+    extras.trialloglikes = trialloglikes;
+    extras.ntrials = ntrials;
+end
 
 end

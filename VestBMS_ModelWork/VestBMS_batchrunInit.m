@@ -8,6 +8,9 @@ debug = 0;
 % Get additional type parameters
 type = type(1);
 
+% Trials are binned for computation of the log likelihood (obsolete!)
+% options = setoptions(options,'binnedloglik',1,1);
+
 % Continue previous sampling if exists
 options = setoptions(options,'loadstartx',1,1);
 
@@ -85,28 +88,16 @@ standardbimodalmodels = [ ...
 
 switch type
     case 0; % DEBUG    
-
-        if nc == 0 % Debug unimodal data     
-            options = setoptions(options,'nc',2,1);
-            options = setoptions(options,'samplingtemperature',2,1);
-            options = setoptions(options,'nsamples',10,1);
-            options = setoptions(options,'nstoredsamples',15,1);
-            options = setoptions(options,'optfevals',20,1);
-            dataids = dataids(1,:);
-
-            % models = standardunimodalmodels(1, :);
-            models = bestunimodalmodels(1, :);
-            groupcnd = [1 2 3 4];           
-        else % Debug bimodal data
-            options = setoptions(options,'nc',2,1);
-            options = setoptions(options,'nsamples',0,1);
-            options = setoptions(options,'nstoredsamples',0,1);
-            options = setoptions(options,'optfevals',10,1);
-            dataids = dataids(1,:);
-
-            models = standardbimodalmodels;
-            groupcnd = [5 6 7];                        
-        end
+        
+        [options,models,groupcnd] = VestBMS(options,2,0);
+        options.jobname = 'vest_debug';
+        dataids = [1 0];
+        
+        options = setoptions(options,'nsamples',100,1);
+        options = setoptions(options,'nstoredsamples',15,1);
+        options = setoptions(options,'optfevals',20,1);
+        options = setoptions(options,'nstarts',1,1);
+        models = models(1,:);
         
 %--------------------------------------------------------------------------        
 % BISENSORY ESTIMATION DATA FITS

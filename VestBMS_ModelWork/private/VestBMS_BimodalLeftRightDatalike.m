@@ -408,7 +408,8 @@ if sumover
     loglike = sum(xx.*log(prmat));
     varargout{1} = loglike;
 else
-    varargout{1} = prmat.^xx;
+    % varargout{1} = prmat.^xx;
+    varargout{1} = loglikmat2vec(log(prmat),xx);
 end
 if nargout > 1; varargout{2} = extras; end
 

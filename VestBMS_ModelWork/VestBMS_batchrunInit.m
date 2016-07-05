@@ -168,6 +168,34 @@ switch type
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
        
        
+%--------------------------------------------------------------------------        
+% FULL JOINT DATA FITS
+
+   case 2001 % Bisensory standard models (humans)
+        
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_joint_human';       
+       models = [ ...
+           5 3 1 1, 1 1 1 1, 1 1 2 1, 1 1 2 2 0; ... % Generalized Bayesian
+           5 3 1 1, 1 1 1 1, 1 1 2 1, 1 1 4 2 0; ... % Soft fixed criterion
+       ];       
+       % models(:,11) = 3;    % Probability matching (might require change)
+       dataids = [(1:11)', zeros(11,1)];       
+
+   case 2002 % Bisensory standard models (monkeys)
+        
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_joint_monkey';
+       models = [ ...
+           5 3 1 1, 1 1 1 1, 1 1 2 1, 1 1 2 2 0; ... % Generalized Bayesian
+           5 3 1 1, 1 1 1 1, 1 1 2 1, 1 1 4 2 0; ... % Soft fixed criterion
+       ];       
+       % models(:,11) = 3;    % Probability matching (might require change)
+       dataids = [12 8; 13 8; 14 8];
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+       
 %--------------------------------------------------------------------------
 % UNIMODAL ESTIMATION DATA FITS
 % All models have by default: no rescaling, no motor noise, a fixed prior

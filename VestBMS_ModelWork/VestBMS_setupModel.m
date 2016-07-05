@@ -74,7 +74,7 @@
 % 5 Forced fusion.
 %--------------------------------------------------------------------------
 % MODEL(16) Report of unity model (Bimodal only, unused):
-% 1 Unused
+% 1 Standard, 2 Separate criterion parameter (1 param)
 
 function [mp,exitflag] = VestBMS_setupModel(mp,theta,model,infostruct)
 
@@ -449,6 +449,8 @@ function [mp, outflag] = initModel(model, infostruct)
         for icnd = 1:mp.ncnd
             mp.fulltheta{icnd}.pcommon = 0.5;
             mp.fulltheta{icnd}.kcommon = 0;
+            mp.fulltheta{icnd}.pcommon_unity = 0.5;
+            mp.fulltheta{icnd}.kcommon_unity = 0;
         end
         
         switch model(14)
@@ -486,6 +488,18 @@ function [mp, outflag] = initModel(model, infostruct)
         % Report of unity criterion
         switch model(16)
             case 1 % Standard
+            case 2 % Separate criterion (based on 15)                
+                switch model(15)
+                    case {1,2} % Bayesian (1-param)
+                        mp.nparams(16) = 1;
+                        pbounds{16} = [0 1, 0.1 0.9, 0.1];
+                        params{16} = {'pcommon_unity'};
+                    case {3,4} % Criterion on x (1-param)
+                        mp.nparams(16) = 1;
+                        pbounds{16} = kcommon_bounds;
+                        params{16} = {'kcommon_unity'};
+                end
+                
             otherwise; error('Unsupported report of unity criterion model.');
         end
         
@@ -856,7 +870,18 @@ function [mp,exitflag] = updateModel(mp,theta)
             end
             
             % Report of unity criterion (Bimodal only)
-            
+            switch model(16)
+                case 1  % Default (copy localization criterion)
+                    mp.fulltheta{icnd}.pcommon_unity = mp.fulltheta{icnd}.pcommon;
+                    mp.fulltheta{icnd}.kcommon_unity = mp.fulltheta{icnd}.kcommon;                    
+                case 2  % Separate criterion parameter
+                    switch model(15)
+                        case {1,2} % Bayesian
+                            updateparams(icnd, 16, {'id'});
+                        case {3,4} % Criterion on x
+                            updateparams(icnd, 16, {'exp'});
+                    end
+            end
         end
 
         

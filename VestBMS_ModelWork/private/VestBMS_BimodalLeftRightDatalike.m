@@ -64,14 +64,23 @@ gamma_causinf = theta(15);
 tau_causinf = theta(16);
 
 % Model selection parameter
-priorc1 = priorinfo(end-1);
-kcommon = priorinfo(end);
+priorc1 = priorinfo(end-3);
+kcommon = priorinfo(end-2);
+priorc1_unity = priorinfo(end-1);
+kcommon_unity = priorinfo(end);
 
 MAXRNG = maxranges(1);
 
 % Trials to be computed
 do_estimation = ~isempty(X{2});
 do_unity = ~isempty(X{3});
+
+% Use distinct criteria for localization vs unity judgement
+if (priorc1_unity ~= priorc1 || kcommon_unity ~= kcommon) && do_unity
+    distinct_criteria = 1;
+else
+    distinct_criteria = 0;
+end
 
 % Is the internal noise Gaussian?
 if ( ( wlike_vis == 0 && wlike_vest == 0 ) ...
@@ -192,18 +201,31 @@ if ~gaussianflag || ~closedformflag
         case 1  % Model weight is Bayesian posterior p(C=1|x_1, x_2)
             % likec1 = squeeze(likec1);
             w1 = likec1*priorc1./(likec1*priorc1 + likec2*(1-priorc1));
+            if distinct_criteria
+                w1_unity = likec1*priorc1_unity./(likec1*priorc1_unity + likec2*(1-priorc1_unity));
+            end
 
         case 2  % Generalized Bayesian causal inference
             % likec1 = squeeze(likec1);
             % postc1 = 1./(1 + likec2*(1-priorc1)./(likec1*priorc1));
             lratio = log(likec1*priorc1) - log(likec2*(1-priorc1));
             w1 = 1./(1 + exp(-gamma_causinf.*lratio));
+            if distinct_criteria
+                lratio = log(likec1*priorc1_unity) - log(likec2*(1-priorc1_unity));
+                w1_unity = 1./(1 + exp(-gamma_causinf.*lratio));
+            end
             
         case 3 % Non-Bayesian, criterion on x
             w1 = abs(bsxfun(@minus, xrange_vis, xrange_vest)) < kcommon;
+            if distinct_criteria
+                w1_unity = abs(bsxfun(@minus, xrange_vis, xrange_vest)) < kcommon_unity;                
+            end
 
         case 4 % Soft criterion on x
             w1 = 1./(1 + exp(tau_causinf*(abs(bsxfun(@minus, xrange_vis, xrange_vest)) - kcommon)));
+            if distinct_criteria
+                w1_unity = 1./(1 + exp(tau_causinf*(abs(bsxfun(@minus, xrange_vis, xrange_vest)) - kcommon_unity)));                
+            end
             
         case 5 % Forced fusion
             w1 = 1;
@@ -212,9 +234,11 @@ if ~gaussianflag || ~closedformflag
     
     % NaNs can emerge as 0/0 - assume that the response becomes random
     w1(isnan(w1)) = 0.5;
+    if distinct_criteria; w1_unity(isnan(w1_unity)) = 0.5; end
     
     if nargout > 1 % Save variables for debug or data generation
         extras.w1 = w1;
+        if distinct_criteria; extras.w1_unity = w1_unity; end
         % extras.postpdfc1 = postpdfc1;
     end
     
@@ -228,13 +252,11 @@ if ~gaussianflag || ~closedformflag
     end
     
     % Bisensory unity judgement
-    if do_unity
-        prunity = w1;
-    end
+    if do_unity && ~distinct_criteria; w1_unity = w1; end
 
     % Clean up memory
     clear postright w1 postpdf_c1 postpdf_c2 postright_c1 postright_c2 ...
-        likec1 likec2 likec2_vis postpdfc1 postc1;
+        likec1 likec2 likec2_vis postpdfc1 postc1 lratio;
 
 else
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -360,7 +382,7 @@ end
 
 if do_unity
     prmat_unity = zeros(numel(bincenters_vest), 2);
-    prmat_unity(:,1) = qtrapz(qtrapz(bsxfun(@times, xpdf2, prunity), 2), 3);
+    prmat_unity(:,1) = qtrapz(qtrapz(bsxfun(@times, xpdf2, w1_unity), 2), 3);
     prmat_unity(:,2) = 1 - prmat_unity(:,1);
 else
     prmat_unity = [];

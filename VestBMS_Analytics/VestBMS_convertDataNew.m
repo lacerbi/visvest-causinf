@@ -71,6 +71,11 @@ for iSubj = 1:length(subjs)
     % Remove missed trials (0 timeout, 4 trial start button, 5 unknown error)
     D(D(:, 5) == 0 | D(:, 5) == 4 | D(:, 5) == 5 | D(:, 9) == 0 | D(:, 9) == 4 | D(:, 9) == 5,:) = [];    
         
+    % Remove out of range trials (only subject 10)
+    idx = abs(D(:,3) - D(:,2)) == 50; 
+    D(idx, :) = [];
+    if sum(idx) > 0; fprintf('Removing %d out of range trials for subject %d.\n', sum(idx), iSubj); end
+    
     % Correct inverted assignement of responses in monkey bisensory data
     if monkeyinverted && any(nid == ismonkey)
         D(D(:,1) == 4, 5) = 3 - D(D(:,1) == 4, 5);

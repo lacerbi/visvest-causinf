@@ -179,8 +179,7 @@ for iicnd = 1:length(cnd)
                     templike = VestBMS_BimodalLeftRightDatalike(...
                         X.bimbins{iNoise},model,theta,priorinfo,infostruct.bincenters_bim,maxranges,mp.XGRID(cnd(iicnd)),SSCALE,0,randomize);
                     % templike = log(templike);
-                    loglikes(cnd(iicnd)) = sum(templike);
-                                        
+                    loglikes(cnd(iicnd)) = sum(templike);                                        
                     trialloglikes(starttrials(cnd(iicnd)):starttrials(cnd(iicnd)+1)-1) = templike;
                 end
             end

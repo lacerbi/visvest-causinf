@@ -162,7 +162,7 @@ switch type
 %--------------------------------------------------------------------------        
 % FULL JOINT DATA FITS
 
-   case 2001 % Bisensory standard models (humans)
+   case 2001 % Full joint standard models (humans)
         
        options = VestBMS(options,2,0);
        groupcnd = 1:7;
@@ -174,7 +174,7 @@ switch type
        % models(:,11) = 3;    % Probability matching (might require change)
        dataids = [(1:11)', zeros(11,1)];       
 
-   case 2002 % Bisensory standard models (monkeys)
+   case 2002 % Full joint standard models (monkeys)
         
        options = VestBMS(options,2,0);
        groupcnd = 1:7;

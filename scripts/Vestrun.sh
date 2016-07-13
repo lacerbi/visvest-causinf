@@ -17,7 +17,7 @@ VERBOSE=1
 NSAMPLES=5000
 NBURNIN=10000
 CONTINUE=1
-LOADMBAG=0
+LOADMBAG=1
 
 #Job list is second argument
 if [[ ! -z "$2" ]]; then

@@ -29,6 +29,7 @@ addpath(genpath('/home/la67/${PROJECT}'));
 cd('${WORKDIR}');
 nsamples=${NSAMPLES}; % MCMC samples
 nburnin=${NBURNIN}; % MCMC burn-in
+optfevals=${OPTFEVALS}; % Optimization function evaluations
 continueflag=${CONTINUE}; % Continue flag
 loadmbag=${LOADMBAG};
 if loadmbag
@@ -37,5 +38,5 @@ if loadmbag
 else
 	mbag = [];
 end
-ModelWork_batchEval('${PROJECT}',[],'${IID}.job','procid',${IID},'nsamples',nsamples,'burnin',nburnin,'continueflag',continueflag,'mbag',mbag);
+ModelWork_batchEval('${PROJECT}',[],'${IID}.job','procid',${IID},'optfevals',optfevals,'nsamples',nsamples,'burnin',nburnin,'continueflag',continueflag,'mbag',mbag);
 EOF

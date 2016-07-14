@@ -32,11 +32,16 @@ nburnin=${NBURNIN}; % MCMC burn-in
 optfevals=${OPTFEVALS}; % Optimization function evaluations
 continueflag=${CONTINUE}; % Continue flag
 loadmbag=${LOADMBAG};
+if optfevals==0 && nsamples==0
+	recomputesamplingmetrics=1;
+else
+	recomputesamplingmetrics=0;
+end
 if loadmbag
 	temp = load('../${PROJECT}_${RUN}.mat','mbag');
 	mbag = temp.mbag
 else
 	mbag = [];
 end
-ModelWork_batchEval('${PROJECT}',[],'${IID}.job','procid',${IID},'optfevals',optfevals,'nsamples',nsamples,'burnin',nburnin,'continueflag',continueflag,'mbag',mbag);
+ModelWork_batchEval('${PROJECT}',[],'${IID}.job','procid',${IID},'optfevals',optfevals,'nsamples',nsamples,'burnin',nburnin,'continueflag',continueflag,'mbag',mbag,'recomputesamplingmetrics',recomputesamplingmetrics);
 EOF

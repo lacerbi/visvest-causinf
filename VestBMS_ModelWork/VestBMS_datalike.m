@@ -197,7 +197,7 @@ if any(isnan(loglikes) | isinf(loglikes) | ~isreal(loglikes))
 end
 
 loglike = sum(loglikes);
-if debug; extras.struct = extras; end
+if debug; temp = extras; extras = []; extras.struct = temp; end
 if ~isempty(trialloglikes)
     extras.trialloglikes = trialloglikes;
     extras.ntrials = ntrials;

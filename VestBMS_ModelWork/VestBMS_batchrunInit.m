@@ -56,6 +56,7 @@ end
 
 options = setoptions(options,'nstarts',nOptimizationRestarts,1);
 options = setoptions(options,'optfevals',MAXFUNEVALS,1);
+if isempty(options.optfevals); options.optfevals = MAXFUNEVALS; end
 
 dataids = DATAIDS;
 

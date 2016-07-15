@@ -114,12 +114,27 @@ switch type
        options.jobname = 'vest_bim_monkey';
        dataids = [12 8; 13 8; 14 8];
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+
+   case {11} % Bisensory standard models without beta
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       options.jobname = 'vest_2bim';
+       models(:,11) = 3;    % Probability matching
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
     case 101 % Bimodal standard models with constant noise
         
        [options,models,groupcnd] = VestBMS(options,2,0);
        models(:,[1 2]) = 1; % Constant noise
        options.jobname = 'vest_bim_const';
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+
+    case 111 % Bimodal standard models with constant noise without beta
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,[1 2]) = 1; % Constant noise
+       options.jobname = 'vest_2bim_const';
+       models(:,11) = 3;    % Probability matching
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
     % LARGE-DISPARITY TRIALS ONLY   

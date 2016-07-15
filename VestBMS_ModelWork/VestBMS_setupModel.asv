@@ -507,7 +507,7 @@ function [mp, outflag] = initModel(model, infostruct)
                         params{16} = {'pcommon_unity','invgamma_causinf_unity'};
                     case {3,4} % Criterion on x (2-params)
                         mp.nparams(16) = 2;
-                        pbounds{16} = [kcommon_bounds; kcommon_bounds];
+                        pbounds{16} = [kcommon_bounds; softmax_bounds];
                         params{16} = {'kcommon_unity','invgamma_causinf_unity'};
                 end
                 
@@ -893,7 +893,6 @@ function [mp,exitflag] = updateModel(mp,theta)
                         case {3,4} % Criterion on x
                             updateparams(icnd, 16, {'exp'});
                     end
-                    mp.fulltheta{icnd}.invgamma_causinf_unity = mp.fulltheta{icnd}.invgamma_causinf;
                 case 3  % Separate criterion and gamma parameter
                     switch model(15)
                         case {1,2} % Bayesian

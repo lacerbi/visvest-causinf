@@ -187,6 +187,18 @@ switch type
        % models(:,11) = 3;    % Probability matching (might require change)
        dataids = [12 8; 13 8; 14 8];
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+
+   case 2011 % Full joint standard models, separate criteria and softmax (humans)
+        
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_joint2_human';       
+       models = [ ...
+           5 3 1 1, 1 1 1 1, 1 1 2 1, 1 1 2 3 0; ... % Generalized Bayesian
+           5 3 1 1, 1 1 1 1, 1 1 2 1, 1 1 4 3 0; ... % Soft fixed criterion
+       ];       
+       dataids = [(1:11)', zeros(11,1)];       
+       
        
 %--------------------------------------------------------------------------
 % UNIMODAL ESTIMATION DATA FITS

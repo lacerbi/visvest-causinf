@@ -173,10 +173,10 @@ for iicnd = 1:length(cnd)
             [Rmat,Rmat_unity] = GendataFun(datafun,X.bimbins{iNoise},N);
             
             % Rmat = VestBMS_BimodalLeftRightGendata(X.bimbins{iNoise},N,model,theta,priorinfo,infostruct.bincenters_bim,infostruct.MAXRNG,SSCALE);
+            R = [];
             
             % Left/right localization trials
             if ~isempty(Rmat)
-                R = [];
                 % Convert from response matrix to trial matrix
                 for iMat = 1:N
                     mat = Rmat(:,:,iMat);
@@ -205,46 +205,8 @@ for iicnd = 1:length(cnd)
                 temp = R(fcat, 5, :); % Categorical response
                 temp(temp == 0) = 2; % Convert zeros to 2
                 D(fcat, 10, :) = temp;
-            else
-                D = [];
             end
             
-            % Unity judgements trials
-            if ~isempty(Rmat_unity)
-                R = [];
-                % Convert from response matrix to trial matrix
-                for iMat = 1:N
-                    mat = Rmat_unity(:,:,iMat);
-                    temp = [];
-                    for t = 1:size(mat,1)
-                        nTot = sum(mat(t,:),2);
-                        resp = [ones(mat(t,1),1); zeros(mat(t,2),1)];
-                        Du = [zeros(nTot,1), 3*ones(nTot,1), infostruct.bincenters_bim{2}(t)*ones(nTot,1), infostruct.bincenters_bim{1}(t)*ones(nTot,1), resp];
-                        temp = [temp; Du];           
-                    end
-                    R(:,:,iMat) = temp;
-                end
-
-                Du = zeros(size(R, 1), 10, size(R, 3));
-                Du(:, 1, :) = R(:, 1, :) + 600; % Trial number
-                Du(:, 3, :) = iNoise; % Visual noise level
-                Du(:, 4, :) = R(:, 2, :); % Trial response type
-                Du(:, 5, :) = R(:, 3, :); % Vestibular stimulus position
-                Du(:, 6, :) = R(:, 4, :); % Visual stimulus position
-                Du(:, 7, :) = 2; % Number of stimuli (1 Unimodal, 2 Bimodal)
-                fvest = Du(:, 4, 1) == 2;
-                Du(fvest, 8, :) = R(fvest, 5, :); % Vestibular response
-                fvis = Du(:, 4, 1) == 1;
-                Du(fvis, 9, :) = R(fvis, 5, :); % Visual response
-                fcat = Du(:, 4, 1) == 3;
-                temp = R(fcat, 5, :); % Categorical response
-                temp(temp == 0) = 2; % Convert zeros to 2
-                Du(fcat, 10, :) = temp;
-            else
-                Du = [];
-            end
-            
-            D = [D; Du];
             
     end
     

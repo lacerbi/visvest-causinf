@@ -63,6 +63,8 @@ beta_softmax = theta(14);
 gamma_causinf = theta(15);
 tau_causinf = theta(16);
 
+gamma_causinf_unity = theta(17);
+
 % Model selection parameter
 priorc1 = priorinfo(end-3);
 kcommon = priorinfo(end-2);
@@ -212,7 +214,7 @@ if ~gaussianflag || ~closedformflag
             w1 = 1./(1 + exp(-gamma_causinf.*lratio));
             if distinct_criteria
                 lratio = log(likec1*priorc1_unity) - log(likec2*(1-priorc1_unity));
-                w1_unity = 1./(1 + exp(-gamma_causinf.*lratio));
+                w1_unity = 1./(1 + exp(-gamma_causinf_unity.*lratio));
             end
             
         case 3 % Non-Bayesian, criterion on x
@@ -252,7 +254,10 @@ if ~gaussianflag || ~closedformflag
     end
     
     % Bisensory unity judgement
-    if do_unity && ~distinct_criteria; w1_unity = w1; end
+    if do_unity && ~distinct_criteria
+        % w1_unity = 1./(1 + ((1-w1)./w1).^beta_softmax);
+        w1_unity = w1;
+    end
 
     % Clean up memory
     clear postright w1 postpdf_c1 postpdf_c2 postright_c1 postright_c2 ...
@@ -388,20 +393,22 @@ else
     prmat_unity = [];
 end
     
-prmat = [prmat(:); prmat_unity(:)];
-
 % Fix probabilities
 prmat = min(max(prmat,0),1);
+prmat_unity = min(max(prmat_unity,0),1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Finalize log likelihood
 
 prmat = FIXEDLAPSEPDF + (1-FIXEDLAPSEPDF)*prmat;
+prmat_unity = FIXEDLAPSEPDF + (1-FIXEDLAPSEPDF)*prmat_unity;
 
 if nargout > 1
     extras.responsepdf = prmat;
+    extras.responsepdf_unity = prmat_unity;
 end
 
+prmat = [prmat(:); prmat_unity(:)];
 xx = [X{1}(:); X{2}(:); X{3}(:)];
 
 if sumover

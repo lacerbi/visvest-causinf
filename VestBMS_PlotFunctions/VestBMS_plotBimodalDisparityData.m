@@ -14,7 +14,7 @@ plotdata = flags(1);
 if isstruct(data) && isfield(data, 'X'); data = {data}; end
 
 % Plot average across all provided datasets
-subjs = 0;
+subjs = 1:11;
 
 nNoise = 3; % Three levels of noise
 
@@ -27,7 +27,7 @@ if subjs(1) == 0
 else
     fig.intborder = [0.05 0.015]; % Internal border noise
     nRows = length(subjs);
-    type = type*ones(1,nRow);
+    type = type*ones(1,nRows);
     plotdata = 0;
 end
 fig.panelgraph = reshape(1:nNoise*nRows,nNoise,nRows)';
@@ -106,6 +106,7 @@ for iRow = 1:nRows
                     copyplot.color = NaN;
                     copyplot.errColor = 0.8*[1 1 1];
                     copyplot.priority = -1;
+                    copyplot.source.dataids = nid;
                     panel.plots{end+1} = copyplot; % Add panel to figure                    
                 end
             end

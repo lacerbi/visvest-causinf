@@ -26,8 +26,8 @@ persistent starttrials;
 persistent ntrials;
 if isempty(oldparams)
     % Prepare variables to store parameters between function calls
-    for iicnd = 1:4; oldparams{iicnd} = zeros(1, 10); end
-    for iicnd = 5:7; oldparams{iicnd} = zeros(1, 23); end
+    for iicnd = 1:4; oldparams{iicnd} = zeros(1, 11); end
+    for iicnd = 5:7; oldparams{iicnd} = zeros(1, 24); end
     oldloglikes = zeros(1, 7);
     
     % Count expected number of trial types per condition
@@ -72,6 +72,7 @@ for iicnd = 1:length(cnd)
             
             % Decision making, lapse and errors
             theta(8) = 1/fulltheta.tau_softmax; % Inverse temperature
+            theta(9) = fulltheta.lambda;
             
             priorinfo = [fulltheta.priormu,fulltheta.priorsigma];
             
@@ -140,14 +141,15 @@ for iicnd = 1:length(cnd)
 
             if isfield(fulltheta,'invgamma_causinf')
                 theta(15) = 1./fulltheta.invgamma_causinf;
+                if ~isfield(fulltheta,'invgamma_causinf_unity')
+                    fulltheta.invgamma_causinf_unity = fulltheta.invgamma_causinf;
+                end
+                theta(17) = 1./fulltheta.invgamma_causinf_unity;
             end
             if isfield(fulltheta,'tau_causinf')
                 theta(16) = fulltheta.tau_causinf;
             end
-            if ~isfield(fulltheta,'invgamma_causinf_unity')
-                fulltheta.invgamma_causinf_unity = fulltheta.invgamma_causinf;
-            end
-            theta(17) = 1./fulltheta.invgamma_causinf_unity;            
+            theta(18) = fulltheta.lambda;
             
             % Retrocompatibility
             if ~isfield(fulltheta,'pcommon_unity'); fulltheta.pcommon_unity = fulltheta.pcommon; end

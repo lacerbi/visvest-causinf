@@ -54,6 +54,7 @@ sigmalikezero = theta(3);
 wlike = theta(4);
 alpha_rescaling = 1;
 beta_softmax = theta(8);
+lambda = theta(9);
 
 % Is the internal noise Gaussian?
 if ( wlike == 0 ...
@@ -92,7 +93,7 @@ sigmasprime = VestBMS_sensoryNoise(likemodel,likerange,sigmalikezero,wlike);
 % Compute unnormalized posterior for each measurement x in XRANGE
 postpdf = bsxfun(@times, priorpdf, bsxfun_normpdf(xrange, srange, sigmasprime));
 
-if isinf(beta_softmax)
+if isinf(beta_softmax) && 0
     % Deterministic decision making
     error('Deterministic decision making not supported.');
 
@@ -128,6 +129,7 @@ prmat(:, 2) = simpson1(bsxfun(@times, xpdf, prright), 2)*dx;
 prmat(:, 1) = 1 - prmat(:, 2);
 
 % Finalize log likelihood
+prmat = lambda/2 + (1-lambda)*prmat;
 prmat = FIXEDLAPSEPDF + (1-FIXEDLAPSEPDF)*prmat;
 prmat = prmat(:);
 

@@ -121,6 +121,14 @@ switch type
        options.jobname = 'vest_2bim';
        models(:,11) = 3;    % Probability matching
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+
+   case {21} % Bisensory standard models without beta and with lapse
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       options.jobname = 'vest_lbim';
+       models(:,11) = 3;    % Probability matching
+       models(:,13) = 2;    % Lapse
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
     case 101 % Bimodal standard models with constant noise
         
@@ -214,6 +222,18 @@ switch type
        ];       
        dataids = [(1:11)', zeros(11,1)];       
        
+   case 2021 % Full joint standard models with lapse (humans)
+        
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_joint_human';       
+       models = [ ...
+           5 3 1 1, 1 1 1 1, 1 1 2 1, 1 1 2 2 0; ... % Generalized Bayesian
+           5 3 1 1, 1 1 1 1, 1 1 2 1, 1 1 4 2 0; ... % Soft fixed criterion
+       ];       
+       models(:,11) = 3;    % Probability matching
+       models(:,13) = 2;    % Lapse
+       dataids = [(1:11)', zeros(11,1)];       
        
 %--------------------------------------------------------------------------
 % UNIMODAL ESTIMATION DATA FITS

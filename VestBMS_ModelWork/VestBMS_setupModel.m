@@ -431,7 +431,7 @@ function [mp, outflag] = initModel(model, infostruct)
     end    
     switch model(13)
         case 1 % No lapse
-        case 2 % Prior-matching lapse (1-param)
+        case 2 % Lapse (1-param)
             mp.nparams(13) = 1;
             pbounds{13} = [0 1, 0.01 0.2, 0.04];
             params{13} = {'lambda'};
@@ -884,8 +884,10 @@ function [mp,exitflag] = updateModel(mp,theta)
             switch model(16)
                 case 1  % Default (copy localization criterion)
                     mp.fulltheta{icnd}.pcommon_unity = mp.fulltheta{icnd}.pcommon;
-                    mp.fulltheta{icnd}.kcommon_unity = mp.fulltheta{icnd}.kcommon; 
-                    mp.fulltheta{icnd}.invgamma_causinf_unity = mp.fulltheta{icnd}.invgamma_causinf;
+                    mp.fulltheta{icnd}.kcommon_unity = mp.fulltheta{icnd}.kcommon;
+                    if isfield(mp.fulltheta{icnd},'invgamma_causinf')
+                        mp.fulltheta{icnd}.invgamma_causinf_unity = mp.fulltheta{icnd}.invgamma_causinf;
+                    end
                 case 2  % Separate criterion parameter
                     switch model(15)
                         case {1,2} % Bayesian
@@ -893,7 +895,9 @@ function [mp,exitflag] = updateModel(mp,theta)
                         case {3,4} % Criterion on x
                             updateparams(icnd, 16, {'exp'});
                     end
-                    mp.fulltheta{icnd}.invgamma_causinf_unity = mp.fulltheta{icnd}.invgamma_causinf;
+                    if isfield(mp.fulltheta{icnd},'invgamma_causinf')
+                        mp.fulltheta{icnd}.invgamma_causinf_unity = mp.fulltheta{icnd}.invgamma_causinf;
+                    end
                 case 3  % Separate criterion and gamma parameter
                     switch model(15)
                         case {1,2} % Bayesian

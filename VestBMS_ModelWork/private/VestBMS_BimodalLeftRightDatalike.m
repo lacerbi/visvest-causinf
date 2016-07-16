@@ -64,6 +64,7 @@ gamma_causinf = theta(15);
 tau_causinf = theta(16);
 
 gamma_causinf_unity = theta(17);
+lambda = theta(18);
 
 % Model selection parameter
 priorc1 = priorinfo(end-3);
@@ -400,7 +401,10 @@ prmat_unity = min(max(prmat_unity,0),1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Finalize log likelihood
 
+prmat = lambda/2 + (1-lambda)*prmat;
 prmat = FIXEDLAPSEPDF + (1-FIXEDLAPSEPDF)*prmat;
+
+prmat_unity = lambda/2 + (1-lambda)*prmat_unity;
 prmat_unity = FIXEDLAPSEPDF + (1-FIXEDLAPSEPDF)*prmat_unity;
 
 if nargout > 1

@@ -122,12 +122,9 @@ switch type
        models(:,11) = 3;    % Probability matching
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
 
-   case {21} % Bisensory standard models with sinusoidal/constant noise without beta and with lapse
+   case {21} % Bisensory standard models without beta and with lapse
        
        [options,models,groupcnd] = VestBMS(options,2,0);
-       models_const = models;
-       models_const(:,[1 2]) = 1; % Constant noise
-       models = [models; models_const];
        options.jobname = 'vest_lbim';
        models(:,11) = 3;    % Probability matching
        models(:,13) = 2;    % Lapse
@@ -146,6 +143,15 @@ switch type
        models(:,[1 2]) = 1; % Constant noise
        options.jobname = 'vest_2bim_const';
        models(:,11) = 3;    % Probability matching
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+
+   case 121 % Bisensory standard models with constant noise without beta and with lapse
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,[1 2]) = 1; % Constant noise
+       options.jobname = 'vest_lbim_const';
+       models(:,11) = 3;    % Probability matching
+       models(:,13) = 2;    % Lapse
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
     % LARGE-DISPARITY TRIALS ONLY   

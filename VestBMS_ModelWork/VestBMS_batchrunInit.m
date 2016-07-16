@@ -251,6 +251,16 @@ switch type
         models(:,[1 2]) = 1; % Constant noise
         options.jobname = 'vest_uni_const';
         
+    case 10201 % Standard unimodal with sinusoidal/constant noise and lapse
+        
+        [options,models,groupcnd] = VestBMS(options,1);
+        models_const = models;
+        models_const(:,[1 2]) = 1; % Constant noise
+        models = [models; models_const];
+        models(:,11) = 1;           % BDT (no softmax)
+        models(:,13) = 2;           % Lapse        
+        options.jobname = 'vest_lapse_uni';        
+        
 end
 
 % Set speed test values

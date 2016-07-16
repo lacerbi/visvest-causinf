@@ -206,7 +206,7 @@ loglike = sum(loglikes);
 if debug; temp = extras; extras = []; extras.struct = temp; end
 if ~isempty(trialloglikes)
     extras.trialloglikes = trialloglikes;
-    extras.ntrials = ntrials;
+    extras.ntrials = ntrials;    
 end
 
 end

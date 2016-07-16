@@ -122,9 +122,12 @@ switch type
        models(:,11) = 3;    % Probability matching
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
 
-   case {21} % Bisensory standard models without beta and with lapse
-        
+   case {21} % Bisensory standard models with sinusoidal/constant noise without beta and with lapse
+       
        [options,models,groupcnd] = VestBMS(options,2,0);
+       models_const = models;
+       models_const(:,[1 2]) = 1; % Constant noise
+       models = [models; models_const];
        options.jobname = 'vest_lbim';
        models(:,11) = 3;    % Probability matching
        models(:,13) = 2;    % Lapse
@@ -171,7 +174,21 @@ switch type
        models(models(:,15) == 5,:) = [];    % Remove forced fusion
        dataids = [(1:11)', zeros(11,1)];       
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
-              
+
+   case 1021 % Bisensory standard models with sinusoidal/constant noise without beta and with lapse
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models_const = models;
+       models_const(:,[1 2]) = 1; % Constant noise
+       models = [models; models_const];
+       options.jobname = 'vest_lunity';
+       models(:,11) = 3;    % Probability matching
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 5,:) = [];    % Remove forced fusion
+       dataids = [(1:11)', zeros(11,1)];       
+       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
+       
+       
     case 1101 % Bimodal standard models with constant noise
         
        [options,models,groupcnd] = VestBMS(options,2,0);

@@ -158,6 +158,12 @@ for iicnd = 1:length(cnd)
             priorinfo = [fulltheta.priormu fulltheta.priorsigma ...
                 fulltheta.pcommon fulltheta.kcommon fulltheta.pcommon_unity fulltheta.kcommon_unity];
             
+            % Random unity judgments
+            if model(16) == 4
+                string = {'low', 'med', 'high'};                
+                theta(17) = fulltheta.(['random_unity_' string{iNoise}]);             
+            end
+            
             maxranges = infostruct.MAXRNG;
             
             % Dynamic assignment of SSCALE

@@ -194,6 +194,13 @@ switch type
        dataids = [(1:11)', zeros(11,1)];       
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
        
+   case 1031 % Bisensory standard models with random unity judgement
+        
+       [options,~,groupcnd] = VestBMS(options,2,0);
+       options.jobname = 'vest_randunity';
+       models = [10 10 1 1, 1 1 1 3, 1 1 1 1, 1 1 5 4 0];
+       dataids = [(1:11)', zeros(11,1)];       
+       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
        
     case 1101 % Bimodal standard models with constant noise
         

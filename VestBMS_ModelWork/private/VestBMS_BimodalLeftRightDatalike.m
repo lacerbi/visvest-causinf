@@ -78,6 +78,22 @@ MAXRNG = maxranges(1);
 do_estimation = ~isempty(X{2});
 do_unity = ~isempty(X{3});
 
+% Random unity judgments
+if model(16) == 4
+    if do_estimation; error('Estimation not supported with random unity judgements.'); end
+    if ~do_unity; error('Unity trials must be present with random unity judgement model.'); end
+
+    prmat = [];
+    prmat_unity = zeros(numel(bincenters{2}), 2);
+    prmat_unity(:,1) = theta(17);
+    prmat_unity(:,2) = 1 - prmat_unity(:,1);
+    
+    [ll,extras] = finalize(prmat,prmat_unity,X,FIXEDLAPSEPDF,nargout > 1,sumover);
+    varargout{1} = ll;
+    if nargout > 1; varargout{2} = extras; end
+    return;
+end
+    
 % Use distinct criteria for localization vs unity judgement
 if (priorc1_unity ~= priorc1 || kcommon_unity ~= kcommon) && do_unity
     distinct_criteria = 1;
@@ -157,7 +173,7 @@ if ~gaussianflag || ~closedformflag
 
     like_vis = bsxfun_normpdf(xrange_vis,srange,sigmasprime_vis);
     like_vest = bsxfun_normpdf(xrange_vest,srange,sigmasprime_vest);
-    
+
     % Compute prior, p(s)
     priorpdf = bsxfun_normpdf(srange,priorinfo(1),priorinfo(2));
     priorpdf = priorpdf/(qtrapz(priorpdf, 1)*ds); % Normalize prior
@@ -169,7 +185,7 @@ if ~gaussianflag || ~closedformflag
     else
         postright_c2 = 0;
     end
-        
+
     % Compute unnormalized posterior and rightward posterior (C = 1)
     if priorc1 > 0
         postpdf_c1 = bsxfun(@times, postpdf_c2, like_vis);
@@ -178,12 +194,12 @@ if ~gaussianflag || ~closedformflag
         postpdf_c1 = 0;
         postright_c1 = 0;
     end
-        
+
     if nargout > 1 
         extras.postright_c2 = postright_c2;    
         extras.postright_c1 = postright_c1; 
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Compute causal inference weights
 
@@ -217,7 +233,7 @@ if ~gaussianflag || ~closedformflag
                 lratio = log(likec1*priorc1_unity) - log(likec2*(1-priorc1_unity));
                 w1_unity = 1./(1 + exp(-gamma_causinf_unity.*lratio));
             end
-            
+
         case 3 % Non-Bayesian, criterion on x
             w1 = abs(bsxfun(@minus, xrange_vis, xrange_vest)) < kcommon;
             if distinct_criteria
@@ -229,22 +245,22 @@ if ~gaussianflag || ~closedformflag
             if distinct_criteria
                 w1_unity = 1./(1 + exp(tau_causinf*(abs(bsxfun(@minus, xrange_vis, xrange_vest)) - kcommon_unity)));                
             end
-            
+
         case 5 % Forced fusion
             w1 = 1;
-            
+
     end
-    
+
     % NaNs can emerge as 0/0 - assume that the response becomes random
     w1(isnan(w1)) = 0.5;
     if distinct_criteria; w1_unity(isnan(w1_unity)) = 0.5; end
-    
+
     if nargout > 1 % Save variables for debug or data generation
         extras.w1 = w1;
         if distinct_criteria; extras.w1_unity = w1_unity; end
         % extras.postpdfc1 = postpdfc1;
     end
-    
+
     % Bisensory estimation
     if do_estimation
         % Compute posterior probability of rightward motion    
@@ -253,7 +269,7 @@ if ~gaussianflag || ~closedformflag
         % Probability of rightward response
         prright = 1./(1 + ((1-postright)./postright).^beta_softmax); 
     end
-    
+
     % Bisensory unity judgement
     if do_unity && ~distinct_criteria
         % w1_unity = 1./(1 + ((1-w1)./w1).^beta_softmax);
@@ -269,7 +285,7 @@ else
     % Compute likelihood for Gaussian likelihoods
 
     error('Closed form computation not supported (yet).');
-    
+
     SSCALE = 8;
     srange = linspace(-MAXRNG, MAXRNG, MAXRNG*SSCALE*2 + 1)';
     ds = diff(srange(1:2));
@@ -365,7 +381,7 @@ else
             extras.postpdfc1 = [];            
         end
     end  
-    
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -393,7 +409,7 @@ if do_unity
 else
     prmat_unity = [];
 end
-    
+
 % Fix probabilities
 prmat = min(max(prmat,0),1);
 prmat_unity = min(max(prmat_unity,0),1);
@@ -402,26 +418,35 @@ prmat_unity = min(max(prmat_unity,0),1);
 % Finalize log likelihood
 
 prmat = lambda/2 + (1-lambda)*prmat;
-prmat = FIXEDLAPSEPDF + (1-FIXEDLAPSEPDF)*prmat;
-
 prmat_unity = lambda/2 + (1-lambda)*prmat_unity;
-prmat_unity = FIXEDLAPSEPDF + (1-FIXEDLAPSEPDF)*prmat_unity;
 
-if nargout > 1
+[ll,extras] = finalize(prmat,prmat_unity,X,FIXEDLAPSEPDF,nargout > 1,sumover);
+varargout{1} = ll;
+if nargout > 1; varargout{2} = extras; end
+
+end
+
+%--------------------------------------------------------------------------
+function [ll,extras] = finalize(prmat,prmat_unity,X,epsilon,extrasflag,sumoverflag)
+%FINALIZE Finalize log likelihood
+
+prmat = epsilon + (1-epsilon)*prmat;
+prmat_unity = epsilon + (1-epsilon)*prmat_unity;
+
+if extrasflag
     extras.responsepdf = prmat;
     extras.responsepdf_unity = prmat_unity;
+else
+    extras = [];
 end
 
 prmat = [prmat(:); prmat_unity(:)];
 xx = [X{1}(:); X{2}(:); X{3}(:)];
 
-if sumover
-    loglike = sum(xx.*log(prmat));
-    varargout{1} = loglike;
+if sumoverflag
+    ll = sum(xx.*log(prmat));
 else
-    % varargout{1} = prmat.^xx;
-    varargout{1} = loglikmat2vec(log(prmat),xx);
+    ll = loglikmat2vec(log(prmat),xx);
 end
-if nargout > 1; varargout{2} = extras; end
 
 end

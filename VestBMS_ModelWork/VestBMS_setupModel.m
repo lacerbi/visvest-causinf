@@ -19,13 +19,15 @@
 % 1 Constant (1 param), 2 Quadratic (2 params), 3 Sinusoidal (2 params), 
 % 4 Quadratic with single w (2 params), 5 Sinusoidal with single w (2 params)
 % 6 Quadratic with single w, base fixed (1 param), 7 Square-abs with single w, base fixed (1 param)
-% 8 Quadratic with single-proportional w (2 params), 9 Sinusoidal with single-proportional w (2 params)
+% 8 Quadratic with single-proportional w (2 params), 9 Sinusoidal with single-proportional w (2 params),
+% 10 none
 %--------------------------------------------------------------------------
 % MODEL(2) Vestibular noise variance:
 % 1 Constant (1 param), 2 Quadratic (2 params), 3 Square-abs (2 params), 
 % 4 Quadratic with w equal to w_vis (1 param), 5 Square-abs with w equal to w_vis (1 param).
 % 6 Quadratic with base fixed (1 param), 7 Square-abs with base fixed (1 param)
 % 8 Quadratic with base fixed and w equal to w_vis, 9 Square-abs with base fixed and w equal to w_vis
+% 10 none
 %--------------------------------------------------------------------------
 % MODEL(3) Sensory noise source:
 % 1 None, 2 From unimodal data, 3 Proportional from data (1 param), 
@@ -74,7 +76,8 @@
 % 5 Forced fusion.
 %--------------------------------------------------------------------------
 % MODEL(16) Report of unity model (Bimodal only, unused):
-% 1 Standard, 2 Separate criterion parameter (1 param)
+% 1 Standard, 2 Separate criterion parameter (1 param), 
+% 3 Separate criterion and gamma (2 params), 4 Free probability (3 params)
 
 function [mp,exitflag] = VestBMS_setupModel(mp,theta,model,infostruct)
 
@@ -219,6 +222,8 @@ function [mp, outflag] = initModel(model, infostruct)
         mp.nparams(1) = 1;
         params{1}{1} = 'w_vis';
         pbounds{1} = wbound;
+        
+        case 10 % None            
 
         otherwise
             error('Unsupported sensory variance model.');
@@ -248,6 +253,7 @@ function [mp, outflag] = initModel(model, infostruct)
             params{2} = {'w_vest'};
         case {8, 9} % Quadratic or sinusoidal variance with base fixed and w equal to w_vis (log scale)
             mp.nparams(2) = 0;
+        case 10 % None            
         otherwise; error('Unsupported sensory variance model.');
     end
     
@@ -510,7 +516,10 @@ function [mp, outflag] = initModel(model, infostruct)
                         pbounds{16} = [kcommon_bounds; kcommon_bounds];
                         params{16} = {'kcommon_unity','invgamma_causinf_unity'};
                 end
-                
+            case 4
+                mp.nparams(16) = 3;
+                pbounds{16} = [0 1, 0.1 0.9, 0.1; 0 1, 0.1 0.9, 0.1; 0 1, 0.1 0.9, 0.1];
+                params{16} = {'random_unity_low','random_unity_med','random_unity_high'};
             otherwise; error('Unsupported report of unity criterion model.');
         end
         
@@ -905,6 +914,8 @@ function [mp,exitflag] = updateModel(mp,theta)
                         case {3,4} % Criterion on x
                             updateparams(icnd, 16, {'exp','exp'});
                     end
+                case 4 % Random unity
+                    updateparams(icnd, 16, {'id','id','id'});                    
             end
         end
 

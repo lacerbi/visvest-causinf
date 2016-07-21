@@ -129,6 +129,15 @@ switch type
        models(:,11) = 3;    % Probability matching
        models(:,13) = 2;    % Lapse
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+
+   case {31} % Bisensory standard models with deterministic decision making and lapse
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       options.jobname = 'vest_dbim';
+       models(:,11) = 1;    % BDT
+       models(:,13) = 2;    % Lapse
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+       
        
     case 101 % Bimodal standard models with constant noise
         
@@ -151,6 +160,15 @@ switch type
        models(:,[1 2]) = 1; % Constant noise
        options.jobname = 'vest_lbim_const';
        models(:,11) = 3;    % Probability matching
+       models(:,13) = 2;    % Lapse
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+
+   case 131 % Bisensory standard models with deterministic decision making and lapse
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,[1 2]) = 1; % Constant noise
+       options.jobname = 'vest_lbim_const';
+       models(:,11) = 1;    % BDT
        models(:,13) = 2;    % Lapse
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
@@ -181,7 +199,7 @@ switch type
        dataids = [(1:11)', zeros(11,1)];       
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
 
-   case 1021 % Bisensory standard models with sinusoidal/constant noise without beta and with lapse
+   case 1021 % Bisensory standard models with sinusoidal/constant noise with lapse
         
        [options,models,groupcnd] = VestBMS(options,2,0);
        models_const = models;

@@ -1,7 +1,11 @@
 function VestBMS_plotParams(nid)
 
 fitnames = {'uni','biml','bimu','joint'};
-modeln = [2 1 1 1];
+if 0
+    modeln = [2 1 1 1];
+else
+    modeln = [2 1 3 1];    
+end
 
 mbags = load('VestBMS_modelfits.mat');
 

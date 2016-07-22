@@ -219,6 +219,20 @@ switch type
        models = [10 10 1 1, 1 1 1 3, 1 1 1 1, 1 1 5 4 0];
        dataids = [(1:11)', zeros(11,1)];       
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
+
+   case 1041 % Bisensory standard models with sinusoidal/constant noise, BDT and lapse
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models_const = models;
+       models_const(:,[1 2]) = 1; % Constant noise
+       models = [models; models_const];
+       options.jobname = 'vest_dunity';
+       models(:,11) = 1;    % BDT
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 5,:) = [];    % Remove forced fusion
+       models(:,15) = models(:,15) - 1;     % Remove softness
+       dataids = [(1:11)', zeros(11,1)];       
+       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
        
     case 1101 % Bimodal standard models with constant noise
         

@@ -138,6 +138,16 @@ switch type
        models(:,13) = 2;    % Lapse
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
+   case {41} % Bisensory standard models with deterministic decision making and lapse and simple causal inference (not necessary)
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       options.jobname = 'vest_dsbim';
+       models(:,11) = 1;    % BDT
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 2,15) = 1;     % Standard Bayesian
+       models(models(:,15) == 4,15) = 3;     % Fixed criterion
+       
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
     case 101 % Bimodal standard models with constant noise
         
@@ -228,6 +238,20 @@ switch type
        models = [models; models_const];
        options.jobname = 'vest_dunity';
        models(:,11) = 1;    % BDT
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 5,:) = [];    % Remove forced fusion
+       models(:,15) = models(:,15) - 1;     % Remove softness
+       dataids = [(1:11)', zeros(11,1)];       
+       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
+
+   case 1051 % Bisensory standard models with sinusoidal/constant noise, probability matching and lapse
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models_const = models;
+       models_const(:,[1 2]) = 1; % Constant noise
+       models = [models; models_const];
+       options.jobname = 'vest_dunity';
+       models(:,11) = 3;    % Probability matching
        models(:,13) = 2;    % Lapse
        models(models(:,15) == 5,:) = [];    % Remove forced fusion
        models(:,15) = models(:,15) - 1;     % Remove softness

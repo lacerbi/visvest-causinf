@@ -14,7 +14,11 @@ plotdata = flags(1);
 if isstruct(data) && isfield(data, 'X'); data = {data}; end
 
 % Plot average across all provided datasets
-subjs = 1:11;
+if numel(data) == 1
+    subjs = 1;
+else
+    subjs = 1:numel(data);
+end
 
 nNoise = 3; % Three levels of noise
 

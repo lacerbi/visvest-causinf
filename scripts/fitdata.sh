@@ -29,13 +29,16 @@ addpath(genpath('/home/la67/${PROJECT}'));
 cd('${WORKDIR}');
 nsamples=${NSAMPLES}; % MCMC samples
 nburnin=${NBURNIN}; % MCMC burn-in
+storedsamples=${STOREDSAMPLES}; % Stored MCMC samples
 optfevals=${OPTFEVALS}; % Optimization function evaluations
 continueflag=${CONTINUE}; % Continue flag
 loadmbag=${LOADMBAG};
-if optfevals==0 && nsamples==0
+if ~isempty(optfevals) && optfevals==0 && nsamples==0
 	recomputesamplingmetrics=1;
+	computemarginallike=1;
 else
 	recomputesamplingmetrics=0;
+	computemarginallike=1;
 end
 if loadmbag
 	temp = load('../${PROJECT}_${RUN}.mat','mbag');
@@ -43,5 +46,5 @@ if loadmbag
 else
 	mbag = [];
 end
-ModelWork_batchEval('${PROJECT}',[],'${IID}.job','procid',${IID},'optfevals',optfevals,'nsamples',nsamples,'burnin',nburnin,'continueflag',continueflag,'mbag',mbag,'recomputesamplingmetrics',recomputesamplingmetrics);
+ModelWork_batchEval('${PROJECT}',[],'${IID}.job','procid',${IID},'optfevals',optfevals,'nsamples',nsamples,'burnin',nburnin,'maxstoredsamples',storedsamples,'continueflag',continueflag,'mbag',mbag,'recomputesamplingmetrics',recomputesamplingmetrics,'computemarginallike',computemarginallike);
 EOF

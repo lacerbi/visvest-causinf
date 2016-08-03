@@ -145,8 +145,7 @@ switch type
        models(:,11) = 1;    % BDT
        models(:,13) = 2;    % Lapse
        models(models(:,15) == 2,15) = 1;     % Standard Bayesian
-       models(models(:,15) == 4,15) = 3;     % Fixed criterion
-       
+       models(models(:,15) == 4,15) = 3;     % Fixed criterion       
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
     case 101 % Bimodal standard models with constant noise
@@ -173,13 +172,24 @@ switch type
        models(:,13) = 2;    % Lapse
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
 
-   case 131 % Bisensory standard models with deterministic decision making and lapse
+   case 131 % Bisensory standard models with constant noise, deterministic decision making and lapse
        
        [options,models,groupcnd] = VestBMS(options,2,0);
        models(:,[1 2]) = 1; % Constant noise
        options.jobname = 'vest_lbim_const';
        models(:,11) = 1;    % BDT
        models(:,13) = 2;    % Lapse
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+
+   case {141} % Bisensory standard models with constant noise, deterministic decision making and lapse and simple causal inference
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,[1 2]) = 1; % Constant noise
+       options.jobname = 'vest_dsbim_const';
+       models(:,11) = 1;    % BDT
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 2,15) = 1;     % Standard Bayesian
+       models(models(:,15) == 4,15) = 3;     % Fixed criterion       
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
     % LARGE-DISPARITY TRIALS ONLY   

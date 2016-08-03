@@ -6,10 +6,13 @@ PROJECT="VestBMS"
 LISTD=
 LISTS=
 LISTF=
+LISTR=
 FIRSTD=1
 FIRSTS=1
 FIRSTF=1
+FIRSTR=1
 NSUCC=0
+NRUN=0
 IDS=$(seq 1 $2)
 
 # Start scan
@@ -53,6 +56,21 @@ for i in $IDS; do
 		let NSUCC="$NSUCC + 1"
         fi
 
+	# Check still running jobs
+        if [ ! -f fail-$i.log ] && [ ! -f success-$i.log ]
+        then
+                if [ $FIRSTR -eq 1 ]
+                then
+                        LISTR=$i
+                        FIRSTR=0
+                else
+                        LISTR=$LISTR,$i
+                fi
+		let NRUN="$NRUN + 1"
+        fi
+
+
+
 done
 
 # Print report
@@ -84,6 +102,14 @@ then
 else
         echo "Completed jobs ($NSUCC out of $2):"
         echo $LISTS
+fi
+echo
+if [ $FIRSTR -eq 1 ]
+then
+        echo "No jobs are still running."
+else
+        echo "Unfinished jobs ($NRUN out of $2):"
+        echo $LISTR
 fi
 echo
 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"

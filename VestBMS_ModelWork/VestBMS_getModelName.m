@@ -9,6 +9,10 @@ switch model(15)
     case 4; string = 'SCX';
     case 5; string = 'FF';
 end
+
+if model(11) == 3
+    string = [string 'P'];
+end
         
 switch model(1)
     case 1; string = [string '-C'];

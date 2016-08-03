@@ -272,8 +272,14 @@ if ~gaussianflag || ~closedformflag
 
     % Bisensory unity judgement
     if do_unity && ~distinct_criteria
-        % w1_unity = 1./(1 + ((1-w1)./w1).^beta_softmax);
-        w1_unity = w1;
+        if beta_softmax == 1
+            w1_unity = w1;
+        elseif beta_softmax == Inf
+            w1_unity = w1 > 0.5;
+        else
+            w1_unity = 1./(1 + ((1-w1)./w1).^beta_softmax);
+        end
+        % w1_unity = w1;
     end
 
     % Clean up memory

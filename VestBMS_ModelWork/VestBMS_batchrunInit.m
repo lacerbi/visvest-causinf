@@ -45,8 +45,8 @@ MAXFUNEVALS = 1500;
 NITER_OPTIMIZATION = 1500;
 
 % Number of restarts for optimization
-nOptimizationRestarts = 50;
-% nOptimizationRestarts = 100;
+% nOptimizationRestarts = 50;
+nOptimizationRestarts = 100;
 
 if debug
     nOptimizationRestarts = 10;
@@ -230,7 +230,7 @@ switch type
        dataids = [(1:11)', zeros(11,1)];       
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
 
-   case 1041 % Bisensory standard models with sinusoidal/constant noise, BDT and lapse
+   case 1041 % Bisensory standard models with sinusoidal/constant noise, BDT and lapse (THIS MIGHT BE WRONG, IT DOES PROBABILITY MATCHING)
         
        [options,models,groupcnd] = VestBMS(options,2,0);
        models_const = models;
@@ -252,6 +252,20 @@ switch type
        models = [models; models_const];
        options.jobname = 'vest_dunity';
        models(:,11) = 3;    % Probability matching
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 5,:) = [];    % Remove forced fusion
+       models(:,15) = models(:,15) - 1;     % Remove softness
+       dataids = [(1:11)', zeros(11,1)];       
+       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
+
+   case 1061 % Bisensory standard models with sinusoidal/constant noise, real BDT and lapse
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models_const = models;
+       models_const(:,[1 2]) = 1; % Constant noise
+       models = [models; models_const];
+       options.jobname = 'vest_rdunity';
+       models(:,11) = 1;    % BDT
        models(:,13) = 2;    % Lapse
        models(models(:,15) == 5,:) = [];    % Remove forced fusion
        models(:,15) = models(:,15) - 1;     % Remove softness

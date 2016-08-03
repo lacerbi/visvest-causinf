@@ -18,8 +18,8 @@ Visuo-vestibular causal inference project (with Kalpana Dokka, Dora Angelakis an
   2. **Implicit inference:**
      - *Forced-fusion, Bayesian, fixed-criterion deterministic [eccentric noise]* (41): **optimizing**.
      - *Forced-fusion, Bayesian, fixed-criterion deterministic [constant noise]* (141): **optimizing**.
-     - *Forced-fusion, Bayesian, fixed-criterion probability-matching [eccentric noise]* (41): **none**.
-     - *Forced-fusion, Bayesian, fixed-criterion probability-matching[constant noise]* (141): **none**.
+     - *Forced-fusion, Bayesian, fixed-criterion probability-matching [eccentric noise]*: **none**.
+     - *Forced-fusion, Bayesian, fixed-criterion probability-matching[constant noise]*: **none**.
 
   3. **Uni-sensory localization:**
      - *Standard BDT [both noises]* (10201): optimized, sampled, postprocessed.

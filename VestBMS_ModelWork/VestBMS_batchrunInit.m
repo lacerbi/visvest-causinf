@@ -45,8 +45,7 @@ MAXFUNEVALS = 1500;
 NITER_OPTIMIZATION = 1500;
 
 % Number of restarts for optimization
-% nOptimizationRestarts = 50;
-nOptimizationRestarts = 10;
+nOptimizationRestarts = 50;
 
 if debug
     nOptimizationRestarts = 10;
@@ -381,7 +380,7 @@ switch type
         models(:,8) = 3;            % Fixed prior
         models(:,11) = 1;           % BDT (no softmax)
         models(:,13) = 2;           % Lapse        
-        options.jobname = 'vest_noprior_lapse_uni';        
+        options.jobname = 'vest_noprior_lapse_uni';
         
 end
 

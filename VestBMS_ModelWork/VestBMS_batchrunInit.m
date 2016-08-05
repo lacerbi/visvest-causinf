@@ -35,7 +35,7 @@ else nDatasets = length(data); end
 DATAIDS = [(1:nDatasets)',zeros(nDatasets,1)];
 
 % Remove monkey data
-DATAIDS(any(bsxfun(@eq, DATAIDS(:,1), [12 13 14])),:) = [];
+DATAIDS(any(bsxfun(@eq, DATAIDS(:,1), [12 13 14]),2),:) = [];
 
 % Default number of samples for unimodal/bimodal trials
 NSAMPLES = [1e4,5e3];
@@ -280,7 +280,7 @@ switch type
        options.jobname = 'vest_rdunity';
        models(:,11) = 1;    % BDT
        models(:,13) = 2;    % Lapse
-       models(models(:,15) == 5,:) = [];    % Remove forced fusion
+       models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion
        models(:,15) = models(:,15) - 1;     % Remove softness
        dataids = [(1:11)', zeros(11,1)];       
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials

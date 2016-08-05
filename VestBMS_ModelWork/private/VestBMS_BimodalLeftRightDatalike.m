@@ -44,9 +44,6 @@ MAXSD = 5;
 % Cutoff to the penalty for a single outlier
 FIXEDLAPSEPDF = 1e-4;
 
-% Wrap noisy measurement around circle
-wraparound = 1;
-
 % Take model parameters
 sigmazero_vis = theta(1);
 w_vis = theta(2);
@@ -136,6 +133,15 @@ xrange_vest (1, 1, :) = alpha_rescaling_vest*linspace(max(min(bincenters_vest-MA
 dx_vis = xrange_vis(1, 2, 1) - xrange_vis(1, 1, 1);
 dx_vest = xrange_vest(1, 1, 2) - xrange_vest(1, 1, 1);
 
+% Wrap large noisy measurement around circle
+if MAXRNG_XMEAS >= 180 && ...
+        min(bincenters-MAXSD*sigmas) <= -180 && ...
+        max(bincenters-MAXSD*sigmas) >= 180
+    wraparound = 1;
+else
+    wraparound = 0;
+end
+
 % Add random jitter to XRANGE's to estimate error in the computation of the 
 % log likelihood due to the current grid size
 if randomize
@@ -218,7 +224,7 @@ if ~gaussianflag || ~closedformflag
 
     % Compute marginal likelihood, p(x_vis, x_vest|C)
 
-    if model(15) == 1 || model(15) == 2
+    if model(15) == 1 || model(15) == 2 % (Generalized) Bayesian posterior
         % CASE C=2, Independent likelihoods
         likec2_vis = bsxfun(@times, priorpdf, like_vis);
         likec2 = (bsxfun(@times, qtrapz(likec2_vis, 1)*ds, qtrapz(postpdf_c2, 1)*ds)) + realmin; 

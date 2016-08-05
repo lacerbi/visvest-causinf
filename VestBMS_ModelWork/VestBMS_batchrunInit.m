@@ -272,12 +272,11 @@ switch type
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
 
    case 1061 % Bisensory standard models with sinusoidal/constant noise, real BDT and lapse
-        
        [options,models,groupcnd] = VestBMS(options,2,0);
        models_const = models;
        models_const(:,[1 2]) = 1; % Constant noise
        models = [models; models_const];
-       options.jobname = 'vest_rdunity';
+       options.jobname = 'vest_dbunity';
        models(:,11) = 1;    % BDT
        models(:,13) = 2;    % Lapse
        models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion
@@ -295,6 +294,39 @@ switch type
        dataids = [(1:11)', zeros(11,1)];       
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
        
+   case 1201 % Bisensory Bayesian models with sinusoidal/constant noise, real BDT and lapse
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models_const = models;
+       models_const(:,[1 2]) = 1; % Constant noise
+       models = [models; models_const];
+       options.jobname = 'vest_bdt_unity';
+       models(:,8) = 2;     % Fixed-mean prior
+       models(:,11) = 1;    % BDT
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 3 | models(:,15) == 4,:) = [];    % Remove fixed criterion
+       models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion
+       models(:,15) = models(:,15) - 1;     % Remove softness
+       dataids = [(1:11)', zeros(11,1)];
+       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
+
+   case 1202 % Bisensory fixed-criterion models with sinusoidal/constant noise, real BDT and lapse
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models_const = models;
+       models_const(:,[1 2]) = 1; % Constant noise
+       models = [models; models_const];
+       options.jobname = 'vest_fixed_unity';
+       models(:,8) = 3;     % No prior (irrelevant for fixed model)
+       models(:,11) = 1;    % BDT
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 3 | models(:,15) == 4,:) = [];    % Remove fixed criterion
+       models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion
+       models(:,15) = models(:,15) - 1;     % Remove softness
+       dataids = [(1:11)', zeros(11,1)];
+       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
        
 %--------------------------------------------------------------------------        
 % FULL JOINT DATA FITS
@@ -374,7 +406,9 @@ switch type
         models(:,13) = 2;           % Lapse        
         options.jobname = 'vest_lapse_uni';        
 
+        
     case 10301 % Standard unimodal with sinusoidal/constant noise and lapse and fixed prior
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
         
         [options,models,groupcnd] = VestBMS(options,1);
         models_const = models;

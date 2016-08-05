@@ -79,9 +79,6 @@ MAXRNG_XMEAS = 180;
 do_estimation = ~isempty(X{2});
 do_unity = ~isempty(X{3});
 
-% Compute fixed criterion analytically
-fixed_criterion_analytic = do_unity && ~do_estimation && model(15) == 3;
-
 % Random unity judgments
 if model(16) == 4
     if do_estimation; error('Estimation not supported with random unity judgements.'); end
@@ -138,8 +135,8 @@ dx_vest = xrange_vest(1, 1, 2) - xrange_vest(1, 1, 1);
 
 % Wrap large noisy measurement around circle
 if MAXRNG_XMEAS >= 180 && ...
-        ( min(bincenters_vis-MAXSD*sigmas_vis) <= -180 || max(bincenters_vis+MAXSD*sigmas_vis) >= 180 || ...
-        min(bincenters_vest-MAXSD*sigmas_vest) <= -180 || max(bincenters_vest+MAXSD*sigmas_vest) >= 180)
+        min(bincenters-MAXSD*sigmas) <= -180 && ...
+        max(bincenters-MAXSD*sigmas) >= 180
     wraparound = 1;
 else
     wraparound = 0;
@@ -180,19 +177,15 @@ sigmasprime_vis = VestBMS_sensoryNoise(likemodel_vis,likerange_vis,sigmalikezero
 if wlike_vest >= 0; likemodel_vest = 'Q'; else likemodel_vest = 'C'; end
 sigmasprime_vest = VestBMS_sensoryNoise(likemodel_vest,likerange_vest,sigmalikezero_vest,wlike_vest);
 
-if fixed_criterion_analytic
+if do_unity && ~do_estimation && model(15) == 3
     % Fixed-criterion unity judgment
     
     mu_diff = bincenters_vest - bincenters_vis;
     sigma_diff = sqrt(sigmas_vis.^2 + sigmas_vest.^2);
     
-    prmat_unity = zeros(numel(bincenters_vest), 2);    
-    prmat_unity(:,1) = bsxfun_normcdf(kcommon,mu_diff,sigma_diff) - bsxfun_normcdf(-kcommon,mu_diff,sigma_diff);
-    if wraparound
-        prmat_unity(:,1) = prmat_unity(:,1) + bsxfun_normcdf(kcommon,mu_diff-360,sigma_diff) - bsxfun_normcdf(-kcommon,mu_diff-360,sigma_diff);
-        prmat_unity(:,1) = prmat_unity(:,1) + bsxfun_normcdf(kcommon,mu_diff+360,sigma_diff) - bsxfun_normcdf(-kcommon,mu_diff+360,sigma_diff);
-    end    
-    prmat_unity(:,2) = 1 - prmat_unity(:,1);
+    bsxfun_normcdf(kcommon,mu_diff,sigma_diff) - bsxfun_normcdf(-kcommon,mu_diff,sigma_diff);
+    
+    
     
 elseif ~gaussianflag || ~closedformflag
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -429,29 +422,27 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Compute overall optimal targets
 
-if ~fixed_criterion_analytic
-    xpdf_vis = bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis,alpha_rescaling_vis*sigmas_vis);
-    xpdf_vis = bsxfun(@rdivide, xpdf_vis, qtrapz(xpdf_vis, 2));
-    xpdf_vest = bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest,alpha_rescaling_vest*sigmas_vest);
-    xpdf_vest = bsxfun(@rdivide, xpdf_vest, qtrapz(xpdf_vest, 3));
+xpdf_vis = bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis,alpha_rescaling_vis*sigmas_vis);
+xpdf_vis = bsxfun(@rdivide, xpdf_vis, qtrapz(xpdf_vis, 2));
+xpdf_vest = bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest,alpha_rescaling_vest*sigmas_vest);
+xpdf_vest = bsxfun(@rdivide, xpdf_vest, qtrapz(xpdf_vest, 3));
 
-    xpdf2 = bsxfun(@times, xpdf_vis, xpdf_vest); % These guys are already normalized (volume element aside)
+xpdf2 = bsxfun(@times, xpdf_vis, xpdf_vest); % These guys are already normalized (volume element aside)
 
-    if do_estimation
-        prmat = zeros(numel(bincenters_vest), 2);
-        prmat(:,2) = qtrapz(qtrapz(bsxfun(@times, xpdf2, prright), 2), 3);
-        prmat(:,1) = 1 - prmat(:,2);
-    else
-        prmat = [];
-    end
+if do_estimation
+    prmat = zeros(numel(bincenters_vest), 2);
+    prmat(:,2) = qtrapz(qtrapz(bsxfun(@times, xpdf2, prright), 2), 3);
+    prmat(:,1) = 1 - prmat(:,2);
+else
+    prmat = [];
+end
 
-    if do_unity
-        prmat_unity = zeros(numel(bincenters_vest), 2);
-        prmat_unity(:,1) = qtrapz(qtrapz(bsxfun(@times, xpdf2, w1_unity), 2), 3);
-        prmat_unity(:,2) = 1 - prmat_unity(:,1);
-    else
-        prmat_unity = [];
-    end
+if do_unity
+    prmat_unity = zeros(numel(bincenters_vest), 2);
+    prmat_unity(:,1) = qtrapz(qtrapz(bsxfun(@times, xpdf2, w1_unity), 2), 3);
+    prmat_unity(:,2) = 1 - prmat_unity(:,1);
+else
+    prmat_unity = [];
 end
 
 % Fix probabilities

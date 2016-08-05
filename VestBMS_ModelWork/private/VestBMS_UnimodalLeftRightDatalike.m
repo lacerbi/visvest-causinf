@@ -81,8 +81,7 @@ dx = xrange(2)-xrange(1);
 
 % Wrap large noisy measurement around circle
 if MAXRNG_XMEAS >= 180 && ...
-        min(bincenters-MAXSD*sigmas) <= -180 && ...
-        max(bincenters-MAXSD*sigmas) >= 180
+        (min(bincenters-MAXSD*sigmas) <= -180 || max(bincenters+MAXSD*sigmas) >= 180)
     wraparound = 1;
 else
     wraparound = 0;

@@ -34,6 +34,9 @@ else nDatasets = length(data); end
 % Subjects mask
 DATAIDS = [(1:nDatasets)',zeros(nDatasets,1)];
 
+% Remove monkey data
+DATAIDS(any(DATAIDS(:,1) == [12 13 14])) = [];
+
 % Default number of samples for unimodal/bimodal trials
 NSAMPLES = [1e4,5e3];
 NSAMPLES = [0 0];
@@ -216,7 +219,7 @@ switch type
        options.jobname = 'vest_unity';
        models(:,11) = 3;    % Probability matching
        models(models(:,15) == 5,:) = [];    % Remove forced fusion
-       dataids = [(1:11)', zeros(11,1)];       
+       dataids = [(1:11)', zeros(11,1)];
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
 
    case 1021 % Bisensory standard models with sinusoidal/constant noise with lapse

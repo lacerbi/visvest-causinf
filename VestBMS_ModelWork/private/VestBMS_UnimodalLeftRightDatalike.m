@@ -47,6 +47,8 @@ MAXSD = 5;
 % Cutoff to the penalty for a single outlier
 FIXEDLAPSEPDF = 1e-4;
 
+MAXRNG_XMEAS = 180;
+
 % Take model parameters
 sigmazero = theta(1);
 w = theta(2);
@@ -65,14 +67,26 @@ else
     if model(4) == 6 || model(5) == 6; error('Unsupported measurement-based likelihood and/or uniform prior.'); end
 end
 
+% Skip the decision process if it is irrelevant
+skipdecision = (priorinfo(1) == 0) && (beta_softmax == Inf);
+
 % Compute sensory noise std per trial
 if w >= 0; noisemodel = 'Q'; else noisemodel = 'C'; end
 sigmas = VestBMS_sensoryNoise(noisemodel,bincenters,sigmazero,w);
 if isscalar(sigmas); sigmas = sigmas*ones(size(bincenters)); end
 
 % Measurements
-xrange = alpha_rescaling*linspace(max(min(bincenters-MAXSD*sigmas),-MAXRNG), min(max(bincenters+MAXSD*sigmas), MAXRNG), XGRID);
+xrange = alpha_rescaling*linspace(max(min(bincenters-MAXSD*sigmas),-MAXRNG_XMEAS), min(max(bincenters+MAXSD*sigmas), MAXRNG_XMEAS), XGRID);
 dx = xrange(2)-xrange(1);
+
+% Wrap large noisy measurement around circle
+if MAXRNG_XMEAS >= 180 && ...
+        min(bincenters-MAXSD*sigmas) <= -180 && ...
+        max(bincenters-MAXSD*sigmas) >= 180
+    wraparound = 1;
+else
+    wraparound = 0;
+end
 
 % Add random jitter to XRANGE to estimate error in the computation of the 
 % log likelihood due to the current grid size
@@ -80,53 +94,98 @@ if randomize; xrange = xrange + dx*(rand()-0.5); end
 
 srange = linspace(-MAXRNG, MAXRNG, MAXRNG*SSCALE*2 + 1)';
 
-% Compute prior
-if ~closedformflag
-    priorpdf = bsxfun_normpdf(srange,priorinfo(1),priorinfo(2));
-end
-
-% Compute likelihood; variable range depends on type
-if gaussianflag; likerange = xrange; else likerange = srange; end
-if wlike >= 0; likemodel = 'Q'; else likemodel = 'C'; end
-sigmasprime = VestBMS_sensoryNoise(likemodel,likerange,sigmalikezero,wlike);
-
-% Compute unnormalized posterior for each measurement x in XRANGE
-postpdf = bsxfun(@times, priorpdf, bsxfun_normpdf(xrange, srange, sigmasprime));
-
-if isinf(beta_softmax) && 0
-    % Deterministic decision making
-    error('Deterministic decision making not supported.');
-
-    % Linear interpolation of median position from cdf
-    cdf = bsxfun(@rdivide,cumtrapz(postpdf, 1),trapz(postpdf, 1));
-    [~,pos] = max(cdf >= 0.5, [], 1);
-    p0 = cdf(size(cdf,1)*(0:size(cdf,2)-1) + max(pos - 1, 1));
-    p1 = cdf(size(cdf,1)*(0:size(cdf,2)-1) + pos);
-    coeff1 = (1./(1 + (0.5 - p0)./(p1 - 0.5)))';
-    sstar = ((1-coeff1).*srange(pos) + (coeff1).*srange(max(pos-1, 1)))';
-
-    % Bin optimal estimates to response bin centers
-    %binbounds = [-MAXRNG; respbincenters(1:end-1) + 0.5*diff(respbincenters); MAXRNG];    
-    %for iBin = 1:length(respbincenters)
-    %    sstar(sstar > binbounds(iBin) &  sstar <= binbounds(iBin+1)) = respbincenters(iBin);
-    %end
-
+if skipdecision    
+    prright = bsxfun_normcdf(alpha_rescaling*MAXRNG_XMEAS, alpha_rescaling*bincenters, alpha_rescaling*sigmas) - ...
+        bsxfun_normcdf(0, alpha_rescaling*bincenters, alpha_rescaling*sigmas);
+    if wraparound
+        prright = prright + bsxfun_normcdf(alpha_rescaling*MAXRNG_XMEAS, alpha_rescaling*bincenters + 360, alpha_rescaling*sigmas) - ...
+            bsxfun_normcdf(0, alpha_rescaling*bincenters + 360, alpha_rescaling*sigmas);
+        prright = prright + bsxfun_normcdf(alpha_rescaling*MAXRNG_XMEAS, alpha_rescaling*bincenters - 360, alpha_rescaling*sigmas) - ...
+            bsxfun_normcdf(0, alpha_rescaling*bincenters - 360, alpha_rescaling*sigmas);
+    end
+    
+    prleft = bsxfun_normcdf(0, alpha_rescaling*bincenters, alpha_rescaling*sigmas) - ...
+        bsxfun_normcdf(-alpha_rescaling*MAXRNG_XMEAS, alpha_rescaling*bincenters, alpha_rescaling*sigmas);
+    if wraparound
+        prleft = prleft + bsxfun_normcdf(0, alpha_rescaling*bincenters + 360, alpha_rescaling*sigmas) - ...
+            bsxfun_normcdf(-alpha_rescaling*MAXRNG_XMEAS, alpha_rescaling*bincenters + 360, alpha_rescaling*sigmas);
+        prleft = prleft + bsxfun_normcdf(0, alpha_rescaling*bincenters - 360, alpha_rescaling*sigmas) - ...
+            bsxfun_normcdf(-alpha_rescaling*MAXRNG_XMEAS, alpha_rescaling*bincenters - 360, alpha_rescaling*sigmas);
+    end
+    
+    % Compute stimulus/response probability matrix (last dimension is response)
+    prmat = zeros(numel(bincenters), 2);
+    prmat(:, 1) = prleft./(prright + prleft);
+    prmat(:, 2) = prright./(prright + prleft);
+    
 else
-    % Compute observer's posterior probability of rightward motion
-    postright = VestBMS_PostRight(postpdf);
 
-    % Probability of rightward response
-    prright = 1./(1 + ((1-postright)./postright).^beta_softmax);
+    % Compute prior
+    if ~closedformflag
+        priorpdf = bsxfun_normpdf(srange,priorinfo(1),priorinfo(2));
+    end
+
+    % Compute likelihood; variable range depends on type
+    if gaussianflag; likerange = xrange; else likerange = srange; end
+    if wlike >= 0; likemodel = 'Q'; else likemodel = 'C'; end
+    sigmasprime = VestBMS_sensoryNoise(likemodel,likerange,sigmalikezero,wlike);
+
+    if wraparound
+        like_meas = bsxfun_normpdf(xrange, srange, sigmasprime) + ...
+            bsxfun_normpdf(xrange, srange + 360, sigmasprime) + ...
+            bsxfun_normpdf(xrange, srange - 360, sigmasprime);
+            % The fact that the first and last column of XRANGE is counted
+            % twice, due to wrapping, is accounted for by the subsequent QTRAPZ
+    else
+        like_meas = bsxfun_normpdf(xrange, srange, sigmasprime);
+    end
+
+    % Compute unnormalized posterior for each measurement x in XRANGE
+    postpdf = bsxfun(@times, priorpdf, like_meas);
+    
+    if isinf(beta_softmax) && 0
+        % Deterministic decision making
+        error('Deterministic decision making not supported.');
+
+        % Linear interpolation of median position from cdf
+        cdf = bsxfun(@rdivide,cumtrapz(postpdf, 1),trapz(postpdf, 1));
+        [~,pos] = max(cdf >= 0.5, [], 1);
+        p0 = cdf(size(cdf,1)*(0:size(cdf,2)-1) + max(pos - 1, 1));
+        p1 = cdf(size(cdf,1)*(0:size(cdf,2)-1) + pos);
+        coeff1 = (1./(1 + (0.5 - p0)./(p1 - 0.5)))';
+        sstar = ((1-coeff1).*srange(pos) + (coeff1).*srange(max(pos-1, 1)))';
+
+        % Bin optimal estimates to response bin centers
+        %binbounds = [-MAXRNG; respbincenters(1:end-1) + 0.5*diff(respbincenters); MAXRNG];    
+        %for iBin = 1:length(respbincenters)
+        %    sstar(sstar > binbounds(iBin) &  sstar <= binbounds(iBin+1)) = respbincenters(iBin);
+        %end
+
+    else
+        % Compute observer's posterior probability of rightward motion
+        postright = VestBMS_PostRight(postpdf);
+
+        % Probability of rightward response
+        prright = 1./(1 + ((1-postright)./postright).^beta_softmax);
+    end
+    
+    % Compute noise distribution
+    if wraparound
+        xpdf = bsxfun_normpdf(xrange, alpha_rescaling*bincenters, alpha_rescaling*sigmas) + ...
+            bsxfun_normpdf(xrange, alpha_rescaling*bincenters - 360, alpha_rescaling*sigmas) + ...
+            bsxfun_normpdf(xrange, alpha_rescaling*bincenters + 360, alpha_rescaling*sigmas);
+    else
+        xpdf = bsxfun_normpdf(xrange, alpha_rescaling*bincenters, alpha_rescaling*sigmas);
+    end
+    xpdf = bsxfun(@rdivide, xpdf, qtrapz(xpdf, 2)*dx);
+
+    % Compute stimulus/response probability matrix (last dimension is response)
+    prmat = zeros(numel(bincenters), 2);
+    prmat(:, 2) = simpson1(bsxfun(@times, xpdf, prright), 2)*dx;
+    prmat(:, 1) = 1 - prmat(:, 2);
+    
 end
 
-% Compute noise distribution
-xpdf = bsxfun_normpdf(xrange, alpha_rescaling*bincenters, alpha_rescaling*sigmas);
-xpdf = bsxfun(@rdivide, xpdf, qtrapz(xpdf, 2)*dx);
-
-% Compute stimulus/response probability matrix (last dimension is response)
-prmat = zeros(numel(bincenters), 2);
-prmat(:, 2) = simpson1(bsxfun(@times, xpdf, prright), 2)*dx;
-prmat(:, 1) = 1 - prmat(:, 2);
 
 % Finalize log likelihood
 prmat = lambda/2 + (1-lambda)*prmat;

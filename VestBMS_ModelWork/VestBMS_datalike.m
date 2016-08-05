@@ -170,7 +170,7 @@ for iicnd = 1:length(cnd)
             if dynamicscale
                 % [sigmazero_vis,sigmazero_aud,priorinfo(2),priorinfo(5)]
                 minsigma = min([theta(1),theta(7),fulltheta.priorsigma])/4;
-                SSCALE = min(max(ceil(1/minsigma),1),8);                
+                SSCALE = min(max(ceil(1/minsigma),1),8);              
             else
                 SSCALE = [];
             end

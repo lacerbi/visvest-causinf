@@ -44,6 +44,9 @@ MAXSD = 5;
 % Cutoff to the penalty for a single outlier
 FIXEDLAPSEPDF = 1e-4;
 
+% Wrap noisy measurement around circle
+wraparound = 1;
+
 % Take model parameters
 sigmazero_vis = theta(1);
 w_vis = theta(2);
@@ -73,6 +76,7 @@ priorc1_unity = priorinfo(end-1);
 kcommon_unity = priorinfo(end);
 
 MAXRNG = maxranges(1);
+MAXRNG_XMEAS = 180;
 
 % Trials to be computed
 do_estimation = ~isempty(X{2});
@@ -127,8 +131,8 @@ if isscalar(sigmas_vest); sigmas_vest = sigmas_vest*ones(numel(bincenters_vest),
 % Measurements
 xrange_vis = zeros(1, XGRID, 1);
 xrange_vest = zeros(1, 1, XGRID);
-xrange_vis(1, :, 1) = alpha_rescaling_vis*linspace(max(min(bincenters_vis-MAXSD*sigmas_vis),-MAXRNG), min(max(bincenters_vis+MAXSD*sigmas_vis), MAXRNG), XGRID);
-xrange_vest (1, 1, :) = alpha_rescaling_vest*linspace(max(min(bincenters_vest-MAXSD*sigmas_vest),-MAXRNG), min(max(bincenters_vest+MAXSD*sigmas_vest), MAXRNG), XGRID);
+xrange_vis(1, :, 1) = alpha_rescaling_vis*linspace(max(min(bincenters_vis-MAXSD*sigmas_vis),-MAXRNG_XMEAS), min(max(bincenters_vis+MAXSD*sigmas_vis), MAXRNG_XMEAS), XGRID);
+xrange_vest (1, 1, :) = alpha_rescaling_vest*linspace(max(min(bincenters_vest-MAXSD*sigmas_vest),-MAXRNG_XMEAS), min(max(bincenters_vest+MAXSD*sigmas_vest), MAXRNG_XMEAS), XGRID);
 dx_vis = xrange_vis(1, 2, 1) - xrange_vis(1, 1, 1);
 dx_vest = xrange_vest(1, 1, 2) - xrange_vest(1, 1, 1);
 
@@ -171,9 +175,18 @@ if ~gaussianflag || ~closedformflag
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Compute likelihood for non-Gaussian likelihoods
 
-    like_vis = bsxfun_normpdf(xrange_vis,srange,sigmasprime_vis);
-    like_vest = bsxfun_normpdf(xrange_vest,srange,sigmasprime_vest);
-
+    if wraparound
+        like_vis = bsxfun_normpdf(xrange_vis,srange,sigmasprime_vis) + ...
+            bsxfun_normpdf(xrange_vis,srange + 360,sigmasprime_vis) + ...
+            bsxfun_normpdf(xrange_vis,srange - 360,sigmasprime_vis);
+        like_vest = bsxfun_normpdf(xrange_vest,srange,sigmasprime_vest) + ...
+            bsxfun_normpdf(xrange_vest,srange + 360,sigmasprime_vest) + ...
+            bsxfun_normpdf(xrange_vest,srange - 360,sigmasprime_vest);
+    else
+        like_vis = bsxfun_normpdf(xrange_vis,srange,sigmasprime_vis);
+        like_vest = bsxfun_normpdf(xrange_vest,srange,sigmasprime_vest);
+    end
+    
     % Compute prior, p(s)
     priorpdf = bsxfun_normpdf(srange,priorinfo(1),priorinfo(2));
     priorpdf = priorpdf/(qtrapz(priorpdf, 1)*ds); % Normalize prior

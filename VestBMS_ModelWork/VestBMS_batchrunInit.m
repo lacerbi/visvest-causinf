@@ -46,7 +46,7 @@ NITER_OPTIMIZATION = 1500;
 
 % Number of restarts for optimization
 % nOptimizationRestarts = 50;
-nOptimizationRestarts = 100;
+nOptimizationRestarts = 10;
 
 if debug
     nOptimizationRestarts = 10;
@@ -55,6 +55,7 @@ if debug
 end
 
 options = setoptions(options,'nstarts',nOptimizationRestarts,1);
+options = setoptions(options,'nsobol',1e4,1);
 options = setoptions(options,'optfevals',MAXFUNEVALS,1);
 if isempty(options.optfevals); options.optfevals = MAXFUNEVALS; end
 
@@ -370,6 +371,17 @@ switch type
         models(:,11) = 1;           % BDT (no softmax)
         models(:,13) = 2;           % Lapse        
         options.jobname = 'vest_lapse_uni';        
+
+    case 10301 % Standard unimodal with sinusoidal/constant noise and lapse and fixed prior
+        
+        [options,models,groupcnd] = VestBMS(options,1);
+        models_const = models;
+        models_const(:,[1 2]) = 1; % Constant noise
+        models = [models; models_const];
+        models(:,8) = 3;            % Fixed prior
+        models(:,11) = 1;           % BDT (no softmax)
+        models(:,13) = 2;           % Lapse        
+        options.jobname = 'vest_noprior_lapse_uni';        
         
 end
 
@@ -405,7 +417,7 @@ return;
         options = setoptions(options,'respbincenters',[-1,1]);
         options = setoptions(options,'nsamples',NSAMPLES(nStimuli),1);
                 
-        % Compute bin weights for eccentricity-independent likelihoods
+        % Compute bin weights for beliefs about eccentricity-independent likelihoods (unused)
         w = +(abs(options.bincenters) <= 25 & options.bincenters ~= 0);
         w(abs(options.bincenters) < 2.5 & options.bincenters ~= 0) = 0.5;
         for icnd = 1:4
@@ -456,7 +468,4 @@ function models = switch2sinusoidalnoise(models)
     models(ff,1) = models(ff,1) + 1; 
     ff = any(bsxfun(@eq,models(:,2),[2 4 6 8]),2);
     models(ff,2) = models(ff,2) + 1; 
-end        
-
-
-    
+end

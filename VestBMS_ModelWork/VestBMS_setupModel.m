@@ -23,10 +23,10 @@
 % 10 none
 %--------------------------------------------------------------------------
 % MODEL(2) Vestibular noise variance:
-% 1 Constant (1 param), 2 Quadratic (2 params), 3 Square-abs (2 params), 
-% 4 Quadratic with w equal to w_vis (1 param), 5 Square-abs with w equal to w_vis (1 param).
-% 6 Quadratic with base fixed (1 param), 7 Square-abs with base fixed (1 param)
-% 8 Quadratic with base fixed and w equal to w_vis, 9 Square-abs with base fixed and w equal to w_vis
+% 1 Constant (1 param), 2 Quadratic (2 params), 3 Sinusoidal (2 params), 
+% 4 Quadratic with w equal to w_vis (1 param), 5 Sinusoidal with w equal to w_vis (1 param).
+% 6 Quadratic with base fixed (1 param), 7 Sinusoidal with base fixed (1 param)
+% 8 Quadratic with base fixed and w equal to w_vis, 9 Sinusoidal with base fixed and w equal to w_vis
 % 10 none
 %--------------------------------------------------------------------------
 % MODEL(3) Sensory noise source:
@@ -127,7 +127,7 @@ function [mp, outflag] = initModel(model, infostruct)
     % Binned intervals
     mp.bincenters = infostruct.bincenters;
     
-    % Bin weights (used for computing eccentricity-independent likelihood)
+    % Bin weights (for computing eccentricity-independent likelihood; unused)
     if ~isfield(infostruct, 'binweights'); infostruct.binweights = []; end
     mp.binweights = infostruct.binweights;
     if ~isempty(mp.bincenters) && isempty(mp.binweights)
@@ -135,7 +135,7 @@ function [mp, outflag] = initModel(model, infostruct)
     end
     
     % Maximum stimulus range
-    mp.MAXRNG = infostruct.MAXRNG;    
+    mp.MAXRNG = infostruct.MAXRNG; 
     if isfield(infostruct,'MAXDELTA'); mp.MAXDELTA = infostruct.MAXDELTA; end
     
     % Fixed parameters
@@ -169,7 +169,7 @@ function [mp, outflag] = initModel(model, infostruct)
     
     mp.theta = [];
     
-    sigmabound = log([0.05 40, 0.5 5, exp(1)]);
+    sigmabound = log([0.5 80, 1 40, exp(2)]);
     wbound = [0 1, 0 0.5, 0.15];
     softmax_bounds = log([1e-4 2, 0.01 0.5, exp(1)]);
 
@@ -223,7 +223,7 @@ function [mp, outflag] = initModel(model, infostruct)
         params{1}{1} = 'w_vis';
         pbounds{1} = wbound;
         
-        case 10 % None            
+        case 10 % None
 
         otherwise
             error('Unsupported sensory variance model.');
@@ -609,9 +609,9 @@ function [mp,exitflag] = updateModel(mp,theta)
     end
     
     if model(9) == 1 % Uncorrelated priors, everything is easy
-        gridPoints = [  101 101 101 101, 51 51 51; ...          % Coarse
-                        501 501 501 501, 201 201 201; ...       % Fine
-                        501 501 501 501, 201 201 201];  % Ultra-fine
+        gridPoints = [  501 501 501 501, 301 301 301; ...          % Coarse
+                        501 501 501 501, 301 301 301; ...       % Fine
+                        501 501 501 501, 301 301 301];  % Ultra-fine
     else
         gridPoints = [  101 101 101 101, 75 75 75; ...          % Coarse
                         501 501 501 501, 101 101 101; ...       % Fine

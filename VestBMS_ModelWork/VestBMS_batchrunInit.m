@@ -35,7 +35,7 @@ else nDatasets = length(data); end
 DATAIDS = [(1:nDatasets)',zeros(nDatasets,1)];
 
 % Remove monkey data
-DATAIDS(any(DATAIDS(:,1) == [12 13 14])) = [];
+DATAIDS(any(bsxfun(@eq, DATAIDS(:,1), [12 13 14])),:) = [];
 
 % Default number of samples for unimodal/bimodal trials
 NSAMPLES = [1e4,5e3];

@@ -322,7 +322,7 @@ switch type
        models(:,8) = 3;     % No prior (irrelevant for fixed model)
        models(:,11) = 1;    % BDT
        models(:,13) = 2;    % Lapse
-       models(models(:,15) == 3 | models(:,15) == 4,:) = [];    % Remove fixed criterion
+       models(models(:,15) == 1 | models(:,15) == 2,:) = [];    % Remove Bayesian
        models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion
        models(:,15) = models(:,15) - 1;     % Remove softness
        dataids = [(1:11)', zeros(11,1)];

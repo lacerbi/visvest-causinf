@@ -30,7 +30,7 @@
 function varargout = VestBMS_BimodalLeftRightDatalike(X,model,theta,priorinfo,bincenters,maxranges,XGRID,SSCALE,sumover,randomize)
 
 % Program constants
-if nargin < 7 || isempty(XGRID) || isnan(XGRID); XGRID = 201; end
+if nargin < 7 || isempty(XGRID) || isnan(XGRID); XGRID = 361; end
 if nargin < 8 || isempty(SSCALE); SSCALE = 8; end
 if nargin < 9 || isempty(sumover); sumover = 1; end
 if nargin < 10 || isempty(randomize); randomize = 0; end
@@ -186,6 +186,7 @@ if fixed_criterion_analytic
     mu_diff = bincenters_vest - bincenters_vis;
     sigma_diff = sqrt(sigmas_vis.^2 + sigmas_vest.^2);
     
+    prmat = [];    
     prmat_unity = zeros(numel(bincenters_vest), 2);    
     prmat_unity(:,1) = bsxfun_normcdf(kcommon,mu_diff,sigma_diff) - bsxfun_normcdf(-kcommon,mu_diff,sigma_diff);
     if wraparound

@@ -227,6 +227,8 @@ elseif ~gaussianflag || ~closedformflag
         else
             postright_c2 = [];
         end
+        
+        likec1 = [];
 
         % Compute unnormalized posterior and rightward posterior (C = 1)
         if priorc1 > 0
@@ -257,8 +259,10 @@ elseif ~gaussianflag || ~closedformflag
                     
                     postright_c1(1,:,:) = intright./(intleft + intright);
                     
-                else
-                    postright_c1(1,:,:) = VestBMS_c1postqtrapz(postpdf_c2, like_vis);
+                else                    
+                    % postright_c1(1,:,:) = VestBMS_c1postqtrapz(postpdf_c2, like_vis);
+                    [postright_c1(1,:,:),likec1(1,:,:)] = VestBMS_c1postandlikec1qtrapz(postpdf_c2, like_vis);
+                    likec1 = likec1 + realmin;
                 end
             else
                 postright_c1 = [];
@@ -323,7 +327,9 @@ elseif ~gaussianflag || ~closedformflag
                 bsxfun_normpdf(mutilde,0,sqrt(sigma2tilde + priorinfo(2)^2)) + realmin;                
         else
             %if isempty(postpdf_c1)
+            if isempty(likec1)
                 likec1(1,:,:) = VestBMS_likec1qtrapz(postpdf_c2,like_vis) + realmin;
+            end
             %else
             %    likec1 = qtrapz(postpdf_c1, 1)*ds + realmin;
             %end            

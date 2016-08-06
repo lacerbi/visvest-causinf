@@ -609,9 +609,9 @@ function [mp,exitflag] = updateModel(mp,theta)
     end
     
     if model(9) == 1 % Uncorrelated priors, everything is easy
-        gridPoints = [  501 501 501 501, 361 361 361; ...          % Coarse
-                        501 501 501 501, 361 361 361; ...       % Fine
-                        501 501 501 501, 361 361 361];  % Ultra-fine
+        gridPoints = [  501 501 501 501, 401 401 401; ...          % Coarse
+                        501 501 501 501, 401 401 401; ...       % Fine
+                        501 501 501 501, 401 401 401];  % Ultra-fine
     else
         gridPoints = [  101 101 101 101, 75 75 75; ...          % Coarse
                         501 501 501 501, 101 101 101; ...       % Fine

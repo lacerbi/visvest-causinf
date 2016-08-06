@@ -30,7 +30,7 @@
 function varargout = VestBMS_BimodalLeftRightDatalike(X,model,theta,priorinfo,bincenters,maxranges,XGRID,SSCALE,sumover,randomize)
 
 % Program constants
-if nargin < 7 || isempty(XGRID) || isnan(XGRID); XGRID = 201; end
+if nargin < 7 || isempty(XGRID) || isnan(XGRID); XGRID = 361; end
 if nargin < 8 || isempty(SSCALE); SSCALE = 8; end
 if nargin < 9 || isempty(sumover); sumover = 1; end
 if nargin < 10 || isempty(randomize); randomize = 0; end
@@ -78,6 +78,9 @@ MAXRNG_XMEAS = 180;
 % Trials to be computed
 do_estimation = ~isempty(X{2});
 do_unity = ~isempty(X{3});
+
+% Compute fixed criterion analytically
+fixed_criterion_analytic = do_unity && ~do_estimation && model(15) == 3;
 
 % Random unity judgments
 if model(16) == 4
@@ -135,8 +138,8 @@ dx_vest = xrange_vest(1, 1, 2) - xrange_vest(1, 1, 1);
 
 % Wrap large noisy measurement around circle
 if MAXRNG_XMEAS >= 180 && ...
-        min(bincenters-MAXSD*sigmas) <= -180 && ...
-        max(bincenters-MAXSD*sigmas) >= 180
+        ( min(bincenters_vis-MAXSD*sigmas_vis) <= -180 || max(bincenters_vis+MAXSD*sigmas_vis) >= 180 || ...
+        min(bincenters_vest-MAXSD*sigmas_vest) <= -180 || max(bincenters_vest+MAXSD*sigmas_vest) >= 180)
     wraparound = 1;
 else
     wraparound = 0;
@@ -177,15 +180,20 @@ sigmasprime_vis = VestBMS_sensoryNoise(likemodel_vis,likerange_vis,sigmalikezero
 if wlike_vest >= 0; likemodel_vest = 'Q'; else likemodel_vest = 'C'; end
 sigmasprime_vest = VestBMS_sensoryNoise(likemodel_vest,likerange_vest,sigmalikezero_vest,wlike_vest);
 
-if do_unity && ~do_estimation && model(15) == 3
+if fixed_criterion_analytic
     % Fixed-criterion unity judgment
     
     mu_diff = bincenters_vest - bincenters_vis;
     sigma_diff = sqrt(sigmas_vis.^2 + sigmas_vest.^2);
     
-    bsxfun_normcdf(kcommon,mu_diff,sigma_diff) - bsxfun_normcdf(-kcommon,mu_diff,sigma_diff);
-    
-    
+    prmat = [];    
+    prmat_unity = zeros(numel(bincenters_vest), 2);    
+    prmat_unity(:,1) = bsxfun_normcdf(kcommon,mu_diff,sigma_diff) - bsxfun_normcdf(-kcommon,mu_diff,sigma_diff);
+    if wraparound
+        prmat_unity(:,1) = prmat_unity(:,1) + bsxfun_normcdf(kcommon,mu_diff-360,sigma_diff) - bsxfun_normcdf(-kcommon,mu_diff-360,sigma_diff);
+        prmat_unity(:,1) = prmat_unity(:,1) + bsxfun_normcdf(kcommon,mu_diff+360,sigma_diff) - bsxfun_normcdf(-kcommon,mu_diff+360,sigma_diff);
+    end    
+    prmat_unity(:,2) = 1 - prmat_unity(:,1);
     
 elseif ~gaussianflag || ~closedformflag
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -209,16 +217,26 @@ elseif ~gaussianflag || ~closedformflag
 
     % Compute unnormalized posterior and rightward posterior (C = 2)
     postpdf_c2 = bsxfun(@times, priorpdf, like_vest);
-    if priorc1 < 1
-        postright_c2(1,:,:) = VestBMS_PostRight(postpdf_c2);
+    if do_estimation
+        if priorc1 < 1
+            postright_c2(1,:,:) = VestBMS_PostRight(postpdf_c2);
+        else
+            postright_c2 = 0;
+        end
     else
-        postright_c2 = 0;
+        postright_c2 = [];
     end
 
     % Compute unnormalized posterior and rightward posterior (C = 1)
     if priorc1 > 0
-        postpdf_c1 = bsxfun(@times, postpdf_c2, like_vis);
-        postright_c1(1,:,:) = VestBMS_PostRight(postpdf_c1);
+        if do_estimation || ~gaussianflag
+            postpdf_c1 = bsxfun(@times, postpdf_c2, like_vis);
+            if do_estimation
+                postright_c1(1,:,:) = VestBMS_PostRight(postpdf_c1);
+            else
+                postright_c1 = [];
+            end
+        end
     else
         postpdf_c1 = 0;
         postright_c1 = 0;
@@ -236,12 +254,46 @@ elseif ~gaussianflag || ~closedformflag
 
     if model(15) == 1 || model(15) == 2 % (Generalized) Bayesian posterior
         % CASE C=2, Independent likelihoods
-        likec2_vis = bsxfun(@times, priorpdf, like_vis);
-        likec2 = (bsxfun(@times, qtrapz(likec2_vis, 1)*ds, qtrapz(postpdf_c2, 1)*ds)) + realmin; 
+        if gaussianflag
+            muc2_vis = xrange_vis.*priorinfo(2)^2/(sigmasprime_vis(1)^2 + priorinfo(2)^2);
+            sigmac2_vis = sigmasprime_vis(1)*priorinfo(2)/sqrt(sigmasprime_vis(1)^2 + priorinfo(2)^2);
+            muc2_vest = xrange_vest.*priorinfo(2)^2/(sigmasprime_vest(1)^2 + priorinfo(2)^2);
+            sigmac2_vest = sigmasprime_vest(1)*priorinfo(2)/sqrt(sigmasprime_vest(1)^2 + priorinfo(2)^2);            
+            int_vis = (bsxfun_normcdf(MAXRNG,muc2_vis,sigmac2_vis) - bsxfun_normcdf(-MAXRNG,muc2_vis,sigmac2_vis));
+            int_vest = (bsxfun_normcdf(MAXRNG,muc2_vest,sigmac2_vest) - bsxfun_normcdf(-MAXRNG,muc2_vest,sigmac2_vest));
+            if wraparound
+                int_vis = int_vis + (bsxfun_normcdf(MAXRNG + 360,muc2_vis,sigmac2_vis) - bsxfun_normcdf(-MAXRNG + 360,muc2_vis,sigmac2_vis)) ...
+                    + (bsxfun_normcdf(MAXRNG - 360,muc2_vis,sigmac2_vis) - bsxfun_normcdf(-MAXRNG - 360,muc2_vis,sigmac2_vis));
+                int_vest = int_vest + (bsxfun_normcdf(MAXRNG + 360,muc2_vest,sigmac2_vest) - bsxfun_normcdf(-MAXRNG + 360,muc2_vest,sigmac2_vest)) ...
+                    + (bsxfun_normcdf(MAXRNG - 360,muc2_vest,sigmac2_vest) - bsxfun_normcdf(-MAXRNG - 360,muc2_vest,sigmac2_vest));                
+            end
+            int_vis = int_vis .* bsxfun_normpdf(xrange_vis,0,sqrt(sigmasprime_vis(1)^2 + priorinfo(2)^2));
+            int_vest = int_vest .* bsxfun_normpdf(xrange_vest,0,sqrt(sigmasprime_vest(1)^2 + priorinfo(2)^2));
+        else
+            likec2_vis = bsxfun(@times, priorpdf, like_vis);
+            likec2 = (bsxfun(@times, qtrapz(likec2_vis, 1)*ds, qtrapz(postpdf_c2, 1)*ds)) + realmin;
+        end
 
-        % CASE C=1, Likelihoods are not independent
-        likec1 = qtrapz(postpdf_c1, 1)*ds + realmin;
         % postpdfc1 = bsxfun(@rdivide, postpdfc1, likec1);
+        
+        % CASE C=1, Likelihoods are not independent
+        if gaussianflag
+            if priorinfo(1) ~= 0; error('Prior bias not supported yet.'); end            
+            mutilde = bsxfun(@plus, xrange_vest.*sigmasprime_vis(1)^2, xrange_vis.*sigmasprime_vest(1)^2)./(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2);
+            sigma2tilde = sigmasprime_vis(1)^2.*sigmasprime_vest(1)^2./(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2);
+            mucdf = mutilde.*priorinfo(2)^2./(sigma2tilde + priorinfo(2)^2);
+            sigmacdf = sqrt(sigma2tilde./(sigma2tilde + priorinfo(2)^2))*priorinfo(2);
+            intc1 = (bsxfun_normcdf(MAXRNG, mucdf, sigmacdf) - bsxfun_normcdf(-MAXRNG, mucdf, sigmacdf));
+            if wraparound
+                intc1 = intc1 + ...
+                    (bsxfun_normcdf(MAXRNG + 360, mucdf, sigmacdf) - bsxfun_normcdf(-MAXRNG + 360, mucdf, sigmacdf)) + ...
+                    (bsxfun_normcdf(MAXRNG - 360, mucdf, sigmacdf) - bsxfun_normcdf(-MAXRNG - 360, mucdf, sigmacdf));
+            end            
+            likec1 = intc1 .* bsxfun_normpdf(xrange_vest,xrange_vis,sqrt(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2)) .* ...
+                bsxfun_normpdf(mutilde,0,sqrt(sigma2tilde + priorinfo(2)^2));                
+        else
+            likec1 = qtrapz(postpdf_c1, 1)*ds + realmin;            
+        end
     end
 
     % Compute weight for cue fusion
@@ -255,7 +307,6 @@ elseif ~gaussianflag || ~closedformflag
 
         case 2  % Generalized Bayesian causal inference
             % likec1 = squeeze(likec1);
-            % postc1 = 1./(1 + likec2*(1-priorc1)./(likec1*priorc1));
             lratio = log(likec1*priorc1) - log(likec2*(1-priorc1));
             w1 = 1./(1 + exp(-gamma_causinf.*lratio));
             if distinct_criteria
@@ -313,7 +364,7 @@ elseif ~gaussianflag || ~closedformflag
 
     % Clean up memory
     clear postright w1 postpdf_c1 postpdf_c2 postright_c1 postright_c2 ...
-        likec1 likec2 likec2_vis postpdfc1 postc1 lratio;
+        likec1 likec2 likec2_vis postpdfc1 lratio;
 
 else
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -422,27 +473,29 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Compute overall optimal targets
 
-xpdf_vis = bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis,alpha_rescaling_vis*sigmas_vis);
-xpdf_vis = bsxfun(@rdivide, xpdf_vis, qtrapz(xpdf_vis, 2));
-xpdf_vest = bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest,alpha_rescaling_vest*sigmas_vest);
-xpdf_vest = bsxfun(@rdivide, xpdf_vest, qtrapz(xpdf_vest, 3));
+if ~fixed_criterion_analytic
+    xpdf_vis = bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis,alpha_rescaling_vis*sigmas_vis);
+    xpdf_vis = bsxfun(@rdivide, xpdf_vis, qtrapz(xpdf_vis, 2));
+    xpdf_vest = bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest,alpha_rescaling_vest*sigmas_vest);
+    xpdf_vest = bsxfun(@rdivide, xpdf_vest, qtrapz(xpdf_vest, 3));
 
-xpdf2 = bsxfun(@times, xpdf_vis, xpdf_vest); % These guys are already normalized (volume element aside)
+    xpdf2 = bsxfun(@times, xpdf_vis, xpdf_vest); % These guys are already normalized (volume element aside)
 
-if do_estimation
-    prmat = zeros(numel(bincenters_vest), 2);
-    prmat(:,2) = qtrapz(qtrapz(bsxfun(@times, xpdf2, prright), 2), 3);
-    prmat(:,1) = 1 - prmat(:,2);
-else
-    prmat = [];
-end
+    if do_estimation
+        prmat = zeros(numel(bincenters_vest), 2);
+        prmat(:,2) = qtrapz(qtrapz(bsxfun(@times, xpdf2, prright), 2), 3);
+        prmat(:,1) = 1 - prmat(:,2);
+    else
+        prmat = [];
+    end
 
-if do_unity
-    prmat_unity = zeros(numel(bincenters_vest), 2);
-    prmat_unity(:,1) = qtrapz(qtrapz(bsxfun(@times, xpdf2, w1_unity), 2), 3);
-    prmat_unity(:,2) = 1 - prmat_unity(:,1);
-else
-    prmat_unity = [];
+    if do_unity
+        prmat_unity = zeros(numel(bincenters_vest), 2);
+        prmat_unity(:,1) = qtrapz(qtrapz(bsxfun(@times, xpdf2, w1_unity), 2), 3);
+        prmat_unity(:,2) = 1 - prmat_unity(:,1);
+    else
+        prmat_unity = [];
+    end
 end
 
 % Fix probabilities

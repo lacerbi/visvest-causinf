@@ -1,5 +1,5 @@
 function postright = VestBMS_PostRight(postpdf)
-%VESTBMD_POSTRIGHT Posterior probability of perceiving rightward motion.
+%VESTBMS_POSTRIGHT Posterior probability of perceiving rightward motion.
 
 n = size(postpdf,1);
 pmin = realmin*n/2;

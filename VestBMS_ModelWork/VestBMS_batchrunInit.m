@@ -194,16 +194,46 @@ switch type
        models(models(:,15) == 2,15) = 1;     % Standard Bayesian
        models(models(:,15) == 4,15) = 3;     % Fixed criterion       
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+              
+   case {201} % Bisensory Bayesian models with *constant* noise, deterministic decision making and lapse
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,[1 2]) = 1; % Constant noise
+       models(:,11) = 1;    % BDT
+       models_pm = models;
+       models_pm(:,11) = 3; % Probability matching
+       models = [models; models_pm];       
+       options.jobname = 'vest_bayes_cnst';
+       models(:,8) = 2;     % Fixed-mean prior
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 2,15) = 1;     % Standard Bayesian
+       models(models(:,15) ~= 1 & models(:,15) ~= 2,:) = [];     % Remove non-Bayesian models       
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+       
+   case {202} % Bisensory non-Bayesian models with *constant* noise, deterministic decision making and lapse
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,[1 2]) = 1; % Constant noise
+       models(:,11) = 1;    % BDT
+       options.jobname = 'vest_fix_cnst';
+       models(:,8) = 2;     % Fixed-mean prior
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 4,15) = 3;     % Fixed criterion
+       models(models(:,15) == 1 | models(:,15) == 2,:) = [];     % Remove Bayesian models       
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+       
        
     % LARGE-DISPARITY TRIALS ONLY   
        
-    case 201 % Bisensory models
+    case 501 % Bisensory models
 
        [options,models,groupcnd] = VestBMS(options,2,0);
        options.jobname = 'vest_bim_largedisparity';
        dataids(:,2) = setflag(dataids(:,2), [4,5]);     % No categorical trials, no small disparity
         
-    case 211 % Bisensory models with constant noise
+    case 511 % Bisensory models with constant noise
         
        [options,models,groupcnd] = VestBMS(options,2,0);
        models(:,[1 2]) = 1; % Constant noise

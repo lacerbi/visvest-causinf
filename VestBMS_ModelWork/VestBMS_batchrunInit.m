@@ -339,7 +339,6 @@ switch type
        models = [models; models_pm];
        options.jobname = 'vest_bayes_ecc_unity';
        models(:,8) = 2;     % Fixed-mean prior
-       models(:,11) = 1;    % BDT
        models(:,13) = 2;    % Lapse
        models(models(:,15) == 3 | models(:,15) == 4,:) = [];    % Remove fixed criterion
        models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion

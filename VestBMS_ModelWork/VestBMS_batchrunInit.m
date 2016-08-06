@@ -294,16 +294,17 @@ switch type
        dataids = [(1:11)', zeros(11,1)];       
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
        
-   case 1201 % Bisensory Bayesian models with sinusoidal/constant noise, real BDT and lapse
+   case 1201 % Bisensory Bayesian models with *constant* noise and lapse
         % THIS MODEL BELONGS TO THE FINAL MODEL SET
         
        [options,models,groupcnd] = VestBMS(options,2,0);
-       models_const = models;
-       models_const(:,[1 2]) = 1; % Constant noise
-       models = [models; models_const];
-       options.jobname = 'vest_bdt_unity';
-       models(:,8) = 2;     % Fixed-mean prior
+       models(:,[1 2]) = 1; % Constant noise
        models(:,11) = 1;    % BDT
+       models_pm = models;
+       models_pm(:,11) = 3; % Probability matching
+       models = [models; models_pm];       
+       options.jobname = 'vest_bayes_cnst_unity';
+       models(:,8) = 2;     % Fixed-mean prior
        models(:,13) = 2;    % Lapse
        models(models(:,15) == 3 | models(:,15) == 4,:) = [];    % Remove fixed criterion
        models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion
@@ -323,6 +324,24 @@ switch type
        models(:,11) = 1;    % BDT
        models(:,13) = 2;    % Lapse
        models(models(:,15) == 1 | models(:,15) == 2,:) = [];    % Remove Bayesian
+       models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion
+       models(:,15) = models(:,15) - 1;     % Remove softness
+       dataids = [(1:11)', zeros(11,1)];
+       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
+       
+   case 1203 % Bisensory Bayesian models with *sinusoidal* noise and lapse
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,11) = 1;    % BDT
+       models_pm = models;
+       models_pm(:,11) = 3; % Probability matching
+       models = [models; models_pm];
+       options.jobname = 'vest_bayes_ecc_unity';
+       models(:,8) = 2;     % Fixed-mean prior
+       models(:,11) = 1;    % BDT
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 3 | models(:,15) == 4,:) = [];    % Remove fixed criterion
        models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion
        models(:,15) = models(:,15) - 1;     % Remove softness
        dataids = [(1:11)', zeros(11,1)];

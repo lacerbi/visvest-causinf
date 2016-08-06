@@ -358,14 +358,16 @@ elseif ~gaussianflag || ~closedformflag
 
     % Bisensory unity judgement
     if do_unity && ~distinct_criteria
-        %if beta_softmax == 1
-        %    w1_unity = w1;
-        %elseif beta_softmax == Inf
-        %    w1_unity = w1 > 0.5;
-        %else
-        %    w1_unity = 1./(1 + ((1-w1)./w1).^beta_softmax);
-        %end
-        w1_unity = w1;
+        if beta_softmax == 1
+            w1_unity = w1;
+        elseif beta_softmax == Inf
+            w1_unity = zeros(size(w1));
+            w1_unity(w1 > 0.5) = 1;
+            w1_unity(w1 == 0.5) = 0.5;
+        else
+            w1_unity = 1./(1 + ((1-w1)./w1).^beta_softmax);
+        end
+        % w1_unity = w1;
     end
 
     % Clean up memory
@@ -481,8 +483,18 @@ end
 
 if ~fixed_criterion_analytic
     xpdf_vis = bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis,alpha_rescaling_vis*sigmas_vis);
+    if wraparound
+        xpdf_vis = xpdf_vis + ...
+            bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis + 360,alpha_rescaling_vis*sigmas_vis) ...
+            + bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis - 360,alpha_rescaling_vis*sigmas_vis);        
+    end
     xpdf_vis = bsxfun(@rdivide, xpdf_vis, qtrapz(xpdf_vis, 2));
     xpdf_vest = bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest,alpha_rescaling_vest*sigmas_vest);
+    if wraparound
+        xpdf_vest = xpdf_vest + ...
+            bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest + 360,alpha_rescaling_vest*sigmas_vest) ...
+            + bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest - 360,alpha_rescaling_vest*sigmas_vest);        
+    end    
     xpdf_vest = bsxfun(@rdivide, xpdf_vest, qtrapz(xpdf_vest, 3));
 
     if do_estimation

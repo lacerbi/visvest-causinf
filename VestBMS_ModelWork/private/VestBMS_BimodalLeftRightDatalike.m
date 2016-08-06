@@ -230,13 +230,15 @@ elseif ~gaussianflag || ~closedformflag
 
         % Compute unnormalized posterior and rightward posterior (C = 1)
         if priorc1 > 0
-            if do_estimation || ~gaussianflag
+            if do_estimation
                 postpdf_c1 = bsxfun(@times, postpdf_c2, like_vis);
                 if do_estimation
                     postright_c1(1,:,:) = VestBMS_PostRight(postpdf_c1);
                 else
                     postright_c1 = [];
                 end
+            else
+                postpdf_c1 = [];
             end
         else
             postpdf_c1 = 0;
@@ -298,7 +300,11 @@ elseif ~gaussianflag || ~closedformflag
             likec1 = intc1 .* bsxfun_normpdf(xrange_vest,xrange_vis,sqrt(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2)) .* ...
                 bsxfun_normpdf(mutilde,0,sqrt(sigma2tilde + priorinfo(2)^2)) + realmin;                
         else
-            likec1 = qtrapz(postpdf_c1, 1)*ds + realmin;            
+            %if isempty(postpdf_c1)
+                likec1(1,:,:) = VestBMS_likec1qtrapz(postpdf_c2,like_vis) + realmin;
+            %else
+            %    likec1 = qtrapz(postpdf_c1, 1)*ds + realmin;
+            %end            
         end
     end
 

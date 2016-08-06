@@ -18,7 +18,7 @@ void qtrapzc(double *xpdf_a, double *xpdf_b, double *w, double *z, mwSize N, mwS
     w0 = w;     /* copy base pointer */
     
     for (i=0; i<N; i++) {
-        sum = 0;
+        sum = 0.;
         w = w0;     /* reset pointer before inner loops */
         for (k=0; k<K; k++) {
             

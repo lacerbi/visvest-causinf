@@ -49,6 +49,7 @@ model = mp.model;
 
 loglikes = zeros(1, max(cnd));
 dynamicscale = 1; % Dynamic computation of SSCALE (~ grid points)
+trialloglikes = NaN(1,ntrials(end));
 
 for iicnd = 1:length(cnd)        
     fulltheta = mp.fulltheta{iicnd};   
@@ -211,7 +212,7 @@ end
 loglike = sum(loglikes);
 if debug; temp = extras; extras = []; extras.struct = temp; end
 if ~isempty(trialloglikes)
-    extras.trialloglikes = trialloglikes;
+    extras.trialloglikes = trialloglikes(~isnan(trialloglikes));
     extras.ntrials = ntrials;    
 end
 

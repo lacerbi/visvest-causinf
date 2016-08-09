@@ -185,10 +185,9 @@ else
     
 end
 
-
 % Finalize log likelihood
 prmat = lambda/2 + (1-lambda)*prmat;
-prmat = FIXEDLAPSEPDF + (1-FIXEDLAPSEPDF)*prmat;
+prmat = 0.5*FIXEDLAPSEPDF + (1-FIXEDLAPSEPDF)*prmat;
 prmat = prmat(:);
 
 if nargout > 1

@@ -489,8 +489,8 @@ end
 function [ll,extras] = finalize(prmat,prmat_unity,X,epsilon,extrasflag,sumoverflag)
 %FINALIZE Finalize log likelihood
 
-prmat = epsilon + (1-epsilon)*prmat;
-prmat_unity = epsilon + (1-epsilon)*prmat_unity;
+prmat = 0.5*epsilon + (1-epsilon)*prmat;
+prmat_unity = 0.5*epsilon + (1-epsilon)*prmat_unity;
 
 if extrasflag
     extras.responsepdf = prmat;

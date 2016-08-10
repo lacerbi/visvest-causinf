@@ -60,6 +60,9 @@ alpha_rescaling_vest = 1;
 % beta_rescaling_vest = 0;
 
 beta_softmax = theta(14);
+% This is effectively infinity but solves some numerical instabilities
+if (beta_softmax == Inf); beta_softmax = 1e4; end
+
 gamma_causinf = theta(15);
 tau_causinf = theta(16);
 
@@ -402,8 +405,8 @@ elseif ~gaussianflag || ~closedformflag
         else
             % Compute posterior probability of rightward motion    
             postright = bsxfun(@plus, bsxfun(@times, w1, postright_c1), bsxfun(@times, 1-w1, postright_c2));
-
-            % Probability of rightward response
+            
+            % Probability of rightward response            
             prright = 1./(1 + ((1-postright)./postright).^beta_softmax);
             prright(isnan(prright)) = 0.5;
         end
@@ -442,13 +445,22 @@ if ~fixed_criterion_analytic
             + bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis - 360,alpha_rescaling_vis*sigmas_vis);        
     end
     xpdf_vis = bsxfun(@rdivide, xpdf_vis, qtrapz(xpdf_vis, 2));
-    xpdf_vest = bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest,alpha_rescaling_vest*sigmas_vest);
+    do_symmetrize = 0;
+    if do_symmetrize
+        mid = ceil(0.5*size(xpdf_vis,1));
+        xpdf_vis(mid,:) = 0.5*(xpdf_vis(mid,:) + fliplr(xpdf_vis(mid,:)));
+    end
+    
+    xpdf_vest = bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest,alpha_rescaling_vest*sigmas_vest);    
     if wraparound
         xpdf_vest = xpdf_vest + ...
             bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest + 360,alpha_rescaling_vest*sigmas_vest) ...
             + bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest - 360,alpha_rescaling_vest*sigmas_vest);        
     end    
     xpdf_vest = bsxfun(@rdivide, xpdf_vest, qtrapz(xpdf_vest, 3));
+    if do_symmetrize
+        xpdf_vest(mid,1,:) = 0.5*(xpdf_vest(mid,1,:) + xpdf_vest(mid,1,end:-1:1));
+    end
 
     if do_estimation
         prmat = zeros(numel(bincenters_vest), 2);

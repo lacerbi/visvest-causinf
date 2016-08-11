@@ -71,7 +71,7 @@ end
 skipdecision = (priorinfo(1) == 0) && (beta_softmax == Inf);
 
 % Compute sensory noise std per trial
-if w >= 0; noisemodel = 'Q'; else noisemodel = 'C'; end
+if w >= 0; noisemodel = 'A'; else noisemodel = 'C'; end
 sigmas = VestBMS_sensoryNoise(noisemodel,bincenters,sigmazero,w);
 if isscalar(sigmas); sigmas = sigmas*ones(size(bincenters)); end
 
@@ -126,7 +126,7 @@ else
 
     % Compute likelihood; variable range depends on type
     if gaussianflag; likerange = xrange; else likerange = srange; end
-    if wlike >= 0; likemodel = 'Q'; else likemodel = 'C'; end
+    if wlike >= 0; likemodel = 'A'; else likemodel = 'C'; end
     sigmasprime = VestBMS_sensoryNoise(likemodel,likerange,sigmalikezero,wlike);
 
     if wraparound

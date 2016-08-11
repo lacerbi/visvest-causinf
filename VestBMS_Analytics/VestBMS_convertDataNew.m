@@ -117,7 +117,7 @@ for iSubj = 1:length(subjs)
     
 end
 
-data = CueBMS_analytics(X,[],1,[],bincenters);
+data = VestBMS_analytics(X,[],1,[],bincenters);
 for i = 1:length(data); data{i}.id = i; end
 display([num2str(length(data)), ' datasets successfully converted.']);
 
@@ -125,8 +125,10 @@ display([num2str(length(data)), ' datasets successfully converted.']);
 allX = [];
 for i = 1:length(data); allX = [allX; X{i}]; end
 
-bigdata = CueBMS_analytics({allX},[],1,[],bincenters);
-display('Mean subject dataset converted.');
+if nargout > 1
+    bigdata = VestBMS_analytics({allX},[],1,[],bincenters);
+    display('Mean subject dataset converted.');
+end
 
 
 end

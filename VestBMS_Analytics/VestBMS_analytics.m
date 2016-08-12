@@ -130,7 +130,7 @@ for ii = 1:length(datasets)
         pairs = [pairs; [s(jj) + 0.5*d, s(jj) - 0.5*d]];
     end        
     
-    % Flat bimodal data
+    % Flatten bimodal data
     for iNoise = 1:3
         for ss = 1:size(pairs,1)
             D.X.bimflat{iNoise}{BIMVIDEO}(ss) = mean(D.X.bimodal{iNoise}{BIMVIDEO}(D.X.bimodal{iNoise}{BIMVIDEO}(:,3) == pairs(ss,1) & D.X.bimodal{iNoise}{BIMVIDEO}(:,4) == pairs(ss,2),end)==1);
@@ -154,7 +154,7 @@ for ii = 1:length(datasets)
         
     end
     
-    % Flat bimodal data
+    % Flatten bimodal data for left/right
     % allStimuli = unique(bsxfun(@plus, s, 0.5*d));    
     allStimuli =  {-45:5:-30,-27.5,-25,-22.5,-20,-17.5,-15,-12.5,-10,-7.5,-5,-2.5,0,2.5,5,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30:5:45};
     
@@ -171,6 +171,31 @@ for ii = 1:length(datasets)
             end
         end
     end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Build psychometric curves for bisensory left/right (vestibular only)
+    
+    fprintf(['Building psychometric curves for subject #' num2str(ii) '...']);    
+    % allStimuli =  {-45:5:-30,-27.5,-25,-22.5,-20,-17.5,-15,-12.5,-10,-7.5,-5,-2.5,0,2.5,5,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30:5:45};
+    %allStimuli =  {-45:5:-30,-27.5:2.5:-22.5,-20,-17.5,-15,-12.5,-10,-7.5,-5,-2.5,0,2.5,5,7.5,10,12.5,15,17.5,20,22.5:2.5:27.5,30:5:45};
+    allStimuli =  {-45:5:-30,-27.5:2.5:-22.5,[-20,-17.5,-15],[-12.5,-10,-7.5],[-5,-2.5],0,[2.5,5],[7.5,10,12.5],[15,17.5,20],22.5:2.5:27.5,30:5:45};
+    iMod = BIMAUDIO;
+    D.psyright_mu = NaN(3,numel(allStimuli));
+    D.psyright_sigma = NaN(3,numel(allStimuli));
+    for iNoise = 1:3    
+        for ss = 1:numel(allStimuli)
+            idx = any(bsxfun(@eq, D.X.bimodal{iNoise}{iMod}(:,4), allStimuli{ss}),2);
+            xxx = D.X.bimodal{iNoise}{iMod}(idx,3);
+            yyy = D.X.bimodal{iNoise}{iMod}(idx,end) == 1;
+            %try
+                [D.psyright_mu(iNoise,ss),D.psyright_sigma(iNoise,ss)] = psychofit(xxx,yyy);                
+            %catch
+                % Continue
+            %end
+        end
+    end
+    D.psyright_mu(abs(D.psyright_mu) > 45) = NaN;
+    fprintf(' done.\n');
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

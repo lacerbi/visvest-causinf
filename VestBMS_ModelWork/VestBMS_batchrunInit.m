@@ -531,6 +531,7 @@ switch type
        dataids = [(1:11)', zeros(11,1)];
 
    case 2101 % Full joint standard models with lapse (humans)
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
         
        options = VestBMS(options,2,0);
        groupcnd = 1:7;

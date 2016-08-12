@@ -528,7 +528,19 @@ switch type
        ];       
        models(:,11) = 3;    % Probability matching
        models(:,13) = 2;    % Lapse
-       dataids = [(1:11)', zeros(11,1)];       
+       dataids = [(1:11)', zeros(11,1)];
+
+   case 2101 % Full joint standard models with lapse (humans)
+        
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_joint';
+       models = [ ...
+           5 3 1 1, 1 1 1 2, 1 1 1 1, 2 1 6 2 0; ... % Bayesian model-PM
+           5 3 1 1, 1 1 1 2, 1 1 1 1, 2 1 3 2 0; ... % Fixed criterion
+       ];       
+       dataids = [(1:11)', zeros(11,1)];
+       
        
 %--------------------------------------------------------------------------
 % UNIMODAL ESTIMATION DATA FITS

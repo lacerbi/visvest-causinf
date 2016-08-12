@@ -262,7 +262,7 @@ elseif ~gaussianflag || ~closedformflag
                     
                     postright_c1(1,:,:) = intright./(intleft + intright);
                     
-                else                    
+                else
                     % postright_c1(1,:,:) = VestBMS_c1postqtrapz(postpdf_c2, like_vis);
                     [postright_c1(1,:,:),likec1(1,:,:)] = VestBMS_c1postandlikec1qtrapz(postpdf_c2, like_vis);
                     likec1 = likec1 + realmin;
@@ -384,13 +384,6 @@ elseif ~gaussianflag || ~closedformflag
 
     % NaNs can emerge as 0/0 - assume that the response becomes random
     w1(isnan(w1)) = 0.5;
-    if distinct_criteria; w1_unity(isnan(w1_unity)) = 0.5; end
-
-    if nargout > 1 % Save variables for debug or data generation
-        extras.w1 = w1;
-        if distinct_criteria; extras.w1_unity = w1_unity; end
-        % extras.postpdfc1 = postpdfc1;
-    end
 
     % Bisensory estimation
     if do_estimation
@@ -426,8 +419,19 @@ elseif ~gaussianflag || ~closedformflag
         % w1_unity = w1;
     elseif do_unity
         w1_unity = double(w1_unity);    % Convert from logical to double
+        if beta_softmax ~= 1
+            w1_unity = 1./(1 + ((1-w1_unity)./w1_unity).^beta_softmax);            
+        end
     end
 
+    if distinct_criteria; w1_unity(isnan(w1_unity)) = 0.5; end
+
+    if nargout > 1 % Save variables for debug or data generation
+        extras.w1 = w1;
+        if distinct_criteria; extras.w1_unity = w1_unity; end
+        % extras.postpdfc1 = postpdfc1;
+    end
+    
     % Clean up memory
     clear postright w1 postpdf_c2 postright_c1 postright_c2 ...
         likec1 likec2 likec2_vis postpdfc1 lratio;

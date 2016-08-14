@@ -142,7 +142,7 @@ for ii = 1:length(datasets)
             if ~isempty(D.X.bimflat{iNoise}{iMod})
                 % D.X.bimflatsymm{iNoise}{iMod} = [D.X.bimflat{iNoise}{iMod}(46:54), nanmean([D.X.bimflat{iNoise}{iMod}(55:end); D.X.bimflat{iNoise}{iMod}(45:-1:1)],1)];
                 D.X.bimflatsymm{iNoise}{iMod} = ...
-                    [nanmean([D.X.bimflat{iNoise}{iMod}(46:54); D.X.bimflat{iNoise}{iMod}(55:63); D.X.bimflat{iNoise}{iMod}(45:-1:37)],1), ...
+                    [nanmean([nanmean([D.X.bimflat{iNoise}{iMod}(46:54); D.X.bimflat{iNoise}{iMod}(54:-1:46)]); D.X.bimflat{iNoise}{iMod}(55:63); D.X.bimflat{iNoise}{iMod}(45:-1:37)],1), ...
                     nanmean([D.X.bimflat{iNoise}{iMod}(64:72); D.X.bimflat{iNoise}{iMod}(73:81); D.X.bimflat{iNoise}{iMod}(36:-1:28); D.X.bimflat{iNoise}{iMod}(27:-1:19)],1), ...
                     nanmean([D.X.bimflat{iNoise}{iMod}(82:90); D.X.bimflat{iNoise}{iMod}(91:99); D.X.bimflat{iNoise}{iMod}(18:-1:10); D.X.bimflat{iNoise}{iMod}(9:-1:1)],1)];
                 D.X.bimflatasymm{iNoise}{iMod} = ...
@@ -183,15 +183,17 @@ for ii = 1:length(datasets)
     D.psyright_mu = NaN(3,numel(allStimuli));
     D.psyright_sigma = NaN(3,numel(allStimuli));
     for iNoise = 1:3    
-        for ss = 1:numel(allStimuli)
-            idx = any(bsxfun(@eq, D.X.bimodal{iNoise}{iMod}(:,4), allStimuli{ss}),2);
-            xxx = D.X.bimodal{iNoise}{iMod}(idx,3);
-            yyy = D.X.bimodal{iNoise}{iMod}(idx,end) == 1;
-            %try
-                [D.psyright_mu(iNoise,ss),D.psyright_sigma(iNoise,ss)] = psychofit(xxx,yyy);                
-            %catch
-                % Continue
-            %end
+        if ~isempty(D.X.bimodal{iNoise}{iMod})
+            for ss = 1:numel(allStimuli)
+                idx = any(bsxfun(@eq, D.X.bimodal{iNoise}{iMod}(:,4), allStimuli{ss}),2);
+                xxx = D.X.bimodal{iNoise}{iMod}(idx,3);
+                yyy = D.X.bimodal{iNoise}{iMod}(idx,end) == 1;
+                try
+                    [D.psyright_mu(iNoise,ss),D.psyright_sigma(iNoise,ss)] = psychofit(xxx,yyy);                
+                catch
+                    % Continue
+                end
+            end
         end
     end
     D.psyright_mu(abs(D.psyright_mu) > 45) = NaN;

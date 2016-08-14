@@ -109,7 +109,7 @@ for iEcc = 1:nEcc
             panel.plots{iPlot}.linewidth = 2;
             panel.plots{iPlot}.errorwidth = 0;
             panel.plots{iPlot}.type = 'errorbar';
-            panel.plots{iPlot}.binshift = 0.5*(iNoise-2);
+            panel.plots{iPlot}.binshift = 0.3*(iNoise-2);
 
             % Panel cosmetics        
             panel.fontsize = fontsize;

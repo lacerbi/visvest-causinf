@@ -1,4 +1,4 @@
-function gendata = VestBMS_gendata(N,varargin)
+function [gendata,trueparams] = VestBMS_gendata(N,varargin)
 %VESTBMS_GENDATA   Generate a number of fake datasets.
 %   GENDATA = VESTBMS_GENDATA(N,MFIT) generates N fake datasets data from 
 %   individual model struct MFIT. GENDATA is a cell array of generated data 
@@ -6,6 +6,9 @@ function gendata = VestBMS_gendata(N,varargin)
 %
 %   GENDATA = CUEBMS_GENDATA(N,X,MP,INFOSTRUCT) generates fake datasets 
 %   from data matrix X, model parameter structure MP and INFOSTRUCT.
+%
+%   [GENDATA,TRUEPARAMS] = CUEBMS_GENDATA(...) returns parameters used to
+%   generate each fake dataset.
 %
 %  By Luigi Acerbi <luigi.acerbi@gmail.com>
 
@@ -24,12 +27,14 @@ gendata = [];
 if ~isempty(mfit.sampling) && ~isempty(mfit.sampling.samples)
     Nsamples = size(mfit.sampling.samples,1);
     idx = round(linspace(1,Nsamples,N));
+    trueparams = mfit.sampling.samples(idx,:);
     for i = 1:N
-        mp = VestBMS_setupModel(mp, mfit.sampling.samples(idx(i),:), mfit.model, infostruct);
+        mp = VestBMS_setupModel(mp, trueparams(i,:), mfit.model, infostruct);
         XX = GenDatasets(1,mp,X,infostruct);
         gendata{i} = squeeze(XX(:, :, 1));
     end
 else
+    trueparams = repmat(mfit.maptheta,[N 1]);
     mp = VestBMS_setupModel(mp, mfit.maptheta, mfit.model, infostruct);    
     XX = GenDatasets(N,mp,X,infostruct);    
     for i = 1:N; gendata{i} = squeeze(XX(:, :, i)); end    

@@ -477,7 +477,7 @@ switch type
        models(:,15) = models(:,15) - 1;     % Remove softness
        dataids = [(1:11)', zeros(11,1)];
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
-       
+              
 %--------------------------------------------------------------------------        
 % FULL JOINT DATA FITS
 
@@ -582,6 +582,30 @@ switch type
         models(:,13) = 2;           % Lapse        
         options.jobname = 'vest_noprior_lapse_uni';
         
+%--------------------------------------------------------------------------
+% MODEL RECOVERY
+   
+    case 21001 % Bisensory models with unity judgment
+        [options,~,groupcnd] = VestBMS(options,2,0);
+        models = [5 3 1 1 1 1 1 2 1 1 1 1 2 1 1 1; ... % BP
+            5 3 1 1 1 1 1 3 1 1 1 1 2 1 3 1; ...       % CX
+            10 10 1 1 1 1 1 3 1 1 1 1 1 1 5 4; ...     % FF
+            1 1 1 1 1 1 1 2 1 1 1 1 2 1 1 1];          % BP-C
+       
+        options.jobname = 'vest_modrec_unity';
+
+        N = 10;          % Ten fake datasets per subject
+        Nsubjs = 11;     % Eleven real subjects in total
+        dataids = [];    % Take only first five fake datasets per subject
+        for i = 1:size(models,1)
+            temp = bsxfun(@plus, (1:5)', ((1:Nsubjs)-1)*N) + (i-1)*(N*Nsubjs);
+            dataids = [dataids; temp(:)];
+        end
+        
+       dataids = [dataids, zeros(numel(dataids),1)];
+       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
+        
+       dataids
 end
 
 % Set speed test values

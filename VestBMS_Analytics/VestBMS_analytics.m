@@ -132,19 +132,32 @@ for ii = 1:length(datasets)
     
     % Flatten bimodal data
     for iNoise = 1:3
-        for ss = 1:size(pairs,1)
-            D.X.bimflat{iNoise}{BIMVIDEO}(ss) = mean(D.X.bimodal{iNoise}{BIMVIDEO}(D.X.bimodal{iNoise}{BIMVIDEO}(:,3) == pairs(ss,1) & D.X.bimodal{iNoise}{BIMVIDEO}(:,4) == pairs(ss,2),end)==1);
-            D.X.bimflat{iNoise}{BIMAUDIO}(ss) = mean(D.X.bimodal{iNoise}{BIMAUDIO}(D.X.bimodal{iNoise}{BIMAUDIO}(:,3) == pairs(ss,1) & D.X.bimodal{iNoise}{BIMAUDIO}(:,4) == pairs(ss,2),end)==1);
-            D.X.bimflat{iNoise}{BIMCATEGORY}(ss) = mean(D.X.bimodal{iNoise}{BIMCATEGORY}(D.X.bimodal{iNoise}{BIMCATEGORY}(:,3) == pairs(ss,1) & D.X.bimodal{iNoise}{BIMCATEGORY}(:,4) == pairs(ss,2),end)==1);
+        for iMod = [BIMVIDEO,BIMAUDIO,BIMCATEGORY]
+            for ss = 1:size(pairs,1)
+                D.X.bimflat{iNoise}{iMod}(ss) = mean(D.X.bimodal{iNoise}{iMod}(D.X.bimodal{iNoise}{iMod}(:,3) == pairs(ss,1) & D.X.bimodal{iNoise}{iMod}(:,4) == pairs(ss,2),end)==1);
+                D.X.bimflatN{iNoise}{iMod}(ss) = numel(D.X.bimodal{iNoise}{iMod}(D.X.bimodal{iNoise}{iMod}(:,3) == pairs(ss,1) & D.X.bimodal{iNoise}{iMod}(:,4) == pairs(ss,2),end)==1);
+            end
         end
        
         for iMod = [BIMVIDEO,BIMAUDIO,BIMCATEGORY]
             if ~isempty(D.X.bimflat{iNoise}{iMod})
                 % D.X.bimflatsymm{iNoise}{iMod} = [D.X.bimflat{iNoise}{iMod}(46:54), nanmean([D.X.bimflat{iNoise}{iMod}(55:end); D.X.bimflat{iNoise}{iMod}(45:-1:1)],1)];
-                D.X.bimflatsymm{iNoise}{iMod} = ...
-                    [nanmean([nanmean([D.X.bimflat{iNoise}{iMod}(46:54); D.X.bimflat{iNoise}{iMod}(54:-1:46)]); D.X.bimflat{iNoise}{iMod}(55:63); D.X.bimflat{iNoise}{iMod}(45:-1:37)],1), ...
-                    nanmean([D.X.bimflat{iNoise}{iMod}(64:72); D.X.bimflat{iNoise}{iMod}(73:81); D.X.bimflat{iNoise}{iMod}(36:-1:28); D.X.bimflat{iNoise}{iMod}(27:-1:19)],1), ...
-                    nanmean([D.X.bimflat{iNoise}{iMod}(82:90); D.X.bimflat{iNoise}{iMod}(91:99); D.X.bimflat{iNoise}{iMod}(18:-1:10); D.X.bimflat{iNoise}{iMod}(9:-1:1)],1)];
+                idxs{1} = {46:54, 54:-1:46, 55:63, 55:63, 45:-1:37, 45:-1:37};
+                idxs{2} = {64:72, 73:81, 36:-1:28, 27:-1:19};
+                idxs{3} = {82:90, 91:99, 18:-1:10, 9:-1:1};                
+                for k = 1:numel(idxs)
+                    tmp = []; Nb = zeros(1,9);
+                    for k2 = 1:numel(idxs{k})
+                        tmp = [tmp; D.X.bimflat{iNoise}{iMod}(idxs{k}{k2}) .* D.X.bimflatN{iNoise}{iMod}(idxs{k}{k2})];
+                        Nb = Nb + D.X.bimflatN{iNoise}{iMod}(idxs{k}{k2});
+                    end
+                    D.X.bimflatsymm{iNoise}{iMod}((1:9) + (k-1)*9) = nansum(tmp) ./ Nb;
+                end
+                
+                %D.X.bimflatsymm{iNoise}{iMod} = ...
+                %    [nanmean([nanmean([D.X.bimflat{iNoise}{iMod}(46:54); D.X.bimflat{iNoise}{iMod}(54:-1:46)]); D.X.bimflat{iNoise}{iMod}(55:63); D.X.bimflat{iNoise}{iMod}(45:-1:37)],1), ...
+                %    nanmean([D.X.bimflat{iNoise}{iMod}(64:72); D.X.bimflat{iNoise}{iMod}(73:81); D.X.bimflat{iNoise}{iMod}(36:-1:28); D.X.bimflat{iNoise}{iMod}(27:-1:19)],1), ...
+                %    nanmean([D.X.bimflat{iNoise}{iMod}(82:90); D.X.bimflat{iNoise}{iMod}(91:99); D.X.bimflat{iNoise}{iMod}(18:-1:10); D.X.bimflat{iNoise}{iMod}(9:-1:1)],1)];
                 D.X.bimflatasymm{iNoise}{iMod} = ...
                     [nanmean([D.X.bimflat{iNoise}{iMod}(46:54); D.X.bimflat{iNoise}{iMod}(55:63); D.X.bimflat{iNoise}{iMod}(37:45)],1), ...
                     nanmean([D.X.bimflat{iNoise}{iMod}(64:72); D.X.bimflat{iNoise}{iMod}(73:81); D.X.bimflat{iNoise}{iMod}(28:36); D.X.bimflat{iNoise}{iMod}(19:27)],1), ...

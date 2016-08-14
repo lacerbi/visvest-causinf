@@ -1,5 +1,5 @@
 %VESTBMS_GENMODELRECOVERY
-function gendata = VestBMS_genModelRecovery(task,N)
+function data = VestBMS_genModelRecovery(task,N)
 %VESTBMS_GENMODELRECOVERY Generate fake datasets for model recovery
 
 % Number of fake datasets per subject

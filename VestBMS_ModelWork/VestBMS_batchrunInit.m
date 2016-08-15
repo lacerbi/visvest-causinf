@@ -194,7 +194,7 @@ switch type
        models(models(:,15) == 2,15) = 1;     % Standard Bayesian
        models(models(:,15) == 4,15) = 3;     % Fixed criterion       
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
-              
+       
    case {201} % Bisensory Bayesian models with *constant* noise, deterministic decision making and lapse
         % THIS MODEL BELONGS TO THE FINAL MODEL SET
        
@@ -585,13 +585,33 @@ switch type
 %--------------------------------------------------------------------------
 % MODEL RECOVERY
    
+   case 20001 % Bisensory models for the localization task
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       [options,~,groupcnd] = VestBMS(options,2,0);
+       models = [5 3 1 1, 1 1 1 2, 1 1 1 1, 2 1 6 1; ...    % BPM
+            5 3 1 1, 1 1 1 2, 1 1 1 1, 2 1 3 1; ...         % CX
+            5 3 1 1, 1 1 1 2, 1 1 1 1, 2 1 5 1; ...         % FF
+            1 1 1 1, 1 1 1 2, 1 1 1 1, 2 1 6 1];            % BMP-C
+       options.jobname = 'vest_modrec_bimloc';
+       
+        N = 10;          % Ten fake datasets per subject
+        Nsubjs = 11;     % Eleven real subjects in total
+        dataids = [];    % Take only first five fake datasets per subject
+        for i = 1:size(models,1)
+            temp = bsxfun(@plus, (1:5)', ((1:Nsubjs)-1)*N) + (i-1)*(N*Nsubjs);
+            dataids = [dataids; temp(:)];
+        end
+        
+       dataids = [dataids, zeros(numel(dataids),1)];
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+
     case 21001 % Bisensory models with unity judgment
         [options,~,groupcnd] = VestBMS(options,2,0);
         models = [5 3 1 1 1 1 1 2 1 1 1 1 2 1 1 1; ... % BP
             5 3 1 1 1 1 1 3 1 1 1 1 2 1 3 1; ...       % CX
             10 10 1 1 1 1 1 3 1 1 1 1 1 1 5 4; ...     % FF
-            1 1 1 1 1 1 1 2 1 1 1 1 2 1 1 1];          % BP-C
-       
+            1 1 1 1 1 1 1 2 1 1 1 1 2 1 1 1];          % BP-C       
         options.jobname = 'vest_modrec_unity';
 
         N = 10;          % Ten fake datasets per subject
@@ -604,8 +624,7 @@ switch type
         
        dataids = [dataids, zeros(numel(dataids),1)];
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
-        
-       dataids
+               
 end
 
 % Set speed test values

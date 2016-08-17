@@ -2,6 +2,7 @@ function [ctab,bias,se,mtab,stab] = VestBMS_showModelRecovery(task,mbag)
 %VESTBMS_SHOWMODELRECOVERY Show model recovery results.
 
 if nargin < 2; mbag = []; end
+modelsummary = [];
 
 % Datasets
 Nsubjs = 11;
@@ -21,6 +22,9 @@ end
 load(dataset);
 if isempty(mbag)
     load(['.' filesep 'modelrecovery' filesep fitname]);
+end
+if isempty(modelsummary)
+    modelsummary = ModelWork_summary(mbag);
 end
 [ctab,bias,se,mtab,stab] = ModelWork_plotModelRecovery(data(dataids),mbag,modelsummary);
 

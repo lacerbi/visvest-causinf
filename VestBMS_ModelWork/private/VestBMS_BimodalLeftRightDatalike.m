@@ -67,7 +67,7 @@ gamma_causinf_unity = theta(17);
 lambda = theta(18);
 
 % Correlated prior
-priorsigmadelta = priorinfo(3);
+if numel(priorinfo) < 7; priorsigmadelta = 0; else priorsigmadelta = priorinfo(3); end
 
 % Model selection parameter
 priorc1 = priorinfo(end-3);

@@ -485,10 +485,13 @@ switch type
        models(:,11) = 1;    % BDT
        models_pm = models;
        models_pm(:,11) = 3; % Probability matching
-       models = [models; models_pm];       
+       models = [models; models_pm];
+       models(:,9) = 3;     % Free correlated prior
+       models_prior = models;
+       models_prior(:,9) = 2;   % Correlated prior from experiment
+       models = [models; models_prior];
        options.jobname = 'vest_bayes_cnst_unity';
        models(:,8) = 2;     % Fixed-mean prior
-       models(:,9) = 3;     % Free correlated prior
        models(:,13) = 2;    % Lapse
        models(models(:,15) == 3 | models(:,15) == 4,:) = [];    % Remove fixed criterion
        models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion

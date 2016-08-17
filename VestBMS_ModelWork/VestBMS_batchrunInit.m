@@ -477,7 +477,25 @@ switch type
        models(:,15) = models(:,15) - 1;     % Remove softness
        dataids = [(1:11)', zeros(11,1)];
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
-              
+       
+   case 1301 % Bisensory Bayesian models with *constant* noise and lapse and CORRELATED priors
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,[1 2]) = 1; % Constant noise
+       models(:,11) = 1;    % BDT
+       models_pm = models;
+       models_pm(:,11) = 3; % Probability matching
+       models = [models; models_pm];       
+       options.jobname = 'vest_bayes_cnst_unity';
+       models(:,8) = 2;     % Fixed-mean prior
+       models(:,9) = 3;     % Free correlated prior
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 3 | models(:,15) == 4,:) = [];    % Remove fixed criterion
+       models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion
+       models(:,15) = models(:,15) - 1;     % Remove softness
+       dataids = [(1:11)', zeros(11,1)];
+       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
+       
 %--------------------------------------------------------------------------        
 % FULL JOINT DATA FITS
 

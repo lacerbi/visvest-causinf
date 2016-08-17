@@ -27,7 +27,7 @@ persistent ntrials;
 if isempty(oldparams)
     % Prepare variables to store parameters between function calls
     for iicnd = 1:4; oldparams{iicnd} = zeros(1, 11); end
-    for iicnd = 5:7; oldparams{iicnd} = zeros(1, 24); end
+    for iicnd = 5:7; oldparams{iicnd} = zeros(1, 25); end
     oldloglikes = zeros(1, 7);
     
     % Count expected number of trial types per condition
@@ -155,8 +155,9 @@ for iicnd = 1:length(cnd)
             % Retrocompatibility
             if ~isfield(fulltheta,'pcommon_unity'); fulltheta.pcommon_unity = fulltheta.pcommon; end
             if ~isfield(fulltheta,'kcommon_unity'); fulltheta.kcommon_unity = fulltheta.kcommon; end
+            if ~isfield(fulltheta,'priorsigmadelta'); fulltheta.priorsigmadelta = 0; end
             
-            priorinfo = [fulltheta.priormu fulltheta.priorsigma ...
+            priorinfo = [fulltheta.priormu fulltheta.priorsigma fulltheta.priorsigmadelta ...
                 fulltheta.pcommon fulltheta.kcommon fulltheta.pcommon_unity fulltheta.kcommon_unity];
             
             % Random unity judgments

@@ -397,12 +397,12 @@ function [mp, outflag] = initModel(model, infostruct)
     switch model(9)
         case 1 % Standard (uncorrelated prior)
             for icnd = 1:mp.ncnd; mp.fulltheta{icnd}.priorsigmadelta = 0; end
-        %case 2 % Fixed Gaussian prior on Delta (correlated prior) 
-        %    for icnd = 1:mp.ncnd; mp.fulltheta{icnd}.priorsigmadelta = 21.7307; end
-        %case 3 % Free Gaussian prior on Delta (correlated prior)
-        %    mp.nparams(9) = 1;
-        %    pbounds{9} = priorsigma_bounds;
-        %    params{9} = {'priorsigmadelta'};            
+        case 2 % Fixed Gaussian prior on Delta (correlated prior) 
+            for icnd = 1:mp.ncnd; mp.fulltheta{icnd}.priorsigmadelta = 21.7307; end
+        case 3 % Free Gaussian prior on Delta (correlated prior)
+            mp.nparams(9) = 1;
+            pbounds{9} = priorsigma_bounds;
+            params{9} = {'priorsigmadelta'};            
         otherwise; error('Unsupported prior model (correlation).');        
     end
     

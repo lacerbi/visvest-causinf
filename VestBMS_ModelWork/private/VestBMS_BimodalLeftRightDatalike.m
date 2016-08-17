@@ -35,9 +35,6 @@ if nargin < 8 || isempty(SSCALE); SSCALE = 8; end
 if nargin < 9 || isempty(sumover); sumover = 1; end
 if nargin < 10 || isempty(randomize); randomize = 0; end
 
-% Use closed form expression for Gaussians (ignores screen bounds!)
-closedformflag = 0;
-
 % When integrating a Gaussian, go up to this SDs away
 MAXSD = 5;
 
@@ -68,6 +65,9 @@ tau_causinf = theta(16);
 
 gamma_causinf_unity = theta(17);
 lambda = theta(18);
+
+% Correlated prior
+priorsigmadelta = priorinfo(3);
 
 % Model selection parameter
 priorc1 = priorinfo(end-3);
@@ -115,6 +115,10 @@ if ( ( wlike_vis == 0 && wlike_vest == 0 ) ...
 else
     gaussianflag = 0;
     if model(4) == 6 || model(5) == 6; error('Unsupported measurement-based likelihood.'); end
+end
+
+if priorsigmadelta > 0 && ~gaussianflag
+    error('Correlated priors with eccentricity-dependent noise are not supported.');
 end
 
 % Bin centers is a column vector
@@ -198,7 +202,7 @@ if fixed_criterion_analytic
     end    
     prmat_unity(:,2) = 1 - prmat_unity(:,1);
     
-elseif ~gaussianflag || ~closedformflag
+else
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Compute likelihood for non-Gaussian likelihoods
 
@@ -291,21 +295,33 @@ elseif ~gaussianflag || ~closedformflag
     if model(15) == 1 || model(15) == 2 || model(15) == 6 % (Generalized) Bayesian posterior
         % CASE C=2, Independent likelihoods
         if gaussianflag
-            muc2_vis = xrange_vis.*priorinfo(2)^2/(sigmasprime_vis(1)^2 + priorinfo(2)^2);
-            sigmac2_vis = sigmasprime_vis(1)*priorinfo(2)/sqrt(sigmasprime_vis(1)^2 + priorinfo(2)^2);
-            muc2_vest = xrange_vest.*priorinfo(2)^2/(sigmasprime_vest(1)^2 + priorinfo(2)^2);
-            sigmac2_vest = sigmasprime_vest(1)*priorinfo(2)/sqrt(sigmasprime_vest(1)^2 + priorinfo(2)^2);            
-            int_vis = (bsxfun_normcdf(MAXRNG,muc2_vis,sigmac2_vis) - bsxfun_normcdf(-MAXRNG,muc2_vis,sigmac2_vis));
-            int_vest = (bsxfun_normcdf(MAXRNG,muc2_vest,sigmac2_vest) - bsxfun_normcdf(-MAXRNG,muc2_vest,sigmac2_vest));
-            if wraparound
-                int_vis = int_vis + (bsxfun_normcdf(MAXRNG + 360,muc2_vis,sigmac2_vis) - bsxfun_normcdf(-MAXRNG + 360,muc2_vis,sigmac2_vis)) ...
-                    + (bsxfun_normcdf(MAXRNG - 360,muc2_vis,sigmac2_vis) - bsxfun_normcdf(-MAXRNG - 360,muc2_vis,sigmac2_vis));
-                int_vest = int_vest + (bsxfun_normcdf(MAXRNG + 360,muc2_vest,sigmac2_vest) - bsxfun_normcdf(-MAXRNG + 360,muc2_vest,sigmac2_vest)) ...
-                    + (bsxfun_normcdf(MAXRNG - 360,muc2_vest,sigmac2_vest) - bsxfun_normcdf(-MAXRNG - 360,muc2_vest,sigmac2_vest));                
+            if priorsigmadelta == 0
+                muc2_vis = xrange_vis.*priorinfo(2)^2/(sigmasprime_vis(1)^2 + priorinfo(2)^2);
+                sigmac2_vis = sigmasprime_vis(1)*priorinfo(2)/sqrt(sigmasprime_vis(1)^2 + priorinfo(2)^2);
+                muc2_vest = xrange_vest.*priorinfo(2)^2/(sigmasprime_vest(1)^2 + priorinfo(2)^2);
+                sigmac2_vest = sigmasprime_vest(1)*priorinfo(2)/sqrt(sigmasprime_vest(1)^2 + priorinfo(2)^2);            
+                int_vis = (bsxfun_normcdf(MAXRNG,muc2_vis,sigmac2_vis) - bsxfun_normcdf(-MAXRNG,muc2_vis,sigmac2_vis));
+                int_vest = (bsxfun_normcdf(MAXRNG,muc2_vest,sigmac2_vest) - bsxfun_normcdf(-MAXRNG,muc2_vest,sigmac2_vest));
+                if wraparound
+                    int_vis = int_vis + (bsxfun_normcdf(MAXRNG + 360,muc2_vis,sigmac2_vis) - bsxfun_normcdf(-MAXRNG + 360,muc2_vis,sigmac2_vis)) ...
+                        + (bsxfun_normcdf(MAXRNG - 360,muc2_vis,sigmac2_vis) - bsxfun_normcdf(-MAXRNG - 360,muc2_vis,sigmac2_vis));
+                    int_vest = int_vest + (bsxfun_normcdf(MAXRNG + 360,muc2_vest,sigmac2_vest) - bsxfun_normcdf(-MAXRNG + 360,muc2_vest,sigmac2_vest)) ...
+                        + (bsxfun_normcdf(MAXRNG - 360,muc2_vest,sigmac2_vest) - bsxfun_normcdf(-MAXRNG - 360,muc2_vest,sigmac2_vest));                
+                end
+                int_vis = int_vis .* bsxfun_normpdf(xrange_vis,0,sqrt(sigmasprime_vis(1)^2 + priorinfo(2)^2));
+                int_vest = int_vest .* bsxfun_normpdf(xrange_vest,0,sqrt(sigmasprime_vest(1)^2 + priorinfo(2)^2));
+                likec2 = bsxfun(@times, int_vis, int_vest) + realmin;
+            else
+                sigma2star = 4*sigmasprime_vis(1)^2*sigmasprime_vest(1)^2 + ...
+                    priorsigmadelta^2*(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2) + ...
+                    4* priorinfo(2)^2*(priorsigmadelta^2 + sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2);
+                z2 = 4* priorinfo(2)^2 * bsxfun(@minus, xrange_vis, xrange_vest).^2 + ...
+                    bsxfun(@plus, ...
+                        bsxfun(@plus, 2* bsxfun(@times, xrange_vis, xrange_vest) * priorsigmadelta^2, ...
+                        xrange_vest.^2 * (priorsigmadelta^2 + 4 * sigmasprime_vis(1)^2)), ...
+                    xrange_vis.^2 * (priorsigmadelta^2 + 4 * sigmasprime_vest(1)^2));
+                likec2 = exp(-0.5*z2./sigma2star)./(pi*sqrt(sigma2star));
             end
-            int_vis = int_vis .* bsxfun_normpdf(xrange_vis,0,sqrt(sigmasprime_vis(1)^2 + priorinfo(2)^2));
-            int_vest = int_vest .* bsxfun_normpdf(xrange_vest,0,sqrt(sigmasprime_vest(1)^2 + priorinfo(2)^2));
-            likec2 = bsxfun(@times, int_vis, int_vest) + realmin;
         else
             likec2_vis = bsxfun(@times, priorpdf, like_vis);
             likec2 = (bsxfun(@times, qtrapz(likec2_vis, 1)*ds, qtrapz(postpdf_c2, 1)*ds)) + realmin;

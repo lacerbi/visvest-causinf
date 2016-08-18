@@ -613,9 +613,12 @@ function [mp,exitflag] = updateModel(mp,theta)
                         501 501 501 501, 401 401 401; ...       % Fine
                         501 501 501 501, 401 401 401];  % Ultra-fine
     else
-        gridPoints = [  101 101 101 101, 75 75 75; ...          % Coarse
-                        501 501 501 501, 101 101 101; ...       % Fine
-                        10001 10001 10001 10001, 125 125 125];  % Ultra-fine
+        gridPoints = [  501 501 501 501, 401 401 401; ...          % Coarse
+                        501 501 501 501, 401 401 401; ...       % Fine
+                        501 501 501 501, 401 401 401];  % Ultra-fine
+%        gridPoints = [  101 101 101 101, 75 75 75; ...          % Coarse
+%                        501 501 501 501, 101 101 101; ...       % Fine
+%                        10001 10001 10001 10001, 125 125 125];  % Ultra-fine
     end
         
     if mp.computation == round(mp.computation)  % Check if integer

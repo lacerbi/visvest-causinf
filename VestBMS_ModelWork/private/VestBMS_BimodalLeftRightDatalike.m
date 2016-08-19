@@ -227,7 +227,15 @@ else
         postpdf_c2 = bsxfun(@times, priorpdf, like_vest);
         if do_estimation
             if priorc1 < 1
-                postright_c2(1,:,:) = VestBMS_PostRight(postpdf_c2);
+                if priorsigmadelta == 0
+                    postright_c2(1,:,:) = VestBMS_PostRight(postpdf_c2);
+                else
+                    T = priorsigmadelta^2 * bsxfun(@minus, xrange_vest .* sigmasprime_vis(1)^2, xrange_vis .* sigmasprime_vest(1)^2) ...
+                        + 4*priorinfo(2)^2 * bsxfun(@plus, xrange_vest * (priorsigmadelta^2 + sigmasprime_vis(1)^2), xrange_vis * sigmasprime_vest(1)^2);
+                    S2 = (priorsigmadelta^2 * sigmasprime_vis(1)^2 + 4 * priorinfo(2)^2 * (priorsigmadelta^2 + sigmasprime_vis(1)^2)) ...
+                        * sigmasprime_vest(1)^2 * (4 * sigmasprime_vis(1)^2 * sigmasprime_vest(1)^2 + priorsigmadelta^2 * (sigmasprime_vis(1)^2 * sigmasprime_vest(1)^2) + 4 * priorinfo(2)^2 * (priorsigmadelta^2 + sigmasprime_vis(1)^2 * sigmasprime_vest(1)^2));
+                    postright_c2 = 0.5 * ( 1 + erf(T / sqrt(2*S2)) );
+                end
             else
                 postright_c2 = 0;
             end

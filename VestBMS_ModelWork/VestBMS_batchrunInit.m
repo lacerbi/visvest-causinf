@@ -202,7 +202,6 @@ switch type
        models(:,[1 2]) = 1; % Constant noise
        models(:,11) = 1;    % BDT
        models_pm = models;
-       % models_pm(:,15) = 6; % Model probability matching
        models_pm(:,11) = 3; % Response probability matching
        models = [models; models_pm];       
        options.jobname = 'vest_bayes_cnst';
@@ -224,7 +223,7 @@ switch type
        models(models(:,15) == 1 | models(:,15) == 2 | models(:,15) == 6,:) = [];     % Remove Bayesian models       
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
 
-   case {203} % Bisensory Bayesian models with *constant* noise, deterministic decision making and lapse
+   case {203} % Bisensory Bayesian models with *constant* noise, posterior model matching and lapse
         % THIS MODEL BELONGS TO THE FINAL MODEL SET
        
        [options,models,groupcnd] = VestBMS(options,2,0);
@@ -327,6 +326,45 @@ switch type
        models(models(:,15) == 1 | models(:,15) == 2 | models(:,15) == 6,:) = [];     % Remove Bayesian models       
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
+   % CORRELATED PRIOR
+       
+   case {301} % Bisensory Bayesian models with *constant* noise, deterministic decision making and lapse -- CORRELATED PRIORS
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,[1 2]) = 1; % Constant noise
+       models(:,11) = 1;    % BDT
+       options.jobname = 'vest_bayes_cnst_corr';
+       models(:,8) = 2;     % Fixed-mean prior
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 2,15) = 1;     % Standard Bayesian
+       models(models(:,15) ~= 1 & models(:,15) ~= 2 & models(:,15) ~= 6,:) = [];     % Remove non-Bayesian models       
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+       models_pm = models;
+       models_pm(:,15) = 6; % Model probability matching
+       models = [models; models_pm];
+       models(:,9) = 2; % Fixed delta prior
+       models_extra = models;
+       models_extra(:,9) = 3;  % Free delta prior
+       models = [models; models_extra];
+       
+   case {304} % Bisensory non-Bayesian models with *constant* noise, deterministic decision making and lapse, NO SIGMA -- CORRELATED PRIORS
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,9) = 2; % Fixed delta prior
+       models(:,[1 2]) = 1; % Constant noise
+       models(:,11) = 1;    % BDT
+       options.jobname = 'vest_fix_cnst_corr';
+       models(:,8) = 3;     % Fixed prior - THESE MODELS DO NOT DEPEND ON SIGMA
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 4,15) = 3;     % Fixed criterion
+       models(models(:,15) == 1 | models(:,15) == 2 | models(:,15) == 6,:) = [];     % Remove Bayesian models       
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+       models_extra = models;
+       models_extra(:,9) = 3;  % Free delta prior
+       models = [models; models_extra];
+              
     % LARGE-DISPARITY TRIALS ONLY   
        
     case 501 % Bisensory models

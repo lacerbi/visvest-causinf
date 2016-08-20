@@ -166,8 +166,9 @@ for iicnd = 1:length(cnd)
             % Retrocompatibility
             if ~isfield(fulltheta,'pcommon_unity'); fulltheta.pcommon_unity = fulltheta.pcommon; end
             if ~isfield(fulltheta,'kcommon_unity'); fulltheta.kcommon_unity = fulltheta.kcommon; end
+            if ~isfield(fulltheta,'priorsigmadelta'); fulltheta.priorsigmadelta = 0; end
 
-            priorinfo = [fulltheta.priormu fulltheta.priorsigma ...
+            priorinfo = [fulltheta.priormu fulltheta.priorsigma fulltheta.priorsigmadelta...
                 fulltheta.pcommon fulltheta.kcommon fulltheta.pcommon_unity fulltheta.kcommon_unity];
             
             % Random unity judgments

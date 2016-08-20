@@ -117,7 +117,13 @@ for iSubj = 1:length(subjs)
     
 end
 
-data = VestBMS_analytics(X,[],1,[],bincenters);
+% Analytics options
+options.robustfitflag = 1;
+options.quickplotflag = 0;
+options.bincenters = bincenters;
+options.psycholeftright = 1;
+
+data = VestBMS_analytics(X,options);
 for i = 1:length(data); data{i}.id = i; end
 display([num2str(length(data)), ' datasets successfully converted.']);
 
@@ -126,7 +132,7 @@ allX = [];
 for i = 1:length(data); allX = [allX; X{i}]; end
 
 if nargout > 1
-    bigdata = VestBMS_analytics({allX},[],1,[],bincenters);
+    bigdata = VestBMS_analytics({allX},options);
     display('Mean subject dataset converted.');
 end
 

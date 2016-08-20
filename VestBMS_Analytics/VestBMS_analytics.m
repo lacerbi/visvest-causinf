@@ -10,16 +10,26 @@
 % X(:, 9) Visual response
 % X(:, 10) Categorical response
 
-function [data bigdata] = VestBMS_analytics(datasets,discardoutliers,robustfitflag,quickplotflag,bincenters)
+function [data bigdata] = VestBMS_analytics(datasets,options)
 
-if ~exist('discardoutliers', 'var') || isempty(discardoutliers); discardoutliers = 1; end
-if ~exist('robustfitflag', 'var') || isempty(robustfitflag); robustfitflag = 0; end
-if ~exist('quickplotflag', 'var') || isempty(quickplotflag); quickplotflag = 1; end
-if ~exist('bincenters', 'var') || isempty(bincenters); bincenters = -15:5:15; end
+if nargin < 2; options = []; end
+
+% Default options
+defopts.discardoutliers = 1;        % Remove outliers data points (unused)
+defopts.robustfitflag = 0;          % Robust linear fit
+defopts.quickplotflag = 1;          % Quick plot, skip some analysis
+defopts.bincenters = [-45,-40,-35,-30:2.5:-2.5,-1.25:0.625:1.25,2.5:2.5:30,35,40,45];    % Bins
+defopts.psycholeftright = 0;        % Build left/right psychometric curves
+
+for f = fields(defopts)'
+    if ~isfield(options,f{:}) || isempty(options.(f{:}))
+        options.(f{:}) = defopts.(f{:});
+    end
+end
 
 data = [];
 bigdata = [];
-    
+
 if ischar(datasets{1})
     loadfiles = 1;
 elseif ismatrix(datasets{1})
@@ -188,30 +198,31 @@ for ii = 1:length(datasets)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Build psychometric curves for bisensory left/right (vestibular only)
     
-    fprintf(['Building psychometric curves for subject #' num2str(ii) '...']);    
-    % allStimuli =  {-45:5:-30,-27.5,-25,-22.5,-20,-17.5,-15,-12.5,-10,-7.5,-5,-2.5,0,2.5,5,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30:5:45};
-    %allStimuli =  {-45:5:-30,-27.5:2.5:-22.5,-20,-17.5,-15,-12.5,-10,-7.5,-5,-2.5,0,2.5,5,7.5,10,12.5,15,17.5,20,22.5:2.5:27.5,30:5:45};
-    allStimuli =  {-45:5:-30,-27.5:2.5:-22.5,[-20,-17.5,-15],[-12.5,-10,-7.5],[-5,-2.5],0,[2.5,5],[7.5,10,12.5],[15,17.5,20],22.5:2.5:27.5,30:5:45};
-    iMod = BIMAUDIO;
-    D.psyright_mu = NaN(3,numel(allStimuli));
-    D.psyright_sigma = NaN(3,numel(allStimuli));
-    for iNoise = 1:3    
-        if ~isempty(D.X.bimodal{iNoise}{iMod})
-            for ss = 1:numel(allStimuli)
-                idx = any(bsxfun(@eq, D.X.bimodal{iNoise}{iMod}(:,4), allStimuli{ss}),2);
-                xxx = D.X.bimodal{iNoise}{iMod}(idx,3);
-                yyy = D.X.bimodal{iNoise}{iMod}(idx,end) == 1;
-                try
-                    [D.psyright_mu(iNoise,ss),D.psyright_sigma(iNoise,ss)] = psychofit(xxx,yyy);                
-                catch
-                    % Continue
+    if options.psycholeftright    
+        fprintf(['Building psychometric curves for subject #' num2str(ii) '...']);    
+        % allStimuli =  {-45:5:-30,-27.5,-25,-22.5,-20,-17.5,-15,-12.5,-10,-7.5,-5,-2.5,0,2.5,5,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30:5:45};
+        %allStimuli =  {-45:5:-30,-27.5:2.5:-22.5,-20,-17.5,-15,-12.5,-10,-7.5,-5,-2.5,0,2.5,5,7.5,10,12.5,15,17.5,20,22.5:2.5:27.5,30:5:45};
+        allStimuli =  {-45:5:-30,-27.5:2.5:-22.5,[-20,-17.5,-15],[-12.5,-10,-7.5],[-5,-2.5],0,[2.5,5],[7.5,10,12.5],[15,17.5,20],22.5:2.5:27.5,30:5:45};
+        iMod = BIMAUDIO;
+        D.psyright_mu = NaN(3,numel(allStimuli));
+        D.psyright_sigma = NaN(3,numel(allStimuli));
+        for iNoise = 1:3    
+            if ~isempty(D.X.bimodal{iNoise}{iMod})
+                for ss = 1:numel(allStimuli)
+                    idx = any(bsxfun(@eq, D.X.bimodal{iNoise}{iMod}(:,4), allStimuli{ss}),2);
+                    xxx = D.X.bimodal{iNoise}{iMod}(idx,3);
+                    yyy = D.X.bimodal{iNoise}{iMod}(idx,end) == 1;
+                    try
+                        [D.psyright_mu(iNoise,ss),D.psyright_sigma(iNoise,ss)] = psychofit(xxx,yyy);                
+                    catch
+                        % Continue
+                    end
                 end
             end
         end
+        D.psyright_mu(abs(D.psyright_mu) > 45) = NaN;
+        fprintf(' done.\n');
     end
-    D.psyright_mu(abs(D.psyright_mu) > 45) = NaN;
-    fprintf(' done.\n');
-    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Cross-validation datasets?
@@ -220,9 +231,9 @@ for ii = 1:length(datasets)
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Bin data, mostly for visualization purposes
-    audbincenters = bincenters;    
+    audbincenters = options.bincenters;    
     % vidbincenters = -18:3:18;
-    vidbincenters = bincenters;
+    vidbincenters = options.bincenters;
     vidbinradius = diff(vidbincenters(1:2))/2;
     dispbincenters = -20:5:20;
     dispbinradius = diff(dispbincenters(1:2))/2;
@@ -232,7 +243,7 @@ for ii = 1:length(datasets)
         D.binX.unimodal{iNoise} = binbuild(D.X.unimodal{iNoise}(:, 2), D.X.unimodal{iNoise}(:, end), vidbincenters, [], TRIMOUTLIERSD);
         D.binX.unimodal{iNoise}.type = ['Unimodal video response trials, ' noiseString{iNoise}];
     end
-    D.binX.unimodal{UNIAUDIO} = binbuild(D.X.unimodal{UNIAUDIO}(:, 2), D.X.unimodal{UNIAUDIO}(:, end), audbincenters, [], TRIMOUTLIERSD, robustfitflag);
+    D.binX.unimodal{UNIAUDIO} = binbuild(D.X.unimodal{UNIAUDIO}(:, 2), D.X.unimodal{UNIAUDIO}(:, end), audbincenters, [], TRIMOUTLIERSD, options.robustfitflag);
     D.binX.unimodal{UNIAUDIO}.type = ['Unimodal audio response trials, ' noiseString{iNoise}];
         
     % Bimodal bins
@@ -300,7 +311,7 @@ for ii = 1:length(datasets)
     end
     
             
-    if ~quickplotflag
+    if ~options.quickplotflag
         D.binX.discarded = [];
         for i = 1:4; D.binX.discarded = sum(D.binX.unimodal{i}.discarded); end
         for iNoise = 1:3
@@ -359,7 +370,7 @@ for ii = 1:length(datasets)
         for iNoise = 1:3
             if ~isempty(D.X.unimodal{iNoise})
         %        D.kreX.unimodal{iNoise}.mean = ksr(D.X.unimodal{iNoise}(:, 2), D.X.unimodal{iNoise}(:, end) - D.X.unimodal{iNoise}(:, 2), [], 101, [-20, 20]);
-                D.kreX.unimodal{iNoise}.mean = ksr(D.X.unimodal{iNoise}(:, 2), D.X.unimodal{iNoise}(:, end), h, 101, [-20, 20], TRIMOUTLIERSD, robustfitflag);
+                D.kreX.unimodal{iNoise}.mean = ksr(D.X.unimodal{iNoise}(:, 2), D.X.unimodal{iNoise}(:, end), h, 101, [-20, 20], TRIMOUTLIERSD, options.robustfitflag);
                 D.kreX.unimodal{iNoise}.type = ['Unimodal video response trials, ' noiseString{iNoise}];
             end
         end
@@ -372,11 +383,11 @@ for ii = 1:length(datasets)
                 for iBin = 1:length(audbincenters)
                     if size(D.X.bimodal{iNoise}{BIMVIDEO}, 1) > 0
                         dd = D.X.bimodal{iNoise}{BIMVIDEO}(D.X.bimodal{iNoise}{BIMVIDEO}(:, 3) == audbincenters(iBin), :);                
-                        if ~isempty(dd); D.kreX.bimodal{iNoise}{iBin}.mean_vis = ksr(dd(:, 4), dd(:, 5), h, 101, [-20, 20], TRIMOUTLIERSD, robustfitflag); end
+                        if ~isempty(dd); D.kreX.bimodal{iNoise}{iBin}.mean_vis = ksr(dd(:, 4), dd(:, 5), h, 101, [-20, 20], TRIMOUTLIERSD, options.robustfitflag); end
                     end
                     if size(D.X.bimodal{iNoise}{BIMAUDIO}, 1) > 0
                         dd = D.X.bimodal{iNoise}{BIMAUDIO}(D.X.bimodal{iNoise}{BIMAUDIO}(:, 3) == audbincenters(iBin), :);                
-                        if ~isempty(dd); D.kreX.bimodal{iNoise}{iBin}.mean_aud = ksr(dd(:, 4), dd(:, 5), h, 101, [-20, 20], TRIMOUTLIERSD, robustfitflag); end
+                        if ~isempty(dd); D.kreX.bimodal{iNoise}{iBin}.mean_aud = ksr(dd(:, 4), dd(:, 5), h, 101, [-20, 20], TRIMOUTLIERSD, options.robustfitflag); end
                     end
                     % D.kreX.bimodal{iNoise}.type = ['Bimodal video response trials, ' noiseString{iNoise}];
                 end
@@ -386,12 +397,12 @@ for ii = 1:length(datasets)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Linear fit to unimodal data
     
-    if ~quickplotflag
+    if ~options.quickplotflag
         for iNoise = 1:4        
             x = D.X.unimodal{iNoise}(:, 2);
             y = D.X.unimodal{iNoise}(:, 3);
             if ~isempty(x) && ~isempty(y)
-                [a b] = linearfit(x, y, robustfitflag);
+                [a b] = linearfit(x, y, options.robustfitflag);
                 D.linearfit.unimodal{iNoise}.a = a;
                 D.linearfit.unimodal{iNoise}.stats = b;
             else

@@ -5,12 +5,6 @@ if nargin < 2 || isempty(modelfamily); modelfamily = 'bayes'; end
 if nargin < 3 || isempty(joint); joint = 0; end
 if nargin < 4 || isempty(noplot); noplot = 0; end
 
-if joint
-    fitnames = {'uni','biml','bimu','joint'};
-else
-    fitnames = {'uni','biml','bimu'};
-end
-
 switch(lower(modelfamily(1)))
     case 'b';           % Bayesian
         modeln = [2 10 6 2]; family = 'Bayesian';
@@ -18,6 +12,15 @@ switch(lower(modelfamily(1)))
         modeln = [2 8 5 1]; family = 'Fixed';
     otherwise
         error('Unknown model family. Known families are (B)ayesian and (F)ixed criterion.');
+end
+
+
+if joint
+    fitnames = {'uni','biml','bimu','joint'};
+else
+    fitnames = {'uni','biml','bimu'};
+    % modeln = modeln(2:3);
+    % fitnames = {'biml','bimu'};
 end
 
 fprintf('Compare parameters from the %s model family.\n', upper(family));
@@ -35,12 +38,16 @@ end
 for i = 1:numel(nids)
     if ~noplot; figure; end
     nid = nids(i);
-    if numel(mfits) == 4
-        minq(i,:) = ModelPlot_plotParameters('VestBMS',...
-            mfits{1}{nid},mfits{2}{nid},mfits{3}{nid},mfits{4}{nid},noplot);
-    else
-        minq(i,:) = ModelPlot_plotParameters('VestBMS',...
-            mfits{1}{nid},mfits{2}{nid},mfits{3}{nid},noplot);
+    switch numel(mfits)
+        case 2
+            minq(i,:) = ModelPlot_plotParameters('VestBMS',...
+                mfits{1}{nid},mfits{2}{nid},noplot);
+        case 3
+            minq(i,:) = ModelPlot_plotParameters('VestBMS',...
+                mfits{1}{nid},mfits{2}{nid},mfits{3}{nid},noplot);
+        case 4
+            minq(i,:) = ModelPlot_plotParameters('VestBMS',...
+                mfits{1}{nid},mfits{2}{nid},mfits{3}{nid},mfits{4}{nid},noplot);
     end
 end
 

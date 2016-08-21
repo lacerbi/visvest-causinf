@@ -21,7 +21,7 @@
  */
 
 /* Set ARGSCHECK to 0 to skip argument checking (for minor speedup) */
-#define ARGSCHECK 1
+#define ARGSCHECK 0
 
 void VestBMS_finalqtrapz( double *prmat, double *xpdf_vis, double *xpdf_vest, double *R, mwSize K, mwSize S )
 {

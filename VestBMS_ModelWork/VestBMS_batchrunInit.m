@@ -278,7 +278,7 @@ switch type
        models(models(:,15) == 1 | models(:,15) == 2 | models(:,15) == 6,:) = [];     % Remove Bayesian models       
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
-   case {213} % Bisensory Bayesian models with *constant* noise, deterministic decision making and lapse
+   case {213} % Bisensory Bayesian models with *cosine* noise, deterministic decision making and lapse
         % THIS MODEL BELONGS TO THE FINAL MODEL SET
        
        [options,models,groupcnd] = VestBMS(options,2,0);
@@ -291,7 +291,7 @@ switch type
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        models(:,15) = 6; % Model probability matching
        
-   case {214} % Bisensory non-Bayesian models with *constant* noise, deterministic decision making and lapse, NO SIGMA
+   case {214} % Bisensory non-Bayesian models with *cosine* noise, deterministic decision making and lapse, NO SIGMA
        
        [options,models,groupcnd] = VestBMS(options,2,0);
        models(:,11) = 1;    % BDT
@@ -359,7 +359,7 @@ switch type
        models(:,8) = 3;     % Fixed prior - THESE MODELS DO NOT DEPEND ON SIGMA
        models(:,13) = 2;    % Lapse
        models(models(:,15) == 4,15) = 3;     % Fixed criterion
-       models(models(:,15) == 1 | models(:,15) == 2 | models(:,15) == 6,:) = [];     % Remove Bayesian models       
+       models(models(:,15) == 1 | models(:,15) == 2 | models(:,15) == 5 | models(:,15) == 6,:) = [];     % Remove Bayesian models and forced fusion 
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        models_extra = models;
        models_extra(:,9) = 3;  % Free delta prior

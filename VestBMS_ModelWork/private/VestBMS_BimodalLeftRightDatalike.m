@@ -102,24 +102,11 @@ if model(16) == 4
 end
     
 % Use distinct criteria for localization vs unity judgement
-if (priorc1_unity ~= priorc1 || kcommon_unity ~= kcommon) && do_unity
-    distinct_criteria = 1;
-else
-    distinct_criteria = 0;
-end
+distinct_criteria = ...
+    (priorc1_unity ~= priorc1 || kcommon_unity ~= kcommon) && do_unity;
 
 % Is the internal noise Gaussian?
-if ( ( wlike_vis == 0 && wlike_vest == 0 ) ...
-        || ((model(4) == 6 || model(4) == 8)  && model(5) == 6))
-    gaussianflag = 1;
-else
-    gaussianflag = 0;
-    if model(4) == 6 || model(5) == 6; error('Unsupported measurement-based likelihood.'); end
-end
-
-if priorsigmadelta > 0 && ~gaussianflag
-    error('Correlated priors with eccentricity-dependent noise are not supported.');
-end
+gaussianflag = (wlike_vis == 0 && wlike_vest == 0);
 
 % Bin centers is a column vector
 bincenters_vis = bincenters{1};
@@ -144,13 +131,9 @@ dx_vis = xrange_vis(1, 2, 1) - xrange_vis(1, 1, 1);
 dx_vest = xrange_vest(1, 1, 2) - xrange_vest(1, 1, 1);
 
 % Wrap large noisy measurement around circle
-if MAXRNG_XMEAS >= 180 && ...
+wraparound = MAXRNG_XMEAS >= 180 && ...
         ( min(bincenters_vis-MAXSD*sigmas_vis) <= -180 || max(bincenters_vis+MAXSD*sigmas_vis) >= 180 || ...
-        min(bincenters_vest-MAXSD*sigmas_vest) <= -180 || max(bincenters_vest+MAXSD*sigmas_vest) >= 180)
-    wraparound = 1;
-else
-    wraparound = 0;
-end
+        min(bincenters_vest-MAXSD*sigmas_vest) <= -180 || max(bincenters_vest+MAXSD*sigmas_vest) >= 180);
 
 % Add random jitter to XRANGE's to estimate error in the computation of the 
 % log likelihood due to the current grid size
@@ -219,17 +202,33 @@ else
             like_vest = bsxfun_normpdf(xrange_vest,srange,sigmasprime_vest);
         end
     
-        % Compute prior, p(s)
-        priorpdf = bsxfun_normpdf(srange,priorinfo(1),priorinfo(2));
-        priorpdf = priorpdf/(qtrapz(priorpdf, 1)*ds); % Normalize prior
+        % Compute UNCORRELATED prior, p(s)
+        priorpdf1d = bsxfun_normpdf(srange,priorinfo(1),priorinfo(2));
+        priorpdf1d = priorpdf1d/(qtrapz(priorpdf1d, 1)*ds); % Normalize prior
 
         % Compute unnormalized posterior and rightward posterior (C = 2)
-        postpdf_c2 = bsxfun(@times, priorpdf, like_vest);
-        if do_estimation
+        postpdf_c2 = bsxfun(@times, priorpdf1d, like_vest);
+        
+        postright_c2 = [];
+        if priorsigmadelta > 0 && ~gaussianflag
+            % Compute CORRELATED prior, p(s_vis, s_vest), for eccentric noise         
+            srange_vis = srange(:);
+            srange_vest = srange(:)';
+            priorpdf2d = bsxfun_normpdf(0.5*srange_vest, -0.5*srange_vis + priorinfo(1), priorinfo(2)) .* ...
+                bsxfun_normpdf(srange_vest, srange_vis, priorsigmadelta);
+            priorpdf2d = priorpdf2d/(qtrapz(qtrapz(priorpdf2d,1))*ds*ds); % Normalize prior
+                        
+            if do_estimation
+                error('Estimation not supported yet.');
+            else
+                likec2 = [];
+            end
+            
+        elseif do_estimation
             if priorc1 < 1
                 if priorsigmadelta == 0
                     postright_c2(1,:,:) = VestBMS_PostRight(postpdf_c2);
-                else
+                else % CORRELATED prior with constant noise
                     T = priorsigmadelta^2 * bsxfun(@minus, xrange_vest .* sigmasprime_vis(1)^2, xrange_vis .* sigmasprime_vest(1)^2) ...
                         + 4*priorinfo(2)^2 * bsxfun(@plus, xrange_vest * (priorsigmadelta^2 + sigmasprime_vis(1)^2), xrange_vis * sigmasprime_vest(1)^2);
                     S2 = (priorsigmadelta^2 * sigmasprime_vis(1)^2 + 4 * priorinfo(2)^2 * (priorsigmadelta^2 + sigmasprime_vis(1)^2)) ...
@@ -240,8 +239,6 @@ else
             else
                 postright_c2 = 0;
             end
-        else
-            postright_c2 = [];
         end
         
         likec1 = [];
@@ -278,7 +275,8 @@ else
                 else
                     % postright_c1(1,:,:) = VestBMS_c1postqtrapz(postpdf_c2, like_vis);
                     [postright_c1(1,:,:),likec1(1,:,:)] = VestBMS_c1postandlikec1qtrapz(postpdf_c2, like_vis);
-                    likec1 = likec1 + realmin;
+                    likec1 = likec1*ds + realmin;   % ADDED DS!
+                    % likec1 = likec1 + realmin;
                 end
             else
                 postright_c1 = [];
@@ -331,8 +329,14 @@ else
                     xrange_vis.^2 * (priorsigmadelta^2 + 4 * sigmasprime_vest(1)^2));
                 likec2 = exp(-0.5*z2./sigma2star)./(pi*sqrt(sigma2star));
             end
+        elseif priorsigmadelta > 0
+            % CORRELATED prior
+            if isempty(likec2)
+                likec2(1,:,:) = VestBMS_likec2corrqtrapz(priorpdf2d,like_vis,like_vest)*ds*ds + realmin;
+            end
         else
-            likec2_vis = bsxfun(@times, priorpdf, like_vis);
+            % UNCORRELATED prior
+            likec2_vis = bsxfun(@times, priorpdf1d, like_vis);
             likec2 = (bsxfun(@times, qtrapz(likec2_vis, 1)*ds, qtrapz(postpdf_c2, 1)*ds)) + realmin;
         end
 
@@ -354,13 +358,10 @@ else
             likec1 = intc1 .* bsxfun_normpdf(xrange_vest,xrange_vis,sqrt(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2)) .* ...
                 bsxfun_normpdf(mutilde,0,sqrt(sigma2tilde + priorinfo(2)^2)) + realmin;                
         else
-            %if isempty(postpdf_c1)
             if isempty(likec1)
-                likec1(1,:,:) = VestBMS_likec1qtrapz(postpdf_c2,like_vis) + realmin;
+                likec1(1,:,:) = VestBMS_likec1qtrapz(postpdf_c2,like_vis)*ds + realmin; % ADDED DS!
+                %likec1(1,:,:) = VestBMS_likec1qtrapz(postpdf_c2,like_vis) + realmin;
             end
-            %else
-            %    likec1 = qtrapz(postpdf_c1, 1)*ds + realmin;
-            %end            
         end
     end
 
@@ -473,7 +474,7 @@ if ~fixed_criterion_analytic
             bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis + 360,alpha_rescaling_vis*sigmas_vis) ...
             + bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis - 360,alpha_rescaling_vis*sigmas_vis);        
     end
-    xpdf_vis = bsxfun(@rdivide, xpdf_vis, qtrapz(xpdf_vis, 2));
+    xpdf_vis = bsxfun(@rdivide, xpdf_vis, qtrapz(xpdf_vis, 2)); % Not multiplying by volume element
     do_symmetrize = 0;
     if do_symmetrize
         mid = ceil(0.5*size(xpdf_vis,1));
@@ -486,7 +487,7 @@ if ~fixed_criterion_analytic
             bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest + 360,alpha_rescaling_vest*sigmas_vest) ...
             + bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest - 360,alpha_rescaling_vest*sigmas_vest);        
     end    
-    xpdf_vest = bsxfun(@rdivide, xpdf_vest, qtrapz(xpdf_vest, 3));
+    xpdf_vest = bsxfun(@rdivide, xpdf_vest, qtrapz(xpdf_vest, 3));  % Not multiplying by volume element
     if do_symmetrize
         xpdf_vest(mid,1,:) = 0.5*(xpdf_vest(mid,1,:) + xpdf_vest(mid,1,end:-1:1));
     end
@@ -494,7 +495,7 @@ if ~fixed_criterion_analytic
     if do_estimation
         prmat = zeros(numel(bincenters_vest), 2);
         % prmat(:,2) = qtrapz(qtrapz(bsxfun(@times, bsxfun(@times, xpdf_vis, xpdf_vest), prright), 2), 3);
-        prmat(:,2) = VestBMS_finalqtrapz(xpdf_vis,xpdf_vest,prright);
+        prmat(:,2) = VestBMS_finalqtrapz(xpdf_vis,xpdf_vest,prright);   % Not multiplying by volume element (xpdfs did not)
         prmat(:,1) = 1 - prmat(:,2);
     else
         prmat = [];
@@ -503,7 +504,7 @@ if ~fixed_criterion_analytic
     if do_unity
         prmat_unity = zeros(numel(bincenters_vest), 2);
         % prmat_unity(:,1) = qtrapz(qtrapz(bsxfun(@times, bsxfun(@times, xpdf_vis, xpdf_vest), w1_unity), 2), 3);
-        prmat_unity(:,1) = VestBMS_finalqtrapz(xpdf_vis,xpdf_vest,w1_unity);
+        prmat_unity(:,1) = VestBMS_finalqtrapz(xpdf_vis,xpdf_vest,w1_unity);    % Not multiplying by volume element (xpdfs did not)
         prmat_unity(:,2) = 1 - prmat_unity(:,1);
     else
         prmat_unity = [];

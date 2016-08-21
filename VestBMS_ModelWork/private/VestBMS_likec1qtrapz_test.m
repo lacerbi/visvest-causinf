@@ -6,7 +6,7 @@ if nargin < 2 || isempty(K); K = 301; end
 x1 = randn(N,1,K);
 x2 = randn(N,K);
 
-tic; a = qtrapz(bsxfun(@times,x1,x2),1); t1 = toc;
+tic; a = VestBMS_likec1qtrapz_mat(x1,x2); t1 = toc;
 tic; b = VestBMS_likec1qtrapz(x1,x2); t2 = toc;
 
 fprintf('=============================\n');

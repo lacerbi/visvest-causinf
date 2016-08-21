@@ -256,7 +256,6 @@ switch type
        [options,models,groupcnd] = VestBMS(options,2,0);
        models(:,11) = 1;    % BDT
        models_pm = models;
-       % models_pm(:,15) = 6; % Model probability matching
        models_pm(:,11) = 3; % Response probability matching
        models = [models; models_pm];       
        options.jobname = 'vest_bayes';
@@ -278,7 +277,7 @@ switch type
        models(models(:,15) == 1 | models(:,15) == 2 | models(:,15) == 6,:) = [];     % Remove Bayesian models       
        dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
        
-   case {213} % Bisensory Bayesian models with *cosine* noise, deterministic decision making and lapse
+   case {213} % Bisensory Bayesian models with *cosine* noise, deterministic decision making and lapse (model probability matching)
         % THIS MODEL BELONGS TO THE FINAL MODEL SET
        
        [options,models,groupcnd] = VestBMS(options,2,0);

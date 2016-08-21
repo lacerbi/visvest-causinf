@@ -4,7 +4,6 @@ function postright = VestBMS_PostRight(postpdf)
 n = size(postpdf,1);
 pmin = realmin*n/2;
 
-% postpdf = postpdf + realmin;    % Avoid zero probability
 idx0deg = (n+1)/2; % Index of 0 deg
 
 % Use MEX files

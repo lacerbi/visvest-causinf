@@ -273,7 +273,6 @@ else
                     postright_c1(1,:,:) = intright./(intleft + intright);
                     
                 else
-                    % postright_c1(1,:,:) = VestBMS_c1postqtrapz(postpdf_c2, like_vis);
                     [postright_c1(1,:,:),likec1(1,:,:)] = VestBMS_c1postandlikec1qtrapz(postpdf_c2, like_vis);
                     likec1 = likec1*ds + realmin;   % ADDED DS!
                     % likec1 = likec1 + realmin;

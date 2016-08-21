@@ -494,7 +494,6 @@ if ~fixed_criterion_analytic
 
     if do_estimation
         prmat = zeros(numel(bincenters_vest), 2);
-        % prmat(:,2) = qtrapz(qtrapz(bsxfun(@times, bsxfun(@times, xpdf_vis, xpdf_vest), prright), 2), 3);
         prmat(:,2) = VestBMS_finalqtrapz(xpdf_vis,xpdf_vest,prright);   % Not multiplying by volume element (xpdfs did not)
         prmat(:,1) = 1 - prmat(:,2);
     else
@@ -503,7 +502,6 @@ if ~fixed_criterion_analytic
 
     if do_unity
         prmat_unity = zeros(numel(bincenters_vest), 2);
-        % prmat_unity(:,1) = qtrapz(qtrapz(bsxfun(@times, bsxfun(@times, xpdf_vis, xpdf_vest), w1_unity), 2), 3);
         prmat_unity(:,1) = VestBMS_finalqtrapz(xpdf_vis,xpdf_vest,w1_unity);    % Not multiplying by volume element (xpdfs did not)
         prmat_unity(:,2) = 1 - prmat_unity(:,1);
     else

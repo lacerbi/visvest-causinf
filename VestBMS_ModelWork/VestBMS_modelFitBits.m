@@ -74,9 +74,10 @@ switch lower(command)
                     temp = [];
                 end
                 if ~isempty(temp)
-                    mfit = ModelBag_get(temp.mbag,options.dataid,model_const,cnd);
+                    mfit = ModelBag_get(temp.mbag,options.dataid,model_const,cnd);                    
                 end
                 if ~isempty(mfit)
+                    mfit = ModelWork_loadFields('VestBMS',mfit);
                     maptheta_const = mfit.maptheta;
                     params_const = mfit.mp.params;
                     infostruct.cnd = cnd;                    

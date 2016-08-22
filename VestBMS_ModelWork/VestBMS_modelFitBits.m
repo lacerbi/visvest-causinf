@@ -77,24 +77,31 @@ switch lower(command)
                     mfit = ModelBag_get(temp.mbag,options.dataid,model_const,cnd);                    
                 end
                 if ~isempty(mfit) && ~isempty(mfit.mp)
+                    Nrep = 1e3;
                     maptheta_const = mfit.maptheta;
                     params_const = mfit.mp.params;
-                    infostruct.cnd = cnd;                    
+                    infostruct.cnd = cnd;
                     mp = VestBMS_setupModel([],[],model,infostruct);
                     params = mp.params;
-                    x0 = NaN(1,numel(params));                    
+                    x0 = NaN(Nrep,numel(params));         
+                    options
                     for i = 1:numel(params_const)
                         idx = find(strcmp(params_const{i},params),1);
-                        x0(idx) = maptheta_const(i);
+                        % Small perturbation
+                        x0(:,idx) = maptheta_const(i) + 0.1*mp.bounds.SCALE(idx)*randn(Nrep,1);
+                        if options.replica == 1; x0(1,idx) = maptheta_const(i); end
                     end
-                    % Set eccentricity parameters to 0, others to reasonable values
-                    for i = find(isnan(x0))
+                    % Set eccentricity parameters to small values, others to reasonable values
+                    for i = find(isnan(x0(1,:)))
                         if params{i}(1) == 'w'
-                            x0(i) = 0;
+                            w = 0.2*linspace(1/(Nrep),1,Nrep);
+                            x0(:,i) = w(randperm(Nrep));
+                            if options.replica == 1; x0(1,i) = 0.01; end
                         else
-                            x0(i) = 0.5*(mp.bounds.RLB(i) + mp.bounds.RUB(i));
+                            x0(:,i) = 0.5*(mp.bounds.RLB(i) + mp.bounds.RUB(i));
                         end
                     end
+                    x0 = bsxfun(@min, bsxfun(@max, x0, mp.bounds.LB), mp.bounds.UB); 
                     options.startx = x0;
                 end
                     

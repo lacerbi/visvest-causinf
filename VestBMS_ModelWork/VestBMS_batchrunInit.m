@@ -556,7 +556,7 @@ switch type
        dataids = [(1:11)', zeros(11,1)];
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
        options = setslowoptions(options); % Slow computation       
-       
+       options.loadinitfromconst = 1;
        
 %--------------------------------------------------------------------------        
 % FULL JOINT DATA FITS

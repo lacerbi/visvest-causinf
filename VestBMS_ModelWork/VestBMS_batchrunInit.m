@@ -527,7 +527,7 @@ switch type
        models_prior = models;
        models_prior(:,9) = 2;   % Correlated prior from experiment
        models = [models; models_prior];
-       options.jobname = 'vest_bayes_cnst_unity';
+       options.jobname = 'vest_bayes_corr_cnst_unity';
        models(:,8) = 2;     % Fixed-mean prior
        models(:,13) = 2;    % Lapse
        models(models(:,15) == 3 | models(:,15) == 4,:) = [];    % Remove fixed criterion
@@ -535,6 +535,28 @@ switch type
        models(:,15) = models(:,15) - 1;     % Remove softness
        dataids = [(1:11)', zeros(11,1)];
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
+
+   case 1311 % Bisensory Bayesian models with *sinusoidal* noise and lapse and CORRELATED priors
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,11) = 1;    % BDT
+       models_pm = models;
+       models_pm(:,11) = 3; % Probability matching
+       models = [models; models_pm];
+       models(:,9) = 3;     % Free correlated prior
+       models_prior = models;
+       models_prior(:,9) = 2;   % Correlated prior from experiment
+       models = [models; models_prior];
+       options.jobname = 'vest_bayes_corr_unity';
+       models(:,8) = 2;     % Fixed-mean prior
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 3 | models(:,15) == 4,:) = [];    % Remove fixed criterion
+       models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion
+       models(:,15) = models(:,15) - 1;     % Remove softness
+       dataids = [(1:11)', zeros(11,1)];
+       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
+       options = setslowoptions(options); % Slow computation       
+       
        
 %--------------------------------------------------------------------------        
 % FULL JOINT DATA FITS
@@ -760,12 +782,13 @@ return;
             options = setoptions(options,'unifullthetanumber',modid);
         end
     end
+
 end
 
-%SWITCH2SINUSOIDALMODELS switch to sinusoidal noise models
-function models = switch2sinusoidalnoise(models)
-    ff = any(bsxfun(@eq,models(:,1),[2 4 6 8]),2);
-    models(ff,1) = models(ff,1) + 1; 
-    ff = any(bsxfun(@eq,models(:,2),[2 4 6 8]),2);
-    models(ff,2) = models(ff,2) + 1; 
+function options = setslowoptions(options)
+%SETSLOWOPTIONS Set optimization options for slow computations.
+
+options = setoptions(options,'nstarts',1,1);
+options = setoptions(options,'nsobol',1,1);
+
 end

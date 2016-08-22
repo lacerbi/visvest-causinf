@@ -62,6 +62,45 @@ switch lower(command)
                 infostruct.MAXDELTA = 60;
             end
             
+            if options.loadinitfromconst && numel(options.dataid) > 1
+                model_const = model;
+                model_const([1 2]) = 1; % Constant noise model
+                
+                if options.dataid(2) == 4
+                    temp = load('VestBMS_starting_points_unity');
+                elseif options.dataid(2) == 8
+                    temp = load('VestBMS_starting_points_localization');
+                else
+                    temp = [];
+                end
+                if ~isempty(temp)
+                    mfit = ModelBag_get(temp.mbag,options.dataid,model_const,cnd);
+                end
+                if ~isempty(mfit)
+                    maptheta_const = mfit.maptheta;
+                    params_const = mfit.mp.params;
+                    infostruct.cnd = cnd;                    
+                    mp = VestBMS_setupModel([],[],model,infostruct);
+                    params = mp.params;
+                    x0 = NaN(1,numel(params));                    
+                    for i = 1:numel(params_const)
+                        idx = find(strcmp(params_const{i},params),1);
+                        x0(idx) = maptheta_const(i);
+                    end
+                    % Set eccentricity parameters to 0, others to reasonable values
+                    for i = find(isnan(x0))
+                        if params{i}(1) == 'w'
+                            x0(i) = 0;
+                        else
+                            x0(i) = 0.5*(mp.bounds.RLB(i) + mp.bounds.RUB(i));
+                        end
+                    end
+                    options.startx = x0;
+                end
+                    
+            end
+            
+            
             % Parameter structure from unimodal data
             if ~isempty(options.unifulltheta)
                 infostruct.unifulltheta = options.unifulltheta;

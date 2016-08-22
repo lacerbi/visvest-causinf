@@ -609,16 +609,20 @@ function [mp,exitflag] = updateModel(mp,theta)
     end
     
     if model(9) == 1 % Uncorrelated priors, everything is easy
-        gridPoints = [  501 501 501 501, 401 401 401; ...          % Coarse
+        gridPoints = [  501 501 501 501, 401 401 401; ...       % Coarse
                         501 501 501 501, 401 401 401; ...       % Fine
-                        501 501 501 501, 401 401 401];  % Ultra-fine
-    else
-        gridPoints = [  501 501 501 501, 401 401 401; ...          % Coarse
+                        501 501 501 501, 401 401 401];          % Ultra-fine
+   
+    elseif model(9) > 1 ... % Correlated priors but with constant noise
+            && model(1) == 1 && model(2) == 1
+        gridPoints = [  501 501 501 501, 401 401 401; ...       % Coarse
                         501 501 501 501, 401 401 401; ...       % Fine
-                        501 501 501 501, 401 401 401];  % Ultra-fine
-%        gridPoints = [  101 101 101 101, 75 75 75; ...          % Coarse
-%                        501 501 501 501, 101 101 101; ...       % Fine
-%                        10001 10001 10001 10001, 125 125 125];  % Ultra-fine
+                        501 501 501 501, 401 401 401];          % Ultra-fine
+    else                    % Correlated prior with eccentric noise
+        nslow = 301;
+        gridPoints = [  501 501 501 501, nslow nslow nslow; ...       % Coarse
+                        501 501 501 501, nslow nslow nslow; ...       % Fine
+                        501 501 501 501, nslow nslow nslow];          % Ultra-fine
     end
         
     if mp.computation == round(mp.computation)  % Check if integer

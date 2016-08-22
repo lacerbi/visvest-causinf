@@ -39,16 +39,16 @@ void VestBMS_likec2corrqtrapz( double *likec2, double *priorpdf2d, double *like_
             like_vest = vest0 + l*S;            
             priorpdf2d = p0;
 
-            // case j = 0
+            /* case j = 0 */
             like_vis = vis0 + k*S;
             sum = 0.25 * *(priorpdf2d++) * *(like_vis++);
             for (i=1; i<S-1; i++) {
                 sum += 0.5 * *(priorpdf2d++) * *(like_vis++);
             }
             sum += 0.25 * *(priorpdf2d++) * *(like_vis++);
-            SUM = sum * *(like_vest++);     // Initialize SUM
+            SUM = sum * *(like_vest++);     /* Initialize SUM */
             
-            // case j = 1 to S-2            
+            /* case j = 1 to S-2 */            
             for (j=1; j<S-1; j++) {
                 like_vis = vis0 + k*S;
                 
@@ -60,7 +60,7 @@ void VestBMS_likec2corrqtrapz( double *likec2, double *priorpdf2d, double *like_
                 SUM += sum * *(like_vest++);
             }
 
-            // case j = S-1
+            /* case j = S-1 */
             like_vis = vis0 + k*S;
             sum = 0.25 * *(priorpdf2d++) * *(like_vis++);
             for (i=1; i<S-1; i++) {

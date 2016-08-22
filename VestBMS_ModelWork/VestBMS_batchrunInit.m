@@ -555,7 +555,9 @@ switch type
        models(:,15) = models(:,15) - 1;     % Remove softness
        dataids = [(1:11)', zeros(11,1)];
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
-       options = setslowoptions(options); % Slow computation       
+       options = setoptions(options,'nstarts',5,1);
+       options = setoptions(options,'nsobol',1,1);
+       %options = setslowoptions(options); % Slow computation       
        options.loadinitfromconst = 1;
        
 %--------------------------------------------------------------------------        
@@ -788,7 +790,5 @@ end
 function options = setslowoptions(options)
 %SETSLOWOPTIONS Set optimization options for slow computations.
 
-options = setoptions(options,'nstarts',1,1);
-options = setoptions(options,'nsobol',1,1);
 
 end

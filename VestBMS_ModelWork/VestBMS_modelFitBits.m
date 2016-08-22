@@ -83,8 +83,7 @@ switch lower(command)
                     infostruct.cnd = cnd;
                     mp = VestBMS_setupModel([],[],model,infostruct);
                     params = mp.params;
-                    x0 = NaN(Nrep,numel(params));         
-                    options
+                    x0 = NaN(Nrep,numel(params));
                     for i = 1:numel(params_const)
                         idx = find(strcmp(params_const{i},params),1);
                         % Small perturbation

@@ -363,7 +363,49 @@ switch type
        models_extra = models;
        models_extra(:,9) = 3;  % Free delta prior
        models = [models; models_extra];
-              
+
+   case {311} % Bisensory Bayesian models with *sinusoidal* noise, deterministic decision making and lapse -- CORRELATED PRIORS
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,11) = 1;    % BDT
+       options.jobname = 'vest_bayes_corr';
+       models(:,8) = 2;     % Fixed-mean prior
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 2,15) = 1;     % Standard Bayesian
+       models(models(:,15) ~= 1 & models(:,15) ~= 2 & models(:,15) ~= 6,:) = [];     % Remove non-Bayesian models       
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+       models_pm = models;
+       models_pm(:,15) = 6; % Model probability matching
+       models = [models; models_pm];
+       models(:,9) = 2; % Fixed delta prior
+       models_extra = models;
+       models_extra(:,9) = 3;  % Free delta prior
+       models = [models; models_extra];
+       options = setoptions(options,'nstarts',5,1);
+       options = setoptions(options,'nsobol',1,1);
+       options.loadinitfromconst = 1;
+       
+   case {314} % Bisensory non-Bayesian models with *sinusoidal* noise, deterministic decision making and lapse, NO SIGMA -- CORRELATED PRIORS
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,9) = 2; % Fixed delta prior
+       models(:,11) = 1;    % BDT
+       options.jobname = 'vest_fix_corr';
+       models(:,8) = 3;     % Fixed prior - THESE MODELS DO NOT DEPEND ON SIGMA
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 4,15) = 3;     % Fixed criterion
+       models(models(:,15) == 1 | models(:,15) == 2 | models(:,15) == 5 | models(:,15) == 6,:) = [];     % Remove Bayesian models and forced fusion 
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+       models_extra = models;
+       models_extra(:,9) = 3;  % Free delta prior
+       models = [models; models_extra];
+       options = setoptions(options,'nstarts',5,1);
+       options = setoptions(options,'nsobol',1,1);
+       options.loadinitfromconst = 1;
+       
+       
     % LARGE-DISPARITY TRIALS ONLY   
        
     case 501 % Bisensory models

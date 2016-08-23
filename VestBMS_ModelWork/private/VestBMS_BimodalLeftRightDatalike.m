@@ -219,7 +219,8 @@ else
             priorpdf2d = priorpdf2d/(qtrapz(qtrapz(priorpdf2d,1))*ds*ds); % Normalize prior
                         
             if do_estimation
-                error('Estimation not supported yet.');
+                [postright_c2(1,:,:),likec2(1,:,:)] = VestBMS_c2corrpostandlikec2qtrapz(priorpdf2d,like_vis,like_vest);
+                likec2 = likec2*ds*ds + realmin;
             else
                 likec2 = [];
             end

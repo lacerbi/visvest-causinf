@@ -29,6 +29,7 @@
 /* Number of discrete pairs of stimuli */
 #define NSTIM 99
 
+/* Summed term */
 #define SUMMAND(N) (*(priorpdf2d+(N)) * *(like_vis+(N)) * *(like_vest+(N)))
 
 /* Hardcoded version much faster */

@@ -66,13 +66,16 @@ lambda = theta(18);
 % Correlated prior
 priorsigmadelta = priorinfo(3);
 
+if priorsigmadelta == 0
+    error('Discrete prior should have nonzero PRIORSIGMADELTA.');
+end
+
 % Model selection parameter
 priorc1 = priorinfo(end-3);
 kcommon = priorinfo(end-2);
 priorc1_unity = priorinfo(end-1);
 kcommon_unity = priorinfo(end);
 
-MAXRNG = maxranges(1);
 MAXRNG_XMEAS = 180;
 
 % Trials to be computed
@@ -101,10 +104,6 @@ end
 % Use distinct criteria for localization vs unity judgement
 distinct_criteria = ...
     (priorc1_unity ~= priorc1 || kcommon_unity ~= kcommon) && do_unity;
-
-% Is the internal noise Gaussian?
-gaussianflag = (wlike_vis == 0 && wlike_vest == 0);
-gaussianflag = 0;
 
 % Bin centers is a column vector
 bincenters_vis = bincenters{1};
@@ -149,17 +148,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Compute likelihood; variable range depends on type
 
-if gaussianflag
-    likerange_vis = xrange_vis; 
-    likerange_vest = xrange_vest; 
-else
-    srange_vis = bincenters_vis(:);
-    srange_vest = bincenters_vest(:);
-    likerange_vis = bincenters_vis(:); 
-    likerange_vest = bincenters_vest(:);
-    srange_uni = unique(0.5*(srange_vis + srange_vest));
-    likerange_uni = srange_uni;
-end
+srange_vis = bincenters_vis(:);
+srange_vest = bincenters_vest(:);
+likerange_vis = bincenters_vis(:); 
+likerange_vest = bincenters_vest(:);
+srange_uni = unique(0.5*(srange_vis + srange_vest));
+likerange_uni = srange_uni;
 
 % Compute sensory likelihood std for vision
 if wlike_vis >= 0; likemodel_vis = 'A'; else likemodel_vis = 'C'; end
@@ -179,114 +173,58 @@ else
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Compute likelihood for non-Gaussian likelihoods
 
-    if do_estimation || ~gaussianflag
-        if wraparound
-            like_vis = bsxfun_normpdf(xrange_vis,srange_vis,sigmasprime_vis) + ...
-                bsxfun_normpdf(xrange_vis,srange_vis + 360,sigmasprime_vis) + ...
-                bsxfun_normpdf(xrange_vis,srange_vis - 360,sigmasprime_vis);
-            like_vest = bsxfun_normpdf(xrange_vest,srange_vest,sigmasprime_vest) + ...
-                bsxfun_normpdf(xrange_vest,srange_vest + 360,sigmasprime_vest) + ...
-                bsxfun_normpdf(xrange_vest,srange_vest - 360,sigmasprime_vest);
-            like_vis_uni = bsxfun_normpdf(xrange_vis,srange_uni,sigmasprime_vis_uni) + ...
-                bsxfun_normpdf(xrange_vis,srange_uni + 360,sigmasprime_vis_uni) + ...
-                bsxfun_normpdf(xrange_vis,srange_uni - 360,sigmasprime_vis_uni);
-            like_vest_uni = bsxfun_normpdf(xrange_vest,srange_uni,sigmasprime_vest_uni) + ...
-                bsxfun_normpdf(xrange_vest,srange_uni + 360,sigmasprime_vest_uni) + ...
-                bsxfun_normpdf(xrange_vest,srange_uni - 360,sigmasprime_vest_uni);
+    if wraparound
+        like_vis = bsxfun_normpdf(xrange_vis,srange_vis,sigmasprime_vis) + ...
+            bsxfun_normpdf(xrange_vis,srange_vis + 360,sigmasprime_vis) + ...
+            bsxfun_normpdf(xrange_vis,srange_vis - 360,sigmasprime_vis);
+        like_vest = bsxfun_normpdf(xrange_vest,srange_vest,sigmasprime_vest) + ...
+            bsxfun_normpdf(xrange_vest,srange_vest + 360,sigmasprime_vest) + ...
+            bsxfun_normpdf(xrange_vest,srange_vest - 360,sigmasprime_vest);
+        like_vis_uni = bsxfun_normpdf(xrange_vis,srange_uni,sigmasprime_vis_uni) + ...
+            bsxfun_normpdf(xrange_vis,srange_uni + 360,sigmasprime_vis_uni) + ...
+            bsxfun_normpdf(xrange_vis,srange_uni - 360,sigmasprime_vis_uni);
+        like_vest_uni = bsxfun_normpdf(xrange_vest,srange_uni,sigmasprime_vest_uni) + ...
+            bsxfun_normpdf(xrange_vest,srange_uni + 360,sigmasprime_vest_uni) + ...
+            bsxfun_normpdf(xrange_vest,srange_uni - 360,sigmasprime_vest_uni);
+    else
+        like_vis = bsxfun_normpdf(xrange_vis,srange_vis,sigmasprime_vis);
+        like_vest = bsxfun_normpdf(xrange_vest,srange_vest,sigmasprime_vest);
+        like_vis_uni = bsxfun_normpdf(xrange_vis,srange_uni,sigmasprime_vis_uni);
+        like_vest_uni = bsxfun_normpdf(xrange_vest,srange_uni,sigmasprime_vest_uni);
+    end
+
+    % Compute UNCORRELATED prior, p(s)
+    priorpdf1d = bsxfun_normpdf(srange_uni,priorinfo(1),priorinfo(2));
+    priorpdf1d = priorpdf1d/sum(priorpdf1d, 1); % Normalize discrete prior
+
+    % Compute unnormalized posterior and rightward posterior (C = 2)
+    postpdf_c2_uni = bsxfun(@times, priorpdf1d, like_vest_uni);
+
+    postright_c2 = [];
+    % Compute CORRELATED prior, p(s_vis, s_vest), for eccentric noise
+    priorpdf2d = bsxfun_normpdf(0.5*srange_vest, -0.5*srange_vis + priorinfo(1), priorinfo(2)); 
+    if isfinite(priorsigmadelta)
+        priorpdf2d = priorpdf2d .* bsxfun_normpdf(srange_vest, srange_vis, priorsigmadelta);
+    end
+    priorpdf2d = priorpdf2d/sum(priorpdf2d); % Normalize discrete prior
+
+    likec1 = [];
+    likec2 = [];
+    if do_estimation
+        [postright_c2(1,:,:),likec2(1,:,:)] = VestBMS_c2corrpostandlikec2sum_discrete(priorpdf2d,like_vis,like_vest,srange_vest);
+        likec2 = likec2 + realmin; % No volume element, discrete distributions
+    end
+
+    % Compute unnormalized posterior and rightward posterior (C = 1)
+    if priorc1 > 0
+        if do_estimation
+            [postright_c1(1,:,:),likec1(1,:,:)] = VestBMS_c1postandlikec1sum_discrete(postpdf_c2_uni, like_vis_uni, srange_uni);
+            likec1 = likec1 + realmin;
         else
-            like_vis = bsxfun_normpdf(xrange_vis,srange_vis,sigmasprime_vis);
-            like_vest = bsxfun_normpdf(xrange_vest,srange_vest,sigmasprime_vest);
-            like_vis_uni = bsxfun_normpdf(xrange_vis,srange_uni,sigmasprime_vis_uni);
-            like_vest_uni = bsxfun_normpdf(xrange_vest,srange_uni,sigmasprime_vest_uni);
-        end
-    
-        % Compute UNCORRELATED prior, p(s)
-        priorpdf1d = bsxfun_normpdf(srange_uni,priorinfo(1),priorinfo(2));
-        priorpdf1d = priorpdf1d/sum(priorpdf1d, 1); % Normalize discrete prior
-
-        % Compute unnormalized posterior and rightward posterior (C = 2)
-        postpdf_c2_uni = bsxfun(@times, priorpdf1d, like_vest_uni);
-        
-        postright_c2 = [];
-        if priorsigmadelta > 0 && ~gaussianflag
-            % Compute CORRELATED prior, p(s_vis, s_vest), for eccentric noise
-            priorpdf2d = bsxfun_normpdf(0.5*srange_vest, -0.5*srange_vis + priorinfo(1), priorinfo(2)); 
-            if isfinite(priorsigmadelta)
-                priorpdf2d = priorpdf2d .* bsxfun_normpdf(srange_vest, srange_vis, priorsigmadelta);
-            end
-            priorpdf2d = priorpdf2d/sum(priorpdf2d); % Normalize discrete prior
-
-            if do_estimation
-                [postright_c2(1,:,:),likec2(1,:,:)] = VestBMS_c2corrpostandlikec2sum_discrete(priorpdf2d,like_vis,like_vest,srange_vest);
-                likec2 = likec2 + realmin; % No volume element, discrete distributions
-            else
-                likec2 = [];
-            end
-            
-        elseif do_estimation
-            if priorc1 < 1
-                if priorsigmadelta == 0
-                    error('Discrete prior should be correlated.');
-                else % CORRELATED prior with constant noise
-                    error('Analytic prior not supported yet.');
-                    T = priorsigmadelta^2 * bsxfun(@minus, xrange_vest .* sigmasprime_vis(1)^2, xrange_vis .* sigmasprime_vest(1)^2) ...
-                        + 4*priorinfo(2)^2 * bsxfun(@plus, xrange_vest * (priorsigmadelta^2 + sigmasprime_vis(1)^2), xrange_vis * sigmasprime_vest(1)^2);
-                    S2 = (priorsigmadelta^2 * sigmasprime_vis(1)^2 + 4 * priorinfo(2)^2 * (priorsigmadelta^2 + sigmasprime_vis(1)^2)) ...
-                        * sigmasprime_vest(1)^2 * (4 * sigmasprime_vis(1)^2 * sigmasprime_vest(1)^2 + ...
-                        priorsigmadelta^2 * (sigmasprime_vis(1)^2 * sigmasprime_vest(1)^2) + 4 * priorinfo(2)^2 * (priorsigmadelta^2 + sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2));
-                    postright_c2 = 0.5 * ( 1 + erf(T / sqrt(2*S2)) );
-                end
-            else
-                postright_c2 = 0;
-            end
-        end
-        
-        likec1 = [];
-
-        % Compute unnormalized posterior and rightward posterior (C = 1)
-        if priorc1 > 0
-            if do_estimation
-                if gaussianflag
-                    error('Analytic prior not supported yet.');
-                    
-                    mutilde = bsxfun(@plus, xrange_vest.*sigmasprime_vis(1)^2, xrange_vis.*sigmasprime_vest(1)^2)./(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2);
-                    sigma2tilde = sigmasprime_vis(1)^2.*sigmasprime_vest(1)^2./(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2);
-                    mucdf = mutilde.*priorinfo(2)^2./(sigma2tilde + priorinfo(2)^2);
-                    sigmacdf = sqrt(sigma2tilde./(sigma2tilde + priorinfo(2)^2))*priorinfo(2);
-                    
-                    intright = (bsxfun_normcdf(MAXRNG, mucdf, sigmacdf) - bsxfun_normcdf(0, mucdf, sigmacdf));
-                    if wraparound
-                        intright = intright + ...
-                            (bsxfun_normcdf(MAXRNG + 360, mucdf, sigmacdf) - bsxfun_normcdf(360, mucdf, sigmacdf)) + ...
-                            (bsxfun_normcdf(MAXRNG - 360, mucdf, sigmacdf) - bsxfun_normcdf(-360, mucdf, sigmacdf));
-                    end
-                    %likeright = intright .* bsxfun_normpdf(xrange_vest,xrange_vis,sqrt(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2)) .* ...
-                    %    bsxfun_normpdf(mutilde,0,sqrt(sigma2tilde + priorinfo(2)^2)) + realmin;                
-                    
-                    intleft = (bsxfun_normcdf(0, mucdf, sigmacdf) - bsxfun_normcdf(-MAXRNG, mucdf, sigmacdf));
-                    if wraparound
-                        intleft = intleft + ...
-                            (bsxfun_normcdf(360, mucdf, sigmacdf) - bsxfun_normcdf(-MAXRNG + 360, mucdf, sigmacdf)) + ...
-                            (bsxfun_normcdf(-360, mucdf, sigmacdf) - bsxfun_normcdf(-MAXRNG - 360, mucdf, sigmacdf));
-                    end            
-                    %likeleft = intleft .* bsxfun_normpdf(xrange_vest,xrange_vis,sqrt(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2)) .* ...
-                    %    bsxfun_normpdf(mutilde,0,sqrt(sigma2tilde + priorinfo(2)^2)) + realmin;
-                    
-                    postright_c1(1,:,:) = intright./(intleft + intright);
-                    
-                else
-                    [postright_c1(1,:,:),likec1(1,:,:)] = VestBMS_c1postandlikec1sum_discrete(postpdf_c2_uni, like_vis_uni, srange_uni);
-                    likec1 = likec1 + realmin;
-                end
-            else
-                postright_c1 = [];
-            end
-        else
-            postright_c1 = 0;
+            postright_c1 = [];
         end
     else
-        postright_c1 = [];
-        postright_c2 = [];
+        postright_c1 = 0;
     end
 
     if nargout > 1 
@@ -300,51 +238,14 @@ else
     % Compute marginal likelihood, p(x_vis, x_vest|C)
 
     if model(15) == 1 || model(15) == 2 || model(15) == 6 % (Generalized) Bayesian posterior
-        % CASE C=2, Independent likelihoods
-        if gaussianflag
-            if priorsigmadelta == 0
-                error('Discrete prior should be correlated.');
-            else
-                error('Analytic prior not supported yet.');
-                sigma2star = 4*sigmasprime_vis(1)^2*sigmasprime_vest(1)^2 + ...
-                    priorsigmadelta^2*(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2) + ...
-                    4* priorinfo(2)^2*(priorsigmadelta^2 + sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2);
-                z2 = 4* priorinfo(2)^2 * bsxfun(@minus, xrange_vis, xrange_vest).^2 + ...
-                    bsxfun(@plus, ...
-                        bsxfun(@plus, 2* bsxfun(@times, xrange_vis, xrange_vest) * priorsigmadelta^2, ...
-                        xrange_vest.^2 * (priorsigmadelta^2 + 4 * sigmasprime_vis(1)^2)), ...
-                    xrange_vis.^2 * (priorsigmadelta^2 + 4 * sigmasprime_vest(1)^2));
-                likec2 = exp(-0.5*z2./sigma2star)./(pi*sqrt(sigma2star));
-            end
-        elseif priorsigmadelta > 0
-            % CORRELATED prior
-            if isempty(likec2)
-                likec2(1,:,:) = VestBMS_likec2corrsum_discrete(priorpdf2d,like_vis,like_vest) + realmin;
-            end
-        else
-            error('Discrete prior should be correlated.');
+        % CASE C=2, Independent likelihoods, DISCRETE CORRELATED prior
+        if isempty(likec2)
+            likec2(1,:,:) = VestBMS_likec2corrsum_discrete(priorpdf2d,like_vis,like_vest) + realmin;
         end
         
-        % CASE C=1, Likelihoods are not independent
-        if gaussianflag
-            if priorinfo(1) ~= 0; error('Prior bias not supported yet.'); end
-            error('Analytic prior not supported yet.');
-            mutilde = bsxfun(@plus, xrange_vest.*sigmasprime_vis(1)^2, xrange_vis.*sigmasprime_vest(1)^2)./(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2);
-            sigma2tilde = sigmasprime_vis(1)^2.*sigmasprime_vest(1)^2./(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2);
-            mucdf = mutilde.*priorinfo(2)^2./(sigma2tilde + priorinfo(2)^2);
-            sigmacdf = sqrt(sigma2tilde./(sigma2tilde + priorinfo(2)^2))*priorinfo(2);
-            intc1 = (bsxfun_normcdf(MAXRNG, mucdf, sigmacdf) - bsxfun_normcdf(-MAXRNG, mucdf, sigmacdf));
-            if wraparound
-                intc1 = intc1 + ...
-                    (bsxfun_normcdf(MAXRNG + 360, mucdf, sigmacdf) - bsxfun_normcdf(-MAXRNG + 360, mucdf, sigmacdf)) + ...
-                    (bsxfun_normcdf(MAXRNG - 360, mucdf, sigmacdf) - bsxfun_normcdf(-MAXRNG - 360, mucdf, sigmacdf));
-            end
-            likec1 = intc1 .* bsxfun_normpdf(xrange_vest,xrange_vis,sqrt(sigmasprime_vis(1)^2 + sigmasprime_vest(1)^2)) .* ...
-                bsxfun_normpdf(mutilde,0,sqrt(sigma2tilde + priorinfo(2)^2)) + realmin;                
-        else
-            if isempty(likec1)
-                likec1(1,:,:) = VestBMS_likec1sum_discrete(postpdf_c2_uni,like_vis_uni) + realmin;
-            end
+        % CASE C=1, Unity likelihoods
+        if isempty(likec1)
+            likec1(1,:,:) = VestBMS_likec1sum_discrete(postpdf_c2_uni,like_vis_uni) + realmin;
         end
     end
 

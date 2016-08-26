@@ -24,6 +24,12 @@
 /* Set ARGSCHECK to 0 to skip argument checking (for minor speedup) */
 #define ARGSCHECK 1
 
+/* Number of discrete pairs of stimuli */
+#define NSTIM 99
+
+/* Summed term */
+#define SUMMAND(N) (*(priorpdf2d+(N)) * *(like_vis+(N)) * *(like_vest+(N)))
+
 void VestBMS_likec2corrsum_discrete( double *likec2, double *priorpdf2d, double *like_vis, double *like_vest, mwSize K, mwSize S )
 {
     mwSize i,j,k;
@@ -34,15 +40,22 @@ void VestBMS_likec2corrsum_discrete( double *likec2, double *priorpdf2d, double 
     vis0 = like_vis;
     vest0 = like_vest;
     
-    for (j=0; j < K; j++) {
-        for (k = 0; k < K; k++) {
+    for (k = 0; k < K; k++) {
+        for (j=0; j < K; j++) {
             priorpdf2d = p0;
             like_vis = vis0 + j*S;
             like_vest = vest0 + k*S;
-            sum = 0.;            
-            for (i = 0; i < S; i++)
-                sum += *(priorpdf2d++) * *(like_vis++) * *(like_vest++);            
-            likec2[k*K+j] = sum;            
+            
+            if ( S == NSTIM ) {
+                *(likec2++) = SUMMAND(0) + SUMMAND(1) + SUMMAND(2) + SUMMAND(3) + SUMMAND(4) + SUMMAND(5) + SUMMAND(6) + SUMMAND(7) + SUMMAND(8) + SUMMAND(9) + SUMMAND(10) + SUMMAND(11) + SUMMAND(12) + SUMMAND(13) + SUMMAND(14) + SUMMAND(15) + SUMMAND(16) + SUMMAND(17) + SUMMAND(18) + SUMMAND(19) + SUMMAND(20) + SUMMAND(21) + SUMMAND(22) + SUMMAND(23) + SUMMAND(24) + SUMMAND(25) + SUMMAND(26) + SUMMAND(27) + SUMMAND(28) + SUMMAND(29) + SUMMAND(30) + SUMMAND(31) + SUMMAND(32) + SUMMAND(33) + SUMMAND(34) + SUMMAND(35) + SUMMAND(36) + SUMMAND(37) + SUMMAND(38) + SUMMAND(39) + SUMMAND(40) + SUMMAND(41) + SUMMAND(42) + SUMMAND(43) + SUMMAND(44) + SUMMAND(45) + SUMMAND(46) + SUMMAND(47) + SUMMAND(48) + SUMMAND(49) + SUMMAND(50) + SUMMAND(51) + SUMMAND(52) + SUMMAND(53) + SUMMAND(54) + SUMMAND(55) + SUMMAND(56) + SUMMAND(57) + SUMMAND(58) + SUMMAND(59) + SUMMAND(60) + SUMMAND(61) + SUMMAND(62) + SUMMAND(63) + SUMMAND(64) + SUMMAND(65) + SUMMAND(66) + SUMMAND(67) + SUMMAND(68) + SUMMAND(69) + SUMMAND(70) + SUMMAND(71) + SUMMAND(72) + SUMMAND(73) + SUMMAND(74) + SUMMAND(75) + SUMMAND(76) + SUMMAND(77) + SUMMAND(78) + SUMMAND(79) + SUMMAND(80) + SUMMAND(81) + SUMMAND(82) + SUMMAND(83) + SUMMAND(84) + SUMMAND(85) + SUMMAND(86) + SUMMAND(87) + SUMMAND(88) + SUMMAND(89) + SUMMAND(90) + SUMMAND(91) + SUMMAND(92) + SUMMAND(93) + SUMMAND(94) + SUMMAND(95) + SUMMAND(96) + SUMMAND(97) + SUMMAND(98);
+            }
+            else {
+                sum = 0.;
+                for (i = 0; i < S; i++)
+                    sum += *(priorpdf2d++) * *(like_vis++) * *(like_vest++);
+                *(likec2++) = sum;
+            }
+            
         }
     }
     

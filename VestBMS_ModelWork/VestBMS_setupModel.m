@@ -53,7 +53,9 @@
 % 4 From unimodal data
 %--------------------------------------------------------------------------
 % MODEL(9) Prior model (correlated or not):
-% 1 Uncorrelated prior, 2 Correlated prior (fixed), 3 Correlated prior (free).
+% 1 Uncorrelated prior, 
+%  2 Correlated prior (fixed), 3 Correlated prior (free), 
+%  4 Discrete correlated prior (fixed), 5 Discrete correlated prior (free)
 %--------------------------------------------------------------------------
 % MODEL(10) Loss model (unused):
 % 1 Unused
@@ -402,6 +404,12 @@ function [mp, outflag] = initModel(model, infostruct)
         case 3 % Free Gaussian prior on Delta (correlated prior)
             mp.nparams(9) = 1;
             pbounds{9} = priorsigma_bounds;
+            params{9} = {'priorsigmadelta'};
+        case 4 % Uniform prior on discrete stimuli (discrete correlated prior) 
+            for icnd = 1:mp.ncnd; mp.fulltheta{icnd}.priorsigmadelta = Inf; end
+        case 5 % Free Gaussian prior on discrete stimuli (discrete correlated prior)
+            mp.nparams(9) = 1;
+            pbounds{9} = priorsigma_bounds;
             params{9} = {'priorsigmadelta'};            
         otherwise; error('Unsupported prior model (correlation).');        
     end
@@ -613,8 +621,9 @@ function [mp,exitflag] = updateModel(mp,theta)
                         501 501 501 501, 401 401 401; ...       % Fine
                         501 501 501 501, 401 401 401];          % Ultra-fine
    
-    elseif model(9) > 1 ... % Correlated priors but with constant noise
-            && model(1) == 1 && model(2) == 1
+                    % Correlated priors but with constant noise or discrete stimuli
+    elseif ( model(9) > 1 && model(1) == 1 && model(2) == 1 ) || ...
+            ( model(9) == 4 || model(9) == 5 )
         gridPoints = [  501 501 501 501, 401 401 401; ...       % Coarse
                         501 501 501 501, 401 401 401; ...       % Fine
                         501 501 501 501, 401 401 401];          % Ultra-fine
@@ -862,7 +871,7 @@ function [mp,exitflag] = updateModel(mp,theta)
 
         % Prior model, part two
         switch model(9)
-            case 3 % Correlated free Gaussian (1 params)
+            case {3,5} % Correlated or discrete free Gaussian (1 params)
                 updateparams(icnd, 9, {'exp'});
         end
         

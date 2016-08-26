@@ -1,5 +1,5 @@
 function [postright_c1,likec1] = VestBMS_c1postandlikec1qtrapz(postpdf_c2,like_vis)
-%VESTBMS_C1POSTANDLIKEC1QTRAPZ Multiple computations for C=1 (uncorrelated) 
+%VESTBMS_C1POSTANDLIKEC1QTRAPZ Multiple computations for C=1 (uncorrelated)
 %
 % ================ INPUT VARIABLES ====================
 % POSTPDF_C2: p(s) * p(x_vest|s). [S-by-1-by-K] (double)

@@ -405,6 +405,27 @@ switch type
        options = setoptions(options,'nsobol',1,1);
        options.loadinitfromconst = 1;
        
+      
+    % CORRELATED PRIOR AND DISCRETE STIMULI
+    
+   case {411} % Bisensory Bayesian models with *sinusoidal* noise, deterministic decision making and lapse -- CORRELATED DISCRETE PRIORS
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,11) = 1;    % BDT
+       options.jobname = 'vest_bayes_disc';
+       models(:,8) = 2;     % Fixed-mean prior
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 2,15) = 1;     % Standard Bayesian
+       models(models(:,15) ~= 1 & models(:,15) ~= 2 & models(:,15) ~= 6,:) = [];     % Remove non-Bayesian models       
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+       models_pm = models;
+       models_pm(:,15) = 6; % Model probability matching
+       models = [models; models_pm];
+       models(:,9) = 4; % Uniform discrete prior on DELTA
+       models_extra = models;
+       models_extra(:,9) = 5;  % Free discrete Gaussian prior on DELTA
+       models = [models; models_extra];
        
     % LARGE-DISPARITY TRIALS ONLY   
        

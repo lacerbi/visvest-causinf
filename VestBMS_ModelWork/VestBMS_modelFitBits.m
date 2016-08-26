@@ -88,14 +88,14 @@ switch lower(command)
                         idx = find(strcmp(params_const{i},params),1);
                         % Small perturbation
                         x0(:,idx) = maptheta_const(i) + 0.1*mp.bounds.SCALE(idx)*randn(Nrep,1);
-                        if options.replica == 1; x0(1,idx) = maptheta_const(i); end
+                        if isfield(options,'replica') && options.replica == 1; x0(1,idx) = maptheta_const(i); end
                     end
                     % Set eccentricity parameters to small values, others to reasonable values
                     for i = find(isnan(x0(1,:)))
                         if params{i}(1) == 'w'
                             w = 0.2*linspace(1/(Nrep),1,Nrep);
                             x0(:,i) = w(randperm(Nrep));
-                            if options.replica == 1; x0(1,i) = 0.01; end
+                            if isfield(options,'replica') && options.replica == 1; x0(1,i) = 0.01; end
                         else
                             x0(:,i) = 0.5*(mp.bounds.RLB(i) + mp.bounds.RUB(i));
                         end

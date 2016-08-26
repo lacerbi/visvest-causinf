@@ -44,7 +44,7 @@ void VestBMS_c2corrpostandlikec2qtrapz( double *postright_c2, double *likec2, do
     
     for (k=0; k<K; k++) {
         for (l=0; l<K; l++) {
-            like_vest = vest0 + l*S;            
+            like_vest = vest0 + l*S;         
             priorpdf2d = p0;
 
             /* case j = 0 */

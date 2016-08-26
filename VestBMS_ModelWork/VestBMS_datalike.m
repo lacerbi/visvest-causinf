@@ -190,8 +190,13 @@ for iicnd = 1:length(cnd)
                     loglikes(cnd(iicnd)) = oldloglikes(cnd(iicnd));
                     trialloglikes(starttrials(cnd(iicnd)):starttrials(cnd(iicnd)+1)-1) = oldtrialloglikes(starttrials(cnd(iicnd)):starttrials(cnd(iicnd)+1)-1);                    
                 else
-                    templike = VestBMS_BimodalLeftRightDatalike(...
-                        X.bimbins{iNoise},model,theta,priorinfo,infostruct.bincenters_bim,maxranges,mp.XGRID(cnd(iicnd)),SSCALE,0,randomize);
+                    if model(9) == 4 || model(9) == 5
+                        templike = VestBMS_BimodalLeftRightDatalike_discrete(...
+                            X.bimbins{iNoise},model,theta,priorinfo,infostruct.bincenters_bim,maxranges,mp.XGRID(cnd(iicnd)),SSCALE,0,randomize);                        
+                    else
+                        templike = VestBMS_BimodalLeftRightDatalike(...
+                            X.bimbins{iNoise},model,theta,priorinfo,infostruct.bincenters_bim,maxranges,mp.XGRID(cnd(iicnd)),SSCALE,0,randomize);
+                    end
                     % templike = log(templike);
                     loglikes(cnd(iicnd)) = sum(templike);                                        
                     trialloglikes(starttrials(cnd(iicnd)):starttrials(cnd(iicnd)+1)-1) = templike;

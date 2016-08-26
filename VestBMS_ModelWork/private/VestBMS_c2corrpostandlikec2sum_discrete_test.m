@@ -7,15 +7,16 @@
 TolErr = sqrt(eps);	% Maximum error tolerance per array element
 
 % Define array sizes (choose reasonable values)
+S = 99;
 K = 100;
-S = 150;
 
 % Randomly initialize input variables
 % (or write here alternative initializations)
 priorpdf2d = 10*rand([S,1]);	%PRIORPDF2D: 2d prior over s_vis, s_vest.
 like_vis = 10*rand([S,K]);	%LIKE_VIS: visual likelihood.
 like_vest = 10*rand([S,1,K]);	%LIKE_VEST: vestibular likelihood.
-srange_vest = 10*rand([S,1]);	%SRANGE_VEST: vestibular stimuli.
+%SRANGE_VEST: vestibular stimuli.
+srange_vest = [-5,0,5,10,15,20,25,30,35,40,45,-15,-10,-5,0,5,10,15,20,25,30,35,-20,-15,-10,-5,0,5,10,15,20,25,30,-22.5,-17.5,-12.5,-7.5,-2.5,2.5,7.5,12.5,17.5,22.5,27.5,-25,-20,-15,-10,-5,0,5,10,15,20,25,-27.5,-22.5,-17.5,-12.5,-7.5,-2.5,2.5,7.5,12.5,17.5,22.5,-30,-25,-20,-15,-10,-5,0,5,10,15,20,-35,-30,-25,-20,-15,-10,-5,0,5,10,15,-45,-40,-35,-30,-25,-20,-15,-10,-5,0,5]';
 
 fprintf('================================================\n');
 fprintf('Testing VestBMS_c2corrpostandlikec2sum_discrete:\n');

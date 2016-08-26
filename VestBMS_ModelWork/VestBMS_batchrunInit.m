@@ -622,6 +622,27 @@ switch type
        options = setoptions(options,'nsobol',1,1);
        %options = setslowoptions(options); % Slow computation       
        options.loadinitfromconst = 1;
+
+   case 1411 % Bisensory Bayesian models with *sinusoidal* noise and lapse and DISCRETE CORRELATED priors
+        
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models(:,11) = 1;    % BDT
+       models_pm = models;
+       models_pm(:,11) = 3; % Probability matching
+       models = [models; models_pm];
+       models(:,9) = 5;     % Free correlated prior
+       models_prior = models;
+       models_prior(:,9) = 4;   % Correlated prior from experiment
+       models = [models; models_prior];
+       options.jobname = 'vest_bayes_disc_unity';
+       models(:,8) = 2;     % Fixed-mean prior
+       models(:,13) = 2;    % Lapse
+       models(models(:,15) == 3 | models(:,15) == 4,:) = [];    % Remove fixed criterion
+       models(models(:,15) == 5,:) = [];    % Remove probabilistic fusion
+       models(:,15) = models(:,15) - 1;     % Remove softness
+       dataids = [(1:11)', zeros(11,1)];
+       dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
+       
        
 %--------------------------------------------------------------------------        
 % FULL JOINT DATA FITS

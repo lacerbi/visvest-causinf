@@ -27,11 +27,10 @@
 % d = data{1, 3}; model = [6 3 5 2 1]; theta = [0.03 -0.055, 0.06 0.14, 10 0 0.2];
 % ParticleCatch_datalike(d.niceData, d.priormix, model, theta, d.priorsinglegauss)
 %
-function varargout = VestBMS_BimodalLeftRightDatalike_discrete(X,model,theta,priorinfo,bincenters,maxranges,XGRID,SSCALE,sumover,randomize)
+function varargout = VestBMS_BimodalLeftRightDatalike_discrete(X,model,theta,priorinfo,bincenters,maxranges,XGRID,sumover,randomize)
 
 % Program constants
 if nargin < 7 || isempty(XGRID) || isnan(XGRID); XGRID = 401; end
-if nargin < 8 || isempty(SSCALE); SSCALE = 8; end
 if nargin < 9 || isempty(sumover); sumover = 1; end
 if nargin < 10 || isempty(randomize); randomize = 0; end
 
@@ -140,9 +139,6 @@ if randomize
     xrange_vis = xrange_vis + dx_vis*(rand()-0.5);
     xrange_vest = xrange_vest + dx_vest*(rand()-0.5);
 end
-
-%srange = linspace(-MAXRNG, MAXRNG, MAXRNG*SSCALE*2 + 1)';
-%ds = diff(srange(1:2));
 
 if nargout > 1 % Save variables for debug or data generation
     extras.xrange_vis = xrange_vis;
@@ -323,7 +319,7 @@ else
         elseif priorsigmadelta > 0
             % CORRELATED prior
             if isempty(likec2)
-                likec2(1,:,:) = VestBMS_likec2corrsum_discrete(priorpdf2d,like_vis,like_vest,srange_vest) + realmin;
+                likec2(1,:,:) = VestBMS_likec2corrsum_discrete(priorpdf2d,like_vis,like_vest) + realmin;
             end
         else
             error('Discrete prior should be correlated.');
@@ -347,7 +343,7 @@ else
                 bsxfun_normpdf(mutilde,0,sqrt(sigma2tilde + priorinfo(2)^2)) + realmin;                
         else
             if isempty(likec1)
-                likec1(1,:,:) = VestBMS_likec1sum_discrete(postpdf_c2_uni,like_vis_uni, srange_uni) + realmin;
+                likec1(1,:,:) = VestBMS_likec1sum_discrete(postpdf_c2_uni,like_vis_uni) + realmin;
             end
         end
     end

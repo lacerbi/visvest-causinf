@@ -194,7 +194,11 @@ else
     end
 
     % Compute UNCORRELATED prior, p(s)
-    priorpdf1d = bsxfun_normpdf(srange_uni,priorinfo(1),priorinfo(2));
+    if isfinite(priorinfo(2))
+        priorpdf1d = bsxfun_normpdf(srange_uni,priorinfo(1),priorinfo(2));
+    else
+        priorpdf1d = ones(size(srange_uni));
+    end
     priorpdf1d = priorpdf1d/sum(priorpdf1d, 1); % Normalize discrete prior
 
     % Compute unnormalized posterior and rightward posterior (C = 2)
@@ -202,7 +206,11 @@ else
 
     postright_c2 = [];
     % Compute CORRELATED prior, p(s_vis, s_vest), for eccentric noise
-    priorpdf2d = bsxfun_normpdf(0.5*srange_vest, -0.5*srange_vis + priorinfo(1), priorinfo(2)); 
+    if isfinite(priorinfo(2))
+        priorpdf2d = bsxfun_normpdf(0.5*srange_vest, -0.5*srange_vis + priorinfo(1), priorinfo(2)); 
+    else
+        priorpdf2d = ones(size(srange_vest));        
+    end
     if isfinite(priorsigmadelta)
         priorpdf2d = priorpdf2d .* bsxfun_normpdf(srange_vest, srange_vis, priorsigmadelta);
     end

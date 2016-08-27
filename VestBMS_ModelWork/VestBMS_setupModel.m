@@ -50,7 +50,7 @@
 %--------------------------------------------------------------------------
 % MODEL(8) Prior model:
 % 1 Free Gaussian (2 params), 2 Centered Gaussian (1 param), 3 Fixed Gaussian
-% 4 From unimodal data
+% 4 From unimodal data, 5 Fixed uniform
 %--------------------------------------------------------------------------
 % MODEL(9) Prior model (correlated or not):
 % 1 Uncorrelated prior, 
@@ -392,6 +392,8 @@ function [mp, outflag] = initModel(model, infostruct)
         case 3 % Fixed Gaussian
         case 4 % From unimodal data
             readParametersFromUnimodalData({'priormu', 'priorsigma'}); 
+        case 5 % Fixed uniform
+            for icnd = 1:mp.ncnd; mp.fulltheta{icnd}.priorsigma = Inf; end
         otherwise; error('Unsupported prior model.');
     end
         
@@ -866,7 +868,6 @@ function [mp,exitflag] = updateModel(mp,theta)
                 updateparams(icnd, 8, {'id', 'exp'});
             case 2 % Centered Gaussian (1 params)
                 updateparams(icnd, 8, {'exp'});
-            case 3 % Fixed Gaussian
         end
 
         % Prior model, part two

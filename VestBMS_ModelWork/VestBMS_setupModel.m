@@ -76,6 +76,7 @@
 % 1 Bayesian posterior (1 param), Generalized Bayesian posterior (2 params),
 % 3 Criterion on x (1 param), 4 Soft criterion on x (2 params),
 % 5 Forced fusion, 6 Bayesian posterior probability matching (1 param)
+% 7 Correlated prior only
 %--------------------------------------------------------------------------
 % MODEL(16) Report of unity model (Bimodal only, unused):
 % 1 Standard, 2 Separate criterion parameter (1 param), 
@@ -492,9 +493,9 @@ function [mp, outflag] = initModel(model, infostruct)
                 pbounds{15} = [kcommon_bounds; kcommon_bounds];
                 params{15} = {'kcommon','tau_causinf'};
             case 5 % Forced fusion
-                for icnd = 1:mp.ncnd
-                    mp.fulltheta{icnd}.pcommon = 1;
-                end
+                for icnd = 1:mp.ncnd; mp.fulltheta{icnd}.pcommon = 1; end
+            case 7 % Correlated prior only
+                for icnd = 1:mp.ncnd; mp.fulltheta{icnd}.pcommon = 0; end
         end
         % For these models criteria are not shared across conditions
         %if model(15) == 3 || model(15) == 5 || model(15) == 7

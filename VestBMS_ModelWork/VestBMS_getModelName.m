@@ -19,6 +19,8 @@ switch model(9)
     case 1
     case 2; string = [string 'u'];
     case 3; string = [string 'U'];
+    case 4; string = [string 'd'];
+    case 5; string = [string 'D'];
 end
 
 switch model(1)

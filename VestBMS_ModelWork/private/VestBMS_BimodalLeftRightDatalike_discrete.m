@@ -297,7 +297,9 @@ else
 
         case 5 % Forced fusion
             w1 = 1;
-
+            
+        case 7 % Correlated prior only
+            w1 = 0;
     end
 
     % NaNs can emerge as 0/0 - assume that the response becomes random

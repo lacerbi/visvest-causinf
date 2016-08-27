@@ -480,6 +480,22 @@ switch type
        models_extra = models;
        models_extra(:,9) = 5;  % Free delta prior
        models = [models; models_extra];
+
+   case {415} % Bisensory Bayesian models with *sinusoidal* noise, deterministic decision making and lapse -- CORRELATED DISCRETE PRIORS ONLY
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       [options,models,groupcnd] = VestBMS(options,2,0);
+       models = models(1,:);
+       models(:,11) = 1;    % BDT
+       options.jobname = 'vest_bayes_disconly';
+       models(:,8) = 2;     % Fixed-mean prior
+       models(:,13) = 2;    % Lapse
+       models(:,15) = 7;    % Correlated prior only
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials
+       models(:,9) = 4; % Uniform discrete prior on DELTA
+       models_extra = models;
+       models_extra(:,9) = 5;  % Free discrete Gaussian prior on DELTA
+       models = [models; models_extra];
        
     % LARGE-DISPARITY TRIALS ONLY   
        
@@ -717,8 +733,7 @@ switch type
        models(:,15) = models(:,15) - 1;     % Remove softness
        dataids = [(1:11)', zeros(11,1)];
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
-       
-       
+              
 %--------------------------------------------------------------------------        
 % FULL JOINT DATA FITS
 

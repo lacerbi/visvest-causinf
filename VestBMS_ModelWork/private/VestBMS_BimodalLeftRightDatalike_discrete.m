@@ -29,6 +29,8 @@
 %
 function varargout = VestBMS_BimodalLeftRightDatalike_discrete(X,model,theta,priorinfo,bincenters,XGRID,sumover,randomize)
 
+DEBUG = 0;  % Plot some debug graphs
+
 % Program constants
 if nargin < 7 || isempty(XGRID) || isnan(XGRID); XGRID = 401; end
 if nargin < 9 || isempty(sumover); sumover = 1; end
@@ -192,20 +194,31 @@ else
         like_vis_uni = bsxfun_normpdf(xrange_vis,srange_uni,sigmasprime_vis_uni);
         like_vest_uni = bsxfun_normpdf(xrange_vest,srange_uni,sigmasprime_vest_uni);
     end
+    
+    %----------------------------------------------------------------------
+    if DEBUG % Plot likelihoods
+        subplot(1,2,1); hold off;
+        for i = 1:3:numel(srange_vis); plot(xrange_vis(:),like_vis(i,:),'k','LineWidth',1); hold on; end
+        subplot(1,2,2); hold off;
+        for i = 1:3:numel(srange_vest); plot(xrange_vest(:),like_vest(i,:),'k','LineWidth',1); hold on; end
+        stdfig();
+        pause
+    end
+    %----------------------------------------------------------------------
 
-    % Compute UNCORRELATED prior, p(s)
+    % Compute C=1 prior, p(s_bar)
     if isfinite(priorinfo(2))
         priorpdf1d = bsxfun_normpdf(srange_uni,priorinfo(1),priorinfo(2));
     else
         priorpdf1d = ones(size(srange_uni));
     end
     priorpdf1d = priorpdf1d/sum(priorpdf1d, 1); % Normalize discrete prior
-
+        
     % Compute unnormalized posterior and rightward posterior (C = 2)
     postpdf_c2_uni = bsxfun(@times, priorpdf1d, like_vest_uni);
 
     postright_c2 = [];
-    % Compute CORRELATED prior, p(s_vis, s_vest), for eccentric noise
+    % Compute C=2 prior, p(s_vis, s_vest), for eccentric noise
     if isfinite(priorinfo(2))
         priorpdf2d = bsxfun_normpdf(0.5*srange_vest, -0.5*srange_vis + priorinfo(1), priorinfo(2)); 
     else
@@ -216,6 +229,19 @@ else
     end
     priorpdf2d = priorpdf2d/sum(priorpdf2d); % Normalize discrete prior
 
+    %----------------------------------------------------------------------
+    if DEBUG % Plot priors
+        subplot(1,2,1); hold off;
+        plot(srange_uni,priorpdf1d,'k','LineWidth',1);
+        text(0.1,0.95,['\sigma = ' num2str(priorinfo(2),'%.1f') ' deg'],'Units','Normalized','FontSize',14);
+        subplot(1,2,2); hold off;
+        plot(priorpdf2d,'k','LineWidth',1);
+        text(0.1,0.95,['\Delta = ' num2str(priorsigmadelta,'%.1f') ' deg'],'Units','Normalized','FontSize',14);
+        stdfig();
+        pause
+    end
+    %----------------------------------------------------------------------
+    
     likec1 = [];
     likec2 = [];
     if do_estimation
@@ -298,8 +324,6 @@ else
         case 5 % Forced fusion
             w1 = 1;
             
-        case 7 % Correlated prior only
-            w1 = 0;
     end
 
     % NaNs can emerge as 0/0 - assume that the response becomes random
@@ -336,7 +360,6 @@ else
         else
             w1_unity = 1./(1 + ((1-w1)./w1).^beta_softmax);
         end
-        % w1_unity = w1;
     elseif do_unity
         w1_unity = double(w1_unity);    % Convert from logical to double
         if beta_softmax ~= 1
@@ -385,6 +408,17 @@ if ~fixed_criterion_analytic
     if do_symmetrize
         xpdf_vest(mid,1,:) = 0.5*(xpdf_vest(mid,1,:) + xpdf_vest(mid,1,end:-1:1));
     end
+    
+    %----------------------------------------------------------------------
+    if DEBUG % Plot noisy measurements distributions
+        subplot(1,2,1); hold off;
+        for i = 1:3:numel(bincenters_vis); plot(xrange_vis(:),xpdf_vis(i,:),'k','LineWidth',1); hold on; end
+        subplot(1,2,2); hold off;
+        for i = 1:3:numel(bincenters_vest); plot(xrange_vest(:),xpdf_vest(i,:),'k','LineWidth',1); hold on; end
+        stdfig();
+        pause
+    end
+    %----------------------------------------------------------------------    
 
     if do_estimation
         prmat = zeros(numel(bincenters_vest), 2);

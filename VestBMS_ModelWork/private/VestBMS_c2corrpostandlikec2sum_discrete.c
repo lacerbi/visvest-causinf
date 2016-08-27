@@ -26,8 +26,8 @@
 /* Set ARGSCHECK to 0 to skip argument checking (for minor speedup) */
 #define ARGSCHECK 1
 
-/* Number of discrete pairs of stimuli */
-#define NSTIM 99
+/* Number of discrete pairs of DISTINCT stimuli */
+#define NSTIM 88
 
 /* Summed term */
 #define SUMMAND(N) (*(priorpdf2d+(N)) * *(like_vis+(N)) * *(like_vest+(N)))
@@ -52,9 +52,14 @@ void VestBMS_c2corrpostandlikec2sum_discrete_hardcoded( double *postright_c2, do
             like_vis = vis0 + j*S;
             like_vest = vest0 + k*S;
             
-            suml = SUMMAND(0) + SUMMAND(11) + SUMMAND(12) + SUMMAND(13) + SUMMAND(22) + SUMMAND(23) + SUMMAND(24) + SUMMAND(25) + SUMMAND(33) + SUMMAND(34) + SUMMAND(35) + SUMMAND(36) + SUMMAND(37) + SUMMAND(44) + SUMMAND(45) + SUMMAND(46) + SUMMAND(47) + SUMMAND(48) + SUMMAND(55) + SUMMAND(56) + SUMMAND(57) + SUMMAND(58) + SUMMAND(59) + SUMMAND(60) + SUMMAND(66) + SUMMAND(67) + SUMMAND(68) + SUMMAND(69) + SUMMAND(70) + SUMMAND(71) + SUMMAND(77) + SUMMAND(78) + SUMMAND(79) + SUMMAND(80) + SUMMAND(81) + SUMMAND(82) + SUMMAND(83) + SUMMAND(88) + SUMMAND(89) + SUMMAND(90) + SUMMAND(91) + SUMMAND(92) + SUMMAND(93) + SUMMAND(94) + SUMMAND(95) + SUMMAND(96);
+            suml = SUMMAND(0) + SUMMAND(11) + SUMMAND(12) + SUMMAND(13) + SUMMAND(22) + SUMMAND(23) + SUMMAND(24) + SUMMAND(25) + SUMMAND(33) + SUMMAND(34) + SUMMAND(35) + SUMMAND(36) + SUMMAND(37) + SUMMAND(44) + SUMMAND(45) + SUMMAND(46) + SUMMAND(47) + SUMMAND(48) + SUMMAND(49) + SUMMAND(55) + SUMMAND(56) + SUMMAND(57) + SUMMAND(58) + SUMMAND(59) + SUMMAND(60) + SUMMAND(66) + SUMMAND(67) + SUMMAND(68) + SUMMAND(69) + SUMMAND(70) + SUMMAND(71) + SUMMAND(72) + SUMMAND(77) + SUMMAND(78) + SUMMAND(79) + SUMMAND(80) + SUMMAND(81) + SUMMAND(82) + SUMMAND(83) + SUMMAND(84) + SUMMAND(85);
+            sumr = SUMMAND(2) + SUMMAND(3) + SUMMAND(4) + SUMMAND(5) + SUMMAND(6) + SUMMAND(7) + SUMMAND(8) + SUMMAND(9) + SUMMAND(10) + SUMMAND(15) + SUMMAND(16) + SUMMAND(17) + SUMMAND(18) + SUMMAND(19) + SUMMAND(20) + SUMMAND(21) + SUMMAND(27) + SUMMAND(28) + SUMMAND(29) + SUMMAND(30) + SUMMAND(31) + SUMMAND(32) + SUMMAND(38) + SUMMAND(39) + SUMMAND(40) + SUMMAND(41) + SUMMAND(42) + SUMMAND(43) + SUMMAND(50) + SUMMAND(51) + SUMMAND(52) + SUMMAND(53) + SUMMAND(54) + SUMMAND(62) + SUMMAND(63) + SUMMAND(64) + SUMMAND(65) + SUMMAND(74) + SUMMAND(75) + SUMMAND(76) + SUMMAND(87);
+            sum0 = SUMMAND(1) + SUMMAND(14) + SUMMAND(26) + SUMMAND(61) + SUMMAND(73) + SUMMAND(86);
+            
+            /* This sum incorrectly contains terms with C=1 
+             suml = SUMMAND(0) + SUMMAND(11) + SUMMAND(12) + SUMMAND(13) + SUMMAND(22) + SUMMAND(23) + SUMMAND(24) + SUMMAND(25) + SUMMAND(33) + SUMMAND(34) + SUMMAND(35) + SUMMAND(36) + SUMMAND(37) + SUMMAND(44) + SUMMAND(45) + SUMMAND(46) + SUMMAND(47) + SUMMAND(48) + SUMMAND(55) + SUMMAND(56) + SUMMAND(57) + SUMMAND(58) + SUMMAND(59) + SUMMAND(60) + SUMMAND(66) + SUMMAND(67) + SUMMAND(68) + SUMMAND(69) + SUMMAND(70) + SUMMAND(71) + SUMMAND(77) + SUMMAND(78) + SUMMAND(79) + SUMMAND(80) + SUMMAND(81) + SUMMAND(82) + SUMMAND(83) + SUMMAND(88) + SUMMAND(89) + SUMMAND(90) + SUMMAND(91) + SUMMAND(92) + SUMMAND(93) + SUMMAND(94) + SUMMAND(95) + SUMMAND(96);
             sumr = SUMMAND(2) + SUMMAND(3) + SUMMAND(4) + SUMMAND(5) + SUMMAND(6) + SUMMAND(7) + SUMMAND(8) + SUMMAND(9) + SUMMAND(10) + SUMMAND(15) + SUMMAND(16) + SUMMAND(17) + SUMMAND(18) + SUMMAND(19) + SUMMAND(20) + SUMMAND(21) + SUMMAND(27) + SUMMAND(28) + SUMMAND(29) + SUMMAND(30) + SUMMAND(31) + SUMMAND(32) + SUMMAND(38) + SUMMAND(39) + SUMMAND(40) + SUMMAND(41) + SUMMAND(42) + SUMMAND(43) + SUMMAND(50) + SUMMAND(51) + SUMMAND(52) + SUMMAND(53) + SUMMAND(54) + SUMMAND(61) + SUMMAND(62) + SUMMAND(63) + SUMMAND(64) + SUMMAND(65) + SUMMAND(73) + SUMMAND(74) + SUMMAND(75) + SUMMAND(76) + SUMMAND(85) + SUMMAND(86) + SUMMAND(87) + SUMMAND(98);
-            sum0 = SUMMAND(1) + SUMMAND(14) + SUMMAND(26) + SUMMAND(49) + SUMMAND(72) + SUMMAND(84) + SUMMAND(97);
+            sum0 = SUMMAND(1) + SUMMAND(14) + SUMMAND(26) + SUMMAND(49) + SUMMAND(72) + SUMMAND(84) + SUMMAND(97); */
             
             likec2[k*K+j] = suml + sumr + sum0 + pmin;
             postright_c2[k*K+j] = (sumr + 0.5*sum0 + pmin) / likec2[k*K+j];            
@@ -119,7 +124,11 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
 #endif /* ( ARGSCHECK!=0 ) */ 
 	mwSize i, K, S;
     /* Hardcoded stimulus vector */
-    double srange[NSTIM] = {-5.,0.,5.,10.,15.,20.,25.,30.,35.,40.,45.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.,35.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.,-22.5,-17.5,-12.5,-7.5,-2.5,2.5,7.5,12.5,17.5,22.5,27.5,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,-27.5,-22.5,-17.5,-12.5,-7.5,-2.5,2.5,7.5,12.5,17.5,22.5,-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,-35.,-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,-45.,-40.,-35.,-30.,-25.,-20.,-15.,-10.,-5.,0.,5.};    
+    double srange[NSTIM] = {-5.0,0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,45.0,-15.0,-10.0,-5.0,0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,-20.0,-15.0,-10.0,-5.0,0.0,5.0,10.0,15.0,20.0,25.0,30.0,-22.5,-17.5,-12.5,-7.5,-2.5,2.5,7.5,12.5,17.5,22.5,27.5,-27.5,-22.5,-17.5,-12.5,-7.5,-2.5,2.5,7.5,12.5,17.5,22.5,-30.0,-25.0,-20.0,-15.0,-10.0,-5.0,0.0,5.0,10.0,15.0,20.0,-35.0,-30.0,-25.0,-20.0,-15.0,-10.0,-5.0,0.0,5.0,10.0,15.0,-45.0,-40.0,-35.0,-30.0,-25.0,-20.0,-15.0,-10.0,-5.0,0.0,5.0};
+
+    /* This vector erroneously contained also the C=1 cases */
+    /* double srange[NSTIM] = {-5.,0.,5.,10.,15.,20.,25.,30.,35.,40.,45.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.,35.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.,-22.5,-17.5,-12.5,-7.5,-2.5,2.5,7.5,12.5,17.5,22.5,27.5,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,-27.5,-22.5,-17.5,-12.5,-7.5,-2.5,2.5,7.5,12.5,17.5,22.5,-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,-35.,-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,-45.,-40.,-35.,-30.,-25.,-20.,-15.,-10.,-5.,0.,5.}; */
+
     int hard;
 
 	/*  check for proper number of arguments */

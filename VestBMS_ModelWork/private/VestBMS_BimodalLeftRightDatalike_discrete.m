@@ -27,7 +27,7 @@
 % d = data{1, 3}; model = [6 3 5 2 1]; theta = [0.03 -0.055, 0.06 0.14, 10 0 0.2];
 % ParticleCatch_datalike(d.niceData, d.priormix, model, theta, d.priorsinglegauss)
 %
-function varargout = VestBMS_BimodalLeftRightDatalike_discrete(X,model,theta,priorinfo,bincenters,maxranges,XGRID,sumover,randomize)
+function varargout = VestBMS_BimodalLeftRightDatalike_discrete(X,model,theta,priorinfo,bincenters,XGRID,sumover,randomize)
 
 % Program constants
 if nargin < 7 || isempty(XGRID) || isnan(XGRID); XGRID = 401; end
@@ -150,20 +150,20 @@ end
 
 srange_vis = bincenters_vis(:);
 srange_vest = bincenters_vest(:);
-likerange_vis = bincenters_vis(:); 
-likerange_vest = bincenters_vest(:);
-srange_uni = unique(0.5*(srange_vis + srange_vest));
-likerange_uni = srange_uni;
+idx = srange_vis == srange_vest;
+srange_uni = srange_vis(idx);           % C = 1
+srange_vis = srange_vis(~idx);          % C = 2, vis
+srange_vest = srange_vest(~idx);        % C = 2, vest
 
 % Compute sensory likelihood std for vision
 if wlike_vis >= 0; likemodel_vis = 'A'; else likemodel_vis = 'C'; end
-sigmasprime_vis = VestBMS_sensoryNoise(likemodel_vis,likerange_vis,sigmalikezero_vis,wlike_vis);
-sigmasprime_vis_uni = VestBMS_sensoryNoise(likemodel_vis,likerange_uni,sigmalikezero_vis,wlike_vis);
+sigmasprime_vis = VestBMS_sensoryNoise(likemodel_vis,srange_vis,sigmalikezero_vis,wlike_vis);
+sigmasprime_vis_uni = VestBMS_sensoryNoise(likemodel_vis,srange_uni,sigmalikezero_vis,wlike_vis);
 
 % Compute sensory likelihood std for vestibular
 if wlike_vest >= 0; likemodel_vest = 'A'; else likemodel_vest = 'C'; end
-sigmasprime_vest = VestBMS_sensoryNoise(likemodel_vest,likerange_vest,sigmalikezero_vest,wlike_vest);
-sigmasprime_vest_uni = VestBMS_sensoryNoise(likemodel_vest,likerange_uni,sigmalikezero_vest,wlike_vest);
+sigmasprime_vest = VestBMS_sensoryNoise(likemodel_vest,srange_vest,sigmalikezero_vest,wlike_vest);
+sigmasprime_vest_uni = VestBMS_sensoryNoise(likemodel_vest,srange_uni,sigmalikezero_vest,wlike_vest);
 
 if fixed_criterion_analytic
     % Fixed-criterion unity judgment

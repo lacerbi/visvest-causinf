@@ -8,7 +8,7 @@ TolErr = sqrt(eps);	% Maximum error tolerance per array element
 
 % Define array sizes (choose reasonable values)
 K = 401;
-S = 99;
+S = 88;
 
 % Randomly initialize input variables
 % (or write here alternative initializations)

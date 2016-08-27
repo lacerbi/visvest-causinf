@@ -193,7 +193,7 @@ for iicnd = 1:length(cnd)
                     if model(9) == 4 || model(9) == 5
                         % Discrete correlated prior
                         templike = VestBMS_BimodalLeftRightDatalike_discrete(...
-                            X.bimbins{iNoise},model,theta,priorinfo,infostruct.bincenters_bim,maxranges,mp.XGRID(cnd(iicnd)),0,randomize);                        
+                            X.bimbins{iNoise},model,theta,priorinfo,infostruct.bincenters_bim,mp.XGRID(cnd(iicnd)),0,randomize);                        
                     else
                         templike = VestBMS_BimodalLeftRightDatalike(...
                             X.bimbins{iNoise},model,theta,priorinfo,infostruct.bincenters_bim,maxranges,mp.XGRID(cnd(iicnd)),SSCALE,0,randomize);

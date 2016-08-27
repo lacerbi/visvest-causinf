@@ -245,8 +245,8 @@ else
 
     % Compute marginal likelihood, p(x_vis, x_vest|C)
 
-    if model(15) == 1 || model(15) == 2 || model(15) == 6 % (Generalized) Bayesian posterior
-        % CASE C=2, Independent likelihoods, DISCRETE CORRELATED prior
+    if model(15) == 1 || model(15) == 2 || model(15) == 6 || model(15) == 7 % (Generalized) Bayesian posterior
+        % CASE C=2, Distinct likelihoods, DISCRETE CORRELATED prior
         if isempty(likec2)
             likec2(1,:,:) = VestBMS_likec2corrsum_discrete(priorpdf2d,like_vis,like_vest) + realmin;
         end
@@ -259,7 +259,7 @@ else
 
     % Compute weight for cue fusion
     switch model(15)
-        case {1, 6}  % Model weight is Bayesian posterior p(C=1|x_1, x_2)
+        case {1, 6, 7}  % Model weight is Bayesian posterior p(C=1|x_1, x_2)
             % likec1 = squeeze(likec1);
             w1 = likec1*priorc1./(likec1*priorc1 + likec2*(1-priorc1));
             if distinct_criteria

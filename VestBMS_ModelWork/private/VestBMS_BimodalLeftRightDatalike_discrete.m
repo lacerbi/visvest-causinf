@@ -32,9 +32,9 @@ function varargout = VestBMS_BimodalLeftRightDatalike_discrete(X,model,theta,pri
 DEBUG = 0;  % Plot some debug graphs
 
 % Program constants
-if nargin < 7 || isempty(XGRID) || isnan(XGRID); XGRID = 401; end
-if nargin < 9 || isempty(sumover); sumover = 1; end
-if nargin < 10 || isempty(randomize); randomize = 0; end
+if nargin < 6 || isempty(XGRID) || isnan(XGRID); XGRID = 401; end
+if nargin < 7 || isempty(sumover); sumover = 1; end
+if nargin < 8 || isempty(randomize); randomize = 0; end
 
 % When integrating a Gaussian, go up to this SDs away
 MAXSD = 5;

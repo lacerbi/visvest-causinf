@@ -12,20 +12,19 @@ module load matlab
 source /home/la67/MATLAB/setpath.sh
 export MATLABPATH=${MATLABPATH}
 
-#Number of running processors is second argument
-NREPLICAS="3"
+#Running processors is second argument
+REPLICAS="1:3"
 
 BASEDIR="run${1}"
 cd ${BASEDIR}
 rm *.job
-rm *.o*
-rm *.e*
-rm *.log
+#rm *.o*
+#rm *.e*
 
 cat<<EOF | matlab -nodisplay
 temp = load('../${PROJECT}_${1}.mat','mbag');
 mbag = temp.mbag;
-exitflag = ModelWork_samplingCheck(mbag,'write',${1},${NREPLICAS})
+exitflag = ModelWork_samplingCheck(mbag,'write',${1},${REPLICAS})
 EOF
 
 cd ..

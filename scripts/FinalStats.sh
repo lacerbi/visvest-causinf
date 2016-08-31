@@ -32,7 +32,7 @@ else
 fi
 
 #RESOURCES="nodes=1:ppn=1,mem=4GB,walltime=${RUNTIME},feature=ivybridge_20p_64GB_3000MHz"
-RESOURCES="nodes=1:ppn=1,mem=8GB,walltime=${RUNTIME}"
+RESOURCES="nodes=1:ppn=1,mem=3GB,walltime=${RUNTIME}"
 
 #if [[ -z ${1} ]]; then
 #        JOBLIST="1-$MAXID"

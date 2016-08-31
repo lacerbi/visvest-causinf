@@ -11,16 +11,16 @@ WORKDIR="/scratch/la67/${PROJECT}/run${RUN}"
 mkdir ${WORKDIR}
 cd ${WORKDIR}
 MAXID=$(ls -l *.job | wc -l)
-RUNTIME=48:00:00
+RUNTIME=24:00:00
 MAXRT=NaN
 VERBOSE=1
-NSAMPLES=5000
-NBURNIN=10000
+NSAMPLES=0
+NBURNIN=0
 STOREDSAMPLES=5000
 OPTFEVALS="[]"
 CONTINUE=1
-LOADMBAG=1
-NEWSAMPLING=1
+LOADMBAG=0
+NEWSAMPLING=0
 
 #Job list is second argument
 if [[ ! -z "$2" ]]; then
@@ -33,7 +33,7 @@ else
 fi
 
 #RESOURCES="nodes=1:ppn=1,mem=4GB,walltime=${RUNTIME},feature=ivybridge_20p_64GB_3000MHz"
-RESOURCES="nodes=1:ppn=1,mem=3GB,walltime=${RUNTIME}"
+RESOURCES="nodes=1:ppn=1,mem=2GB,walltime=${RUNTIME}"
 
 #if [[ -z ${1} ]]; then
 #        JOBLIST="1-$MAXID"

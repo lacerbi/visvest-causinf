@@ -16,14 +16,19 @@ FILEID=${1}
 FILENAME="'joblist-${FILEID}.txt'"
 echo "Input #: ${1}   Output file: ${FILENAME}"
 
-#Number of running processors is second argument
+#Replicas are second argument
 if [[ ! -z "$2" ]]; then
-        NPROCS=$2
+        NREPLICAS=$2
+else
+        NREPLICAS="1:3"
+fi
+
+#Number of running processors is third argument
+if [[ ! -z "$3" ]]; then
+        NPROCS=$3
 else
 	NPROCS=Inf
 fi
-
-NREPLICAS="1:3"
 
 BASEDIR="run${1}"
 mkdir ${BASEDIR}
@@ -32,6 +37,8 @@ rm *.job
 rm *.o*
 rm *.e*
 rm *.log
+
+echo "Creating jobs for ${BASEDIR}, replicas=${NREPLICAS}, nprocs=${NPROCS}"
 
 cat<<EOF | matlab -nodisplay
 ModelWork_makeJobList('$PROJECT',[],${1},${NREPLICAS},${NPROCS})

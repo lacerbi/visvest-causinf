@@ -1,7 +1,10 @@
 #!/bin/sh
-echo "Usage: makejobs job# [file#]"
+echo "Usage: makemodelrecovery job# [file#]"
 
 PROJECT="VestBMS"
+#MODELRECOVERYDATA="VestBMS_fakedata_unity"
+MODELRECOVERYDATA="VestBMS_fakedata_bimloc"
+
 cd /scratch/la67/${PROJECT}
 
 module purge
@@ -20,14 +23,14 @@ echo "Input #: ${1}   Output file: ${FILENAME}"
 if [[ ! -z "$2" ]]; then
         NREPLICAS=$2
 else
-        NREPLICAS="1:3"
+        NREPLICAS="1"
 fi
 
 #Number of running processors is third argument
 if [[ ! -z "$3" ]]; then
         NPROCS=$3
 else
-        NPROCS=Inf
+	NPROCS=Inf
 fi
 
 BASEDIR="run${1}"
@@ -38,8 +41,11 @@ rm *.o*
 rm *.e*
 rm *.log
 
+echo "Creating jobs for ${BASEDIR}, replicas=${NREPLICAS}, nprocs=${NPROCS}"
+
 cat<<EOF | matlab -nodisplay
-ModelWork_makeJobList('$PROJECT',[],${1},${NREPLICAS},${NPROCS},'skipcompletedjobs',0)
+load('${MODELRECOVERYDATA}.mat');
+ModelWork_makeJobList('$PROJECT',data,${1},${NREPLICAS},${NPROCS})
 EOF
 
 cd ..

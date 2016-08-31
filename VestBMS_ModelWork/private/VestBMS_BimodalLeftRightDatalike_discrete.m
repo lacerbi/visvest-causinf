@@ -68,6 +68,13 @@ lambda = theta(18);
 % Correlated prior
 priorsigmadelta = priorinfo(3);
 
+% Correlated prior for unity trials (distinct priors)
+if numel(priorinfo) > 7
+    priorsigmadelta_unity = priorinfo(4);
+else
+    priorsigmadelta_unity = priorsigmadelta;
+end
+
 if priorsigmadelta == 0
     error('Discrete prior should have nonzero PRIORSIGMADELTA.');
 end
@@ -106,6 +113,10 @@ end
 % Use distinct criteria for localization vs unity judgement
 distinct_criteria = ...
     (priorc1_unity ~= priorc1 || kcommon_unity ~= kcommon) && do_unity;
+
+% Use distinct prior over sigma for localization vs unity judgement
+distinct_delta = ...
+    (priorsigmadelta_unity ~= priorsigmadelta) && do_unity;
 
 % Bin centers is a column vector
 bincenters_vis = bincenters{1};
@@ -225,6 +236,10 @@ else
         priorpdf2d = ones(size(srange_vest));        
     end
     if isfinite(priorsigmadelta)
+        if distinct_delta
+            priorpdf2d_unity = priorpdf2d .* bsxfun_normpdf(srange_vest, srange_vis, priorsigmadelta_unity);
+            priorpdf2d_unity = priorpdf2d_unity/sum(priorpdf2d_unity); % Normalize discrete prior
+        end
         priorpdf2d = priorpdf2d .* bsxfun_normpdf(srange_vest, srange_vis, priorsigmadelta);
     end
     priorpdf2d = priorpdf2d/sum(priorpdf2d); % Normalize discrete prior
@@ -275,6 +290,8 @@ else
         % CASE C=2, Distinct likelihoods, DISCRETE CORRELATED prior
         if isempty(likec2)
             likec2(1,:,:) = VestBMS_likec2corrsum_discrete(priorpdf2d,like_vis,like_vest) + realmin;
+        elseif distinct_delta
+            likec2_unity(1,:,:) = VestBMS_likec2corrsum_discrete(priorpdf2d_unity,like_vis,like_vest) + realmin;            
         end
         
         % CASE C=1, Unity likelihoods
@@ -289,11 +306,17 @@ else
             % likec1 = squeeze(likec1);
             w1 = likec1*priorc1./(likec1*priorc1 + likec2*(1-priorc1));
             if distinct_criteria
-                w1_unity = likec1*priorc1_unity./(likec1*priorc1_unity + likec2*(1-priorc1_unity));
+                if distinct_delta
+                    w1_unity = likec1*priorc1_unity./(likec1*priorc1_unity + likec2_unity*(1-priorc1_unity));                    
+                else
+                    w1_unity = likec1*priorc1_unity./(likec1*priorc1_unity + likec2*(1-priorc1_unity));
+                end
+            elseif distinct_delta
+                w1_unity = likec1*priorc1./(likec1*priorc1 + likec2_unity*(1-priorc1));                
             end
 
         case 2  % Generalized Bayesian causal inference
-            % likec1 = squeeze(likec1);
+            error('Generalize Bayesian causal inference not supported any more.');
             lratio = log(likec1*priorc1) - log(likec2*(1-priorc1));
             w1 = 1./(1 + exp(-gamma_causinf.*lratio));
             if distinct_criteria
@@ -314,8 +337,12 @@ else
                         | (abs(bsxfun(@minus, xrange_vis - 360, xrange_vest)) < kcommon_unity);                    
                 end
             end
+            if distinct_delta
+                error('Fixed criterion causal inference does not depend on SIGMADELTA; no point in using distinct parameters between localization and unity judgements.');
+            end
 
         case 4 % Soft criterion on x
+            error('Soft criterion on x not supported any more.');
             w1 = 1./(1 + exp(tau_causinf*(abs(bsxfun(@minus, xrange_vis, xrange_vest)) - kcommon)));
             if distinct_criteria
                 w1_unity = 1./(1 + exp(tau_causinf*(abs(bsxfun(@minus, xrange_vis, xrange_vest)) - kcommon_unity)));                

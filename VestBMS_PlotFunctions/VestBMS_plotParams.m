@@ -7,13 +7,16 @@ if nargin < 4 || isempty(noplot); noplot = 0; end
 
 switch(lower(modelfamily(1)))
     case 'b';           % Bayesian
-        modeln = [2 10 6 2]; family = 'Bayesian';
+        % modeln = [2 10 6 2];
+        modelnames = {'BP','BPD','BPD','BPD'};
+        family = 'Bayesian';
     case {'f','c'};     % Fixed criterion
-        modeln = [2 8 5 1]; family = 'Fixed';
+        % modeln = [2 8 5 1];
+        modelnames = {'BP','CXD','CX','CXD'};
+        family = 'Fixed';
     otherwise
         error('Unknown model family. Known families are (B)ayesian and (F)ixed criterion.');
 end
-
 
 if joint
     fitnames = {'uni','biml','bimu','joint'};
@@ -32,7 +35,11 @@ ids = 1:11; % Human only
 for i = 1:numel(fitnames)
     mbag = mbags.(['mbag_' fitnames{i}]);
     modelsummary = mbags.(['modelsummary_' fitnames{i}]);
-    mfits{i} = ModelBag_get(mbag,modelsummary.dataid(ids,:),modelsummary.models(modeln(i),:),modelsummary.cnd);
+    modeln = find(strcmp(modelnames{i},modelsummary.modelnames));
+    if isempty(modeln) || ~isscalar(modeln)
+        error(['Error in finding model ' modelnames{i} ' (no matches or multiple matches).']);
+    end
+    mfits{i} = ModelBag_get(mbag,modelsummary.dataid(ids,:),modelsummary.models(modeln,:),modelsummary.cnd);
 end
 
 for i = 1:numel(nids)

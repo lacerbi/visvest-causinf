@@ -80,7 +80,8 @@
 %--------------------------------------------------------------------------
 % MODEL(16) Report of unity model (Bimodal only, unused):
 % 1 Standard, 2 Separate criterion parameter (1 param), 
-% 3 Separate criterion and gamma (2 params), 4 Free probability (3 params)
+% 3 Separate criterion and gamma (2 params), 4 Free probability (3 params),
+% 5 Separate criterion and sigmadelta (2 params).
 
 function [mp,exitflag] = VestBMS_setupModel(mp,theta,model,infostruct)
 
@@ -507,7 +508,7 @@ function [mp, outflag] = initModel(model, infostruct)
             case 1 % Standard
             case 2 % Separate criterion (based on 15)                
                 switch model(15)
-                    case {1,2,6} % Bayesian (1-param)
+                    case {1,2,6,7} % Bayesian (1-param)
                         mp.nparams(16) = 1;
                         pbounds{16} = [0 1, 0.1 0.9, 0.1];
                         params{16} = {'pcommon_unity'};
@@ -518,7 +519,7 @@ function [mp, outflag] = initModel(model, infostruct)
                 end
             case 3 % Separate criterion and gamma (based on 15)
                 switch model(15)
-                    case {1,2,6} % Bayesian (2-params)
+                    case {1,2,6,7} % Bayesian (2-params)
                         mp.nparams(16) = 2;
                         pbounds{16} = [0 1, 0.1 0.9, 0.1; softmax_bounds];
                         params{16} = {'pcommon_unity','invgamma_causinf_unity'};
@@ -531,6 +532,19 @@ function [mp, outflag] = initModel(model, infostruct)
                 mp.nparams(16) = 3;
                 pbounds{16} = [0 1, 0.1 0.9, 0.1; 0 1, 0.1 0.9, 0.1; 0 1, 0.1 0.9, 0.1];
                 params{16} = {'random_unity_low','random_unity_med','random_unity_high'};
+            case 5  % Separate criterion and priorsigmadelta
+                switch model(15)
+                    case {1,2,6,7} % Bayesian (2-params)
+                        mp.nparams(16) = 2;
+                        pbounds{16} = [0 1, 0.1 0.9, 0.1; priorsigma_bounds];
+                        params{16} = {'pcommon_unity','priorsigmadelta_unity'};
+                    case {3,4} % Criterion on x (2-params)
+                        mp.nparams(16) = 2;
+                        pbounds{16} = [kcommon_bounds; priorsigma_bounds];
+                        params{16} = {'kcommon_unity','priorsigmadelta_unity'};
+                end
+                
+                
             otherwise; error('Unsupported report of unity criterion model.');
         end
         
@@ -917,7 +931,7 @@ function [mp,exitflag] = updateModel(mp,theta)
                     end
                 case 2  % Separate criterion parameter
                     switch model(15)
-                        case {1,2,6} % Bayesian
+                        case {1,2,6,7} % Bayesian
                             updateparams(icnd, 16, {'id'});
                         case {3,4} % Criterion on x
                             updateparams(icnd, 16, {'exp'});
@@ -927,13 +941,20 @@ function [mp,exitflag] = updateModel(mp,theta)
                     end
                 case 3  % Separate criterion and gamma parameter
                     switch model(15)
-                        case {1,2,6} % Bayesian
+                        case {1,2,6,7} % Bayesian
                             updateparams(icnd, 16, {'id','exp'});
                         case {3,4} % Criterion on x
                             updateparams(icnd, 16, {'exp','exp'});
                     end
                 case 4 % Random unity
-                    updateparams(icnd, 16, {'id','id','id'});                    
+                    updateparams(icnd, 16, {'id','id','id'});
+                case 5 % Separate criterion and priorsigmadelta parameter
+                    switch model(15)
+                        case {1,2,6,7} % Bayesian
+                            updateparams(icnd, 16, {'id','exp'});
+                        case {3,4} % Criterion on x
+                            updateparams(icnd, 16, {'exp','exp'});
+                    end
             end
         end
 

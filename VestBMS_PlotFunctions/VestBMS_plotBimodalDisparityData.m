@@ -18,6 +18,7 @@ if numel(data) == 1
     subjs = 1;
 else
     subjs = 1:numel(data);
+    subjs = 0;
 end
 
 nNoise = 3; % Three levels of noise
@@ -120,7 +121,8 @@ for iRow = 1:nRows
     end
 end
 
-[fig,gendata] = ModelPlot_drawFigure(fig,data,mfit,ngen);
+options.flatten = 0;    % Do not compute flattened bins
+[fig,gendata] = ModelPlot_drawFigure(fig,data,mfit,ngen,options);
 
 return;
 

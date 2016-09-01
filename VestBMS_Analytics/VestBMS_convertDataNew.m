@@ -122,6 +122,8 @@ options.robustfitflag = 1;
 options.quickplotflag = 0;
 options.bincenters = bincenters;
 options.psycholeftright = 1;
+options.bindata = 1;
+options.flatten = 1;
 
 data = VestBMS_analytics(X,options);
 for i = 1:length(data); data{i}.id = i; end

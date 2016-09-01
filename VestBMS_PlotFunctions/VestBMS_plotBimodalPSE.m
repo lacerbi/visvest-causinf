@@ -120,7 +120,8 @@ for iRow = 1:nRows
 end
 fig.panels{end+1} = panel; % Add panel to figure
 
-[fig,gendata] = ModelPlot_drawFigure(fig,data,mfit,ngen);
+options.psycholeftright = 1;    % Compute psychometric functions
+[fig,gendata] = ModelPlot_drawFigure(fig,data,mfit,ngen,options);
 
 title('Vestibular PSE');
 

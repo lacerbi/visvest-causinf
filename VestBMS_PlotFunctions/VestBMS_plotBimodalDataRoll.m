@@ -143,7 +143,7 @@ for iEcc = 1:nEcc
                     if ~isfield(thisplot.source, 'method')
                         copyplot = thisplot;
                         copyplot.source.type = 'model';
-                        copyplot.interp = 1;
+                        % copyplot.interp = 1;
                         % copyplot.type = 'line';
                         copyplot.type = 'line';
                         copyplot.color = NaN;

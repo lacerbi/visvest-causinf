@@ -224,7 +224,7 @@ switch lower(command)
         end
         
         % Keep only some sessions
-        if ~isempty(options.sessions)
+        if isfield(options,'sessions') && ~isempty(options.sessions)
             f = intersect(f,find(any(bsxfun(@eq, modelstruct.X.all(:,2), options.sessions), 2)));
         end
 

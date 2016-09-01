@@ -28,4 +28,9 @@ switch model(1)
     case 1; string = [string '-C'];
 end
 
+switch model(16)
+    case 1; % Nothing
+    otherwise; string = [string 's'];
+end
+
 end

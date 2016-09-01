@@ -19,7 +19,9 @@ defopts.discardoutliers = 1;        % Remove outliers data points (unused)
 defopts.robustfitflag = 0;          % Robust linear fit
 defopts.quickplotflag = 1;          % Quick plot, skip some analysis
 defopts.bincenters = [-45,-40,-35,-30:2.5:-2.5,-1.25:0.625:1.25,2.5:2.5:30,35,40,45];    % Bins
+defopts.flatten = 1;                % Build flattened data
 defopts.psycholeftright = 0;        % Build left/right psychometric curves
+defopts.bindata = 0;                % Build binned data
 
 for f = fields(defopts)'
     if ~isfield(options,f{:}) || isempty(options.(f{:}))
@@ -133,63 +135,65 @@ for ii = 1:length(datasets)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Flatify bimodal data
     
-    s = -25:5:25; % Mean heading direction
-    d = [-40,-20,-10,-5,0,5,10,20,40]'; % Disparity
-    pairs = [];
-    for jj = 1:numel(s)
-        pairs = [pairs; [s(jj) + 0.5*d, s(jj) - 0.5*d]];
-    end        
-    
-    % Flatten bimodal data
-    for iNoise = 1:3
-        for iMod = [BIMVIDEO,BIMAUDIO,BIMCATEGORY]
-            for ss = 1:size(pairs,1)
-                D.X.bimflat{iNoise}{iMod}(ss) = mean(D.X.bimodal{iNoise}{iMod}(D.X.bimodal{iNoise}{iMod}(:,3) == pairs(ss,1) & D.X.bimodal{iNoise}{iMod}(:,4) == pairs(ss,2),end)==1);
-                D.X.bimflatN{iNoise}{iMod}(ss) = numel(D.X.bimodal{iNoise}{iMod}(D.X.bimodal{iNoise}{iMod}(:,3) == pairs(ss,1) & D.X.bimodal{iNoise}{iMod}(:,4) == pairs(ss,2),end)==1);
-            end
-        end
-       
-        for iMod = [BIMVIDEO,BIMAUDIO,BIMCATEGORY]
-            if ~isempty(D.X.bimflat{iNoise}{iMod})
-                % D.X.bimflatsymm{iNoise}{iMod} = [D.X.bimflat{iNoise}{iMod}(46:54), nanmean([D.X.bimflat{iNoise}{iMod}(55:end); D.X.bimflat{iNoise}{iMod}(45:-1:1)],1)];
-                idxs{1} = {46:54, 54:-1:46, 55:63, 55:63, 45:-1:37, 45:-1:37};
-                idxs{2} = {64:72, 73:81, 36:-1:28, 27:-1:19};
-                idxs{3} = {82:90, 91:99, 18:-1:10, 9:-1:1};                
-                for k = 1:numel(idxs)
-                    tmp = []; Nb = zeros(1,9);
-                    for k2 = 1:numel(idxs{k})
-                        tmp = [tmp; D.X.bimflat{iNoise}{iMod}(idxs{k}{k2}) .* D.X.bimflatN{iNoise}{iMod}(idxs{k}{k2})];
-                        Nb = Nb + D.X.bimflatN{iNoise}{iMod}(idxs{k}{k2});
-                    end
-                    D.X.bimflatsymm{iNoise}{iMod}((1:9) + (k-1)*9) = nansum(tmp) ./ Nb;
-                end
-                
-                %D.X.bimflatsymm{iNoise}{iMod} = ...
-                %    [nanmean([nanmean([D.X.bimflat{iNoise}{iMod}(46:54); D.X.bimflat{iNoise}{iMod}(54:-1:46)]); D.X.bimflat{iNoise}{iMod}(55:63); D.X.bimflat{iNoise}{iMod}(45:-1:37)],1), ...
-                %    nanmean([D.X.bimflat{iNoise}{iMod}(64:72); D.X.bimflat{iNoise}{iMod}(73:81); D.X.bimflat{iNoise}{iMod}(36:-1:28); D.X.bimflat{iNoise}{iMod}(27:-1:19)],1), ...
-                %    nanmean([D.X.bimflat{iNoise}{iMod}(82:90); D.X.bimflat{iNoise}{iMod}(91:99); D.X.bimflat{iNoise}{iMod}(18:-1:10); D.X.bimflat{iNoise}{iMod}(9:-1:1)],1)];
-                D.X.bimflatasymm{iNoise}{iMod} = ...
-                    [nanmean([D.X.bimflat{iNoise}{iMod}(46:54); D.X.bimflat{iNoise}{iMod}(55:63); D.X.bimflat{iNoise}{iMod}(37:45)],1), ...
-                    nanmean([D.X.bimflat{iNoise}{iMod}(64:72); D.X.bimflat{iNoise}{iMod}(73:81); D.X.bimflat{iNoise}{iMod}(28:36); D.X.bimflat{iNoise}{iMod}(19:27)],1), ...
-                    nanmean([D.X.bimflat{iNoise}{iMod}(82:90); D.X.bimflat{iNoise}{iMod}(91:99); D.X.bimflat{iNoise}{iMod}(10:18); D.X.bimflat{iNoise}{iMod}(1:9)],1)];
-            end            
-        end
-        
-    end
-    
-    % Flatten bimodal data for left/right
-    % allStimuli = unique(bsxfun(@plus, s, 0.5*d));    
-    allStimuli =  {-45:5:-30,-27.5,-25,-22.5,-20,-17.5,-15,-12.5,-10,-7.5,-5,-2.5,0,2.5,5,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30:5:45};
-    
-    for iNoise = 1:3
-        sets = {[-45,-40,-35,-30,-27.5,-25,-22.5,-20],[-17.5,-15,-12.5,-10,-7.5],[-5,-2.5,0,2.5,5], ...
-            [7.5,10,12.5,15,17.5],[20,22.5,25,27.5,30,35,40,45]};                   
-        for iMod = [BIMVIDEO,BIMAUDIO,BIMCATEGORY]; D.X.bimright{iNoise}{iMod} = []; end
-        for bb = 1:numel(sets)
+    if options.flatten
+        s = -25:5:25; % Mean heading direction
+        d = [-40,-20,-10,-5,0,5,10,20,40]'; % Disparity
+        pairs = [];
+        for jj = 1:numel(s)
+            pairs = [pairs; [s(jj) + 0.5*d, s(jj) - 0.5*d]];
+        end        
+
+        % Flatten bimodal data
+        for iNoise = 1:3
             for iMod = [BIMVIDEO,BIMAUDIO,BIMCATEGORY]
-                for ss = 1:numel(allStimuli)
-                    D.X.bimright{iNoise}{iMod}(end+1) = mean(D.X.bimodal{iNoise}{iMod}(any(bsxfun(@eq,D.X.bimodal{iNoise}{iMod}(:,3), allStimuli{ss}),2) & ...
-                        any(bsxfun(@eq, D.X.bimodal{iNoise}{iMod}(:,4), sets{bb}),2),end)==1);
+                for ss = 1:size(pairs,1)
+                    D.X.bimflat{iNoise}{iMod}(ss) = mean(D.X.bimodal{iNoise}{iMod}(D.X.bimodal{iNoise}{iMod}(:,3) == pairs(ss,1) & D.X.bimodal{iNoise}{iMod}(:,4) == pairs(ss,2),end)==1);
+                    D.X.bimflatN{iNoise}{iMod}(ss) = numel(D.X.bimodal{iNoise}{iMod}(D.X.bimodal{iNoise}{iMod}(:,3) == pairs(ss,1) & D.X.bimodal{iNoise}{iMod}(:,4) == pairs(ss,2),end)==1);
+                end
+            end
+
+            for iMod = [BIMVIDEO,BIMAUDIO,BIMCATEGORY]
+                if ~isempty(D.X.bimflat{iNoise}{iMod})
+                    % D.X.bimflatsymm{iNoise}{iMod} = [D.X.bimflat{iNoise}{iMod}(46:54), nanmean([D.X.bimflat{iNoise}{iMod}(55:end); D.X.bimflat{iNoise}{iMod}(45:-1:1)],1)];
+                    idxs{1} = {46:54, 54:-1:46, 55:63, 55:63, 45:-1:37, 45:-1:37};
+                    idxs{2} = {64:72, 73:81, 36:-1:28, 27:-1:19};
+                    idxs{3} = {82:90, 91:99, 18:-1:10, 9:-1:1};                
+                    for k = 1:numel(idxs)
+                        tmp = []; Nb = zeros(1,9);
+                        for k2 = 1:numel(idxs{k})
+                            tmp = [tmp; D.X.bimflat{iNoise}{iMod}(idxs{k}{k2}) .* D.X.bimflatN{iNoise}{iMod}(idxs{k}{k2})];
+                            Nb = Nb + D.X.bimflatN{iNoise}{iMod}(idxs{k}{k2});
+                        end
+                        D.X.bimflatsymm{iNoise}{iMod}((1:9) + (k-1)*9) = nansum(tmp) ./ Nb;
+                    end
+
+                    D.X.bimflatsymm{iNoise}{iMod} = ...
+                        [nanmean([nanmean([D.X.bimflat{iNoise}{iMod}(46:54); D.X.bimflat{iNoise}{iMod}(54:-1:46)]); D.X.bimflat{iNoise}{iMod}(55:63); D.X.bimflat{iNoise}{iMod}(45:-1:37)],1), ...
+                        nanmean([D.X.bimflat{iNoise}{iMod}(64:72); D.X.bimflat{iNoise}{iMod}(73:81); D.X.bimflat{iNoise}{iMod}(36:-1:28); D.X.bimflat{iNoise}{iMod}(27:-1:19)],1), ...
+                        nanmean([D.X.bimflat{iNoise}{iMod}(82:90); D.X.bimflat{iNoise}{iMod}(91:99); D.X.bimflat{iNoise}{iMod}(18:-1:10); D.X.bimflat{iNoise}{iMod}(9:-1:1)],1)];
+                    D.X.bimflatasymm{iNoise}{iMod} = ...
+                        [nanmean([D.X.bimflat{iNoise}{iMod}(46:54); D.X.bimflat{iNoise}{iMod}(55:63); D.X.bimflat{iNoise}{iMod}(37:45)],1), ...
+                        nanmean([D.X.bimflat{iNoise}{iMod}(64:72); D.X.bimflat{iNoise}{iMod}(73:81); D.X.bimflat{iNoise}{iMod}(28:36); D.X.bimflat{iNoise}{iMod}(19:27)],1), ...
+                        nanmean([D.X.bimflat{iNoise}{iMod}(82:90); D.X.bimflat{iNoise}{iMod}(91:99); D.X.bimflat{iNoise}{iMod}(10:18); D.X.bimflat{iNoise}{iMod}(1:9)],1)];
+                end            
+            end
+
+        end
+
+        % Flatten bimodal data for left/right
+        % allStimuli = unique(bsxfun(@plus, s, 0.5*d));    
+        allStimuli =  {-45:5:-30,-27.5,-25,-22.5,-20,-17.5,-15,-12.5,-10,-7.5,-5,-2.5,0,2.5,5,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30:5:45};
+
+        for iNoise = 1:3
+            sets = {[-45,-40,-35,-30,-27.5,-25,-22.5,-20],[-17.5,-15,-12.5,-10,-7.5],[-5,-2.5,0,2.5,5], ...
+                [7.5,10,12.5,15,17.5],[20,22.5,25,27.5,30,35,40,45]};                   
+            for iMod = [BIMVIDEO,BIMAUDIO,BIMCATEGORY]; D.X.bimright{iNoise}{iMod} = []; end
+            for bb = 1:numel(sets)
+                for iMod = [BIMVIDEO,BIMAUDIO,BIMCATEGORY]
+                    for ss = 1:numel(allStimuli)
+                        D.X.bimright{iNoise}{iMod}(end+1) = mean(D.X.bimodal{iNoise}{iMod}(any(bsxfun(@eq,D.X.bimodal{iNoise}{iMod}(:,3), allStimuli{ss}),2) & ...
+                            any(bsxfun(@eq, D.X.bimodal{iNoise}{iMod}(:,4), sets{bb}),2),end)==1);
+                    end
                 end
             end
         end
@@ -231,92 +235,95 @@ for ii = 1:length(datasets)
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Bin data, mostly for visualization purposes
-    audbincenters = options.bincenters;    
-    % vidbincenters = -18:3:18;
-    vidbincenters = options.bincenters;
-    vidbinradius = diff(vidbincenters(1:2))/2;
-    dispbincenters = -20:5:20;
-    dispbinradius = diff(dispbincenters(1:2))/2;
+    
+    if options.bindata
+        audbincenters = options.bincenters;    
+        % vidbincenters = -18:3:18;
+        vidbincenters = options.bincenters;
+        vidbinradius = diff(vidbincenters(1:2))/2;
+        dispbincenters = -20:5:20;
+        dispbinradius = diff(dispbincenters(1:2))/2;
 
-    % Unimodal bins
-    for iNoise = 1:3
-        D.binX.unimodal{iNoise} = binbuild(D.X.unimodal{iNoise}(:, 2), D.X.unimodal{iNoise}(:, end), vidbincenters, [], TRIMOUTLIERSD);
-        D.binX.unimodal{iNoise}.type = ['Unimodal video response trials, ' noiseString{iNoise}];
-    end
-    D.binX.unimodal{UNIAUDIO} = binbuild(D.X.unimodal{UNIAUDIO}(:, 2), D.X.unimodal{UNIAUDIO}(:, end), audbincenters, [], TRIMOUTLIERSD, options.robustfitflag);
-    D.binX.unimodal{UNIAUDIO}.type = ['Unimodal audio response trials, ' noiseString{iNoise}];
-        
-    % Bimodal bins
-    % Audiovisual trials
-    for iNoise = 1:3
-        for iType = [BIMVIDEO BIMAUDIO];
-            % Standard bins
-            D.binX.bimodal{iNoise}{iType}.x1 = audbincenters;
-            D.binX.bimodal{iNoise}{iType}.x2 = vidbincenters;
-            D.binX.bimodal{iNoise}{iType}.ymeans = zeros(size(audbincenters, 2), size(vidbincenters, 2));
-            D.binX.bimodal{iNoise}{iType}.ystd = zeros(size(audbincenters, 2), size(vidbincenters, 2));
-            D.binX.bimodal{iNoise}{iType}.n = zeros(size(audbincenters, 2), size(vidbincenters, 2));
-            D.binX.bimodal{iNoise}{iType}.discarded = zeros(size(audbincenters, 2), size(vidbincenters, 2));
-            for iBin = 1:size(audbincenters, 2)
-                for jBin = 1:size(vidbincenters, 2)
-                    Y = D.X.bimodal{iNoise}{iType}(D.X.bimodal{iNoise}{iType}(:, 3) == audbincenters(iBin) & ...
-                        abs(D.X.bimodal{iNoise}{iType}(:, 4) - vidbincenters(jBin)) <= vidbinradius, end);
-                    D.binX.bimodal{iNoise}{iType}.y{iBin, jBin} = Y;
-                    D.binX.bimodal{iNoise}{iType}.ymeans(iBin, jBin) = nanmean(Y);
-                    D.binX.bimodal{iNoise}{iType}.ystd(iBin, jBin) = nanstd(Y);
-                    D.binX.bimodal{iNoise}{iType}.n(iBin, jBin) = length(Y);
+        % Unimodal bins
+        for iNoise = 1:3
+            D.binX.unimodal{iNoise} = binbuild(D.X.unimodal{iNoise}(:, 2), D.X.unimodal{iNoise}(:, end), vidbincenters, [], TRIMOUTLIERSD);
+            D.binX.unimodal{iNoise}.type = ['Unimodal video response trials, ' noiseString{iNoise}];
+        end
+        D.binX.unimodal{UNIAUDIO} = binbuild(D.X.unimodal{UNIAUDIO}(:, 2), D.X.unimodal{UNIAUDIO}(:, end), audbincenters, [], TRIMOUTLIERSD, options.robustfitflag);
+        D.binX.unimodal{UNIAUDIO}.type = ['Unimodal audio response trials, ' noiseString{iNoise}];
+
+        % Bimodal bins
+        % Audiovisual trials
+        for iNoise = 1:3
+            for iType = [BIMVIDEO BIMAUDIO];
+                % Standard bins
+                D.binX.bimodal{iNoise}{iType}.x1 = audbincenters;
+                D.binX.bimodal{iNoise}{iType}.x2 = vidbincenters;
+                D.binX.bimodal{iNoise}{iType}.ymeans = zeros(size(audbincenters, 2), size(vidbincenters, 2));
+                D.binX.bimodal{iNoise}{iType}.ystd = zeros(size(audbincenters, 2), size(vidbincenters, 2));
+                D.binX.bimodal{iNoise}{iType}.n = zeros(size(audbincenters, 2), size(vidbincenters, 2));
+                D.binX.bimodal{iNoise}{iType}.discarded = zeros(size(audbincenters, 2), size(vidbincenters, 2));
+                for iBin = 1:size(audbincenters, 2)
+                    for jBin = 1:size(vidbincenters, 2)
+                        Y = D.X.bimodal{iNoise}{iType}(D.X.bimodal{iNoise}{iType}(:, 3) == audbincenters(iBin) & ...
+                            abs(D.X.bimodal{iNoise}{iType}(:, 4) - vidbincenters(jBin)) <= vidbinradius, end);
+                        D.binX.bimodal{iNoise}{iType}.y{iBin, jBin} = Y;
+                        D.binX.bimodal{iNoise}{iType}.ymeans(iBin, jBin) = nanmean(Y);
+                        D.binX.bimodal{iNoise}{iType}.ystd(iBin, jBin) = nanstd(Y);
+                        D.binX.bimodal{iNoise}{iType}.n(iBin, jBin) = length(Y);
+                    end
+                end
+
+                % Disparity bins
+                D.binX.bimdisp{iNoise}{iType}.x = dispbincenters;
+                D.binX.bimdisp{iNoise}{iType}.ymeans = zeros(1, size(dispbincenters, 2));
+                D.binX.bimdisp{iNoise}{iType}.ystd = zeros(1, size(dispbincenters, 2));
+                D.binX.bimdisp{iNoise}{iType}.n = zeros(1, size(dispbincenters, 2));
+                D.binX.bimdisp{iNoise}{iType}.discarded = zeros(1, size(dispbincenters, 2));
+                for iBin = 1:size(dispbincenters, 2)
+                    Y = D.X.bimdisp{iNoise}{iType}(abs(D.X.bimdisp{iNoise}{iType}(:, 3) - dispbincenters(iBin)) <= dispbinradius, end);
+                    D.binX.bimdisp{iNoise}{iType}.y{iBin} = Y;
+                    D.binX.bimdisp{iNoise}{iType}.ymeans(iBin) = nanmean(Y);
+                    D.binX.bimdisp{iNoise}{iType}.ystd(iBin) = nanstd(Y);
+                    D.binX.bimdisp{iNoise}{iType}.n(iBin) = length(Y);
                 end
             end
-            
-            % Disparity bins
-            D.binX.bimdisp{iNoise}{iType}.x = dispbincenters;
-            D.binX.bimdisp{iNoise}{iType}.ymeans = zeros(1, size(dispbincenters, 2));
-            D.binX.bimdisp{iNoise}{iType}.ystd = zeros(1, size(dispbincenters, 2));
-            D.binX.bimdisp{iNoise}{iType}.n = zeros(1, size(dispbincenters, 2));
-            D.binX.bimdisp{iNoise}{iType}.discarded = zeros(1, size(dispbincenters, 2));
-            for iBin = 1:size(dispbincenters, 2)
-                Y = D.X.bimdisp{iNoise}{iType}(abs(D.X.bimdisp{iNoise}{iType}(:, 3) - dispbincenters(iBin)) <= dispbinradius, end);
-                D.binX.bimdisp{iNoise}{iType}.y{iBin} = Y;
-                D.binX.bimdisp{iNoise}{iType}.ymeans(iBin) = nanmean(Y);
-                D.binX.bimdisp{iNoise}{iType}.ystd(iBin) = nanstd(Y);
-                D.binX.bimdisp{iNoise}{iType}.n(iBin) = length(Y);
+        end
+
+        % Categorical trials
+        for iNoise = 1:3
+            % Standard bins
+            D.binX.bimodal{iNoise}{BIMCATEGORY}.x1 = audbincenters;
+            D.binX.bimodal{iNoise}{BIMCATEGORY}.x2 = vidbincenters;
+            %D.binX.bimodal{iNoise}{iType}.ymeans = zeros(size(audbincenters, 2), size(vidbincenters, 2));
+            %D.binX.bimodal{iNoise}{iType}.ystd = zeros(size(audbincenters, 2), size(vidbincenters, 2));
+            %D.binX.bimodal{iNoise}{iType}.n = zeros(size(audbincenters, 2), size(vidbincenters, 2));
+            %D.binX.bimodal{iNoise}{iType}.discarded = zeros(size(audbincenters, 2), size(vidbincenters, 2));
+            for iBin = 1:size(audbincenters, 2)
+                f = D.X.bimodal{iNoise}{BIMCATEGORY}(:, 3) == audbincenters(iBin);
+                Y = D.X.bimodal{iNoise}{BIMCATEGORY}(f, [4 end]);
+                D.binX.bimodal{iNoise}{BIMCATEGORY}.y{iBin} = Y;
+                %D.binX.bimodal{iNoise}{iType}.ymeans(iBin, jBin) = nanmean(Y);
+                %D.binX.bimodal{iNoise}{iType}.ystd(iBin, jBin) = nanstd(Y);
+                %D.binX.bimodal{iNoise}{iType}.n(iBin, jBin) = length(Y);
+            end
+
+            % Last bin contains spatial disparity
+            if isempty(D.X.bimdisp{iNoise}{BIMCATEGORY})
+                D.binX.bimodal{iNoise}{BIMCATEGORY}.y{end+1} = [];            
+            else
+                D.binX.bimodal{iNoise}{BIMCATEGORY}.y{end+1} = D.X.bimdisp{iNoise}{BIMCATEGORY}(:, [3 4]);
             end
         end
-    end
-    
-    % Categorical trials
-    for iNoise = 1:3
-        % Standard bins
-        D.binX.bimodal{iNoise}{BIMCATEGORY}.x1 = audbincenters;
-        D.binX.bimodal{iNoise}{BIMCATEGORY}.x2 = vidbincenters;
-        %D.binX.bimodal{iNoise}{iType}.ymeans = zeros(size(audbincenters, 2), size(vidbincenters, 2));
-        %D.binX.bimodal{iNoise}{iType}.ystd = zeros(size(audbincenters, 2), size(vidbincenters, 2));
-        %D.binX.bimodal{iNoise}{iType}.n = zeros(size(audbincenters, 2), size(vidbincenters, 2));
-        %D.binX.bimodal{iNoise}{iType}.discarded = zeros(size(audbincenters, 2), size(vidbincenters, 2));
-        for iBin = 1:size(audbincenters, 2)
-            f = D.X.bimodal{iNoise}{BIMCATEGORY}(:, 3) == audbincenters(iBin);
-            Y = D.X.bimodal{iNoise}{BIMCATEGORY}(f, [4 end]);
-            D.binX.bimodal{iNoise}{BIMCATEGORY}.y{iBin} = Y;
-            %D.binX.bimodal{iNoise}{iType}.ymeans(iBin, jBin) = nanmean(Y);
-            %D.binX.bimodal{iNoise}{iType}.ystd(iBin, jBin) = nanstd(Y);
-            %D.binX.bimodal{iNoise}{iType}.n(iBin, jBin) = length(Y);
-        end
-        
-        % Last bin contains spatial disparity
-        if isempty(D.X.bimdisp{iNoise}{BIMCATEGORY})
-            D.binX.bimodal{iNoise}{BIMCATEGORY}.y{end+1} = [];            
-        else
-            D.binX.bimodal{iNoise}{BIMCATEGORY}.y{end+1} = D.X.bimdisp{iNoise}{BIMCATEGORY}(:, [3 4]);
-        end
-    end
-    
-            
-    if ~options.quickplotflag
-        D.binX.discarded = [];
-        for i = 1:4; D.binX.discarded = sum(D.binX.unimodal{i}.discarded); end
-        for iNoise = 1:3
-            D.binX.discarded = D.binX.discarded + sum(D.binX.bimodal{iNoise}{BIMVIDEO}.discarded(:)); 
-            D.binX.discarded = D.binX.discarded + sum(D.binX.bimodal{iNoise}{BIMAUDIO}.discarded(:)); 
+
+
+        if ~options.quickplotflag
+            D.binX.discarded = [];
+            for i = 1:4; D.binX.discarded = sum(D.binX.unimodal{i}.discarded); end
+            for iNoise = 1:3
+                D.binX.discarded = D.binX.discarded + sum(D.binX.bimodal{iNoise}{BIMVIDEO}.discarded(:)); 
+                D.binX.discarded = D.binX.discarded + sum(D.binX.bimodal{iNoise}{BIMAUDIO}.discarded(:)); 
+            end
         end
     end
     

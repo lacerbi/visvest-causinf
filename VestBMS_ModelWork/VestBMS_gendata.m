@@ -7,6 +7,9 @@ function [gendata,trueparams] = VestBMS_gendata(N,varargin)
 %   GENDATA = CUEBMS_GENDATA(N,X,MP,INFOSTRUCT) generates fake datasets 
 %   from data matrix X, model parameter structure MP and INFOSTRUCT.
 %
+%   GENDATA = CUEBMS_GENDATA(...,'r') regenerate the REAL dataset (trial
+%   order might be swapped).
+%
 %   [GENDATA,TRUEPARAMS] = CUEBMS_GENDATA(...) returns parameters used to
 %   generate each fake dataset.
 %
@@ -23,6 +26,12 @@ else
     infostruct = varargin{3};
 end
 
+if ischar(varargin{end}) && strncmpi(varargin{end},'r',1)
+    regenerate = 1;
+else
+    regenerate = 0;
+end
+
 gendata = [];
 if ~isempty(mfit.sampling) && ~isempty(mfit.sampling.samples)
     Nsamples = size(mfit.sampling.samples,1);
@@ -30,20 +39,20 @@ if ~isempty(mfit.sampling) && ~isempty(mfit.sampling.samples)
     trueparams = mfit.sampling.samples(idx,:);
     for i = 1:N
         mp = VestBMS_setupModel(mp, trueparams(i,:), mfit.model, infostruct);
-        XX = GenDatasets(1,mp,X,infostruct);
+        XX = GenDatasets(1,mp,X,infostruct,regenerate);
         gendata{i} = squeeze(XX(:, :, 1));
     end
 else
     trueparams = repmat(mfit.maptheta,[N 1]);
     mp = VestBMS_setupModel(mp, mfit.maptheta, mfit.model, infostruct);    
-    XX = GenDatasets(N,mp,X,infostruct);    
+    XX = GenDatasets(N,mp,X,infostruct,regenerate);    
     for i = 1:N; gendata{i} = squeeze(XX(:, :, i)); end    
 end
 
 
 end
 
-function XX = GenDatasets(N,mp,X,infostruct)
+function XX = GenDatasets(N,mp,X,infostruct,regenerate)
 %GENDATASETS Generate fake datasets.
 
 cnd = mp.cnd;
@@ -52,9 +61,9 @@ model = mp.model;
 dynamicscale = 1; % Dynamic computation of SSCALE (~ grid points)
 
 XX = [];
-clear functions;
 
 for iicnd = 1:length(cnd)
+    clear functions;
         
     fulltheta = mp.fulltheta{iicnd}; % This is the MAP (mean for sampling)
     
@@ -93,7 +102,11 @@ for iicnd = 1:length(cnd)
             
             % Fill data matrix
             datafun = @(X) VestBMS_UnimodalLeftRightDatalike(X,model,theta,priorinfo,infostruct.bincenters_uni,infostruct.MAXRNG,[],SSCALE);
-            Rmat = GendataFun(datafun,X.unibins{iindex},N);
+            if regenerate
+                Rmat = X.unibins{iindex};
+            else
+                Rmat = GendataFun(datafun,X.unibins{iindex},N);
+            end
             
             % Convert from response matrix to trial matrix
             R = [];
@@ -125,7 +138,7 @@ for iicnd = 1:length(cnd)
 
         case {5, 6, 7} % Bimodal condition
             iNoise = cnd(iicnd) - 4;
-            theta = zeros(1, 16);
+            theta = zeros(1, 18);
             string = {'vis_low', 'vis_med', 'vis_high'};
             
             % External visual noise
@@ -167,8 +180,9 @@ for iicnd = 1:length(cnd)
             if ~isfield(fulltheta,'pcommon_unity'); fulltheta.pcommon_unity = fulltheta.pcommon; end
             if ~isfield(fulltheta,'kcommon_unity'); fulltheta.kcommon_unity = fulltheta.kcommon; end
             if ~isfield(fulltheta,'priorsigmadelta'); fulltheta.priorsigmadelta = 0; end
+            if ~isfield(fulltheta,'priorsigmadelta_unity'); fulltheta.priorsigmadelta_unity = fulltheta.priorsigmadelta; end
 
-            priorinfo = [fulltheta.priormu fulltheta.priorsigma fulltheta.priorsigmadelta...
+            priorinfo = [fulltheta.priormu fulltheta.priorsigma fulltheta.priorsigmadelta fulltheta.priorsigmadelta_unity...
                 fulltheta.pcommon fulltheta.kcommon fulltheta.pcommon_unity fulltheta.kcommon_unity];
             
             % Random unity judgments
@@ -187,8 +201,17 @@ for iicnd = 1:length(cnd)
             end
             
             % Fill data matrix
-            datafun = @(X) VestBMS_BimodalLeftRightDatalike(X,model,theta,priorinfo,infostruct.bincenters_bim,infostruct.MAXRNG,[],SSCALE);
-            [Rmat,Rmat_unity] = GendataFun(datafun,X.bimbins{iNoise},N);
+            if model(9) == 4 || model(9) == 5
+                datafun = @(X) VestBMS_BimodalLeftRightDatalike_discrete(X,model,theta,priorinfo,infostruct.bincenters_bim);
+            else
+                datafun = @(X) VestBMS_BimodalLeftRightDatalike(X,model,theta,priorinfo,infostruct.bincenters_bim,infostruct.MAXRNG,[],SSCALE);
+            end
+            if regenerate
+                Rmat = X.bimbins{iNoise}{2};
+                Rmat_unity = X.bimbins{iNoise}{3};                
+            else
+                [Rmat,Rmat_unity] = GendataFun(datafun,X.bimbins{iNoise},N);
+            end
             
             % Rmat = VestBMS_BimodalLeftRightGendata(X.bimbins{iNoise},N,model,theta,priorinfo,infostruct.bincenters_bim,infostruct.MAXRNG,SSCALE);
             

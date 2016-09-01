@@ -114,7 +114,7 @@ for iicnd = 1:length(cnd)
             
         case {5, 6, 7} % Bimodal condition - low, med and high noise
             iNoise = cnd(iicnd) - 4;
-            theta = zeros(1, 16);
+            theta = zeros(1, 18);
             string = {'vis_low', 'vis_med', 'vis_high'};
             
             % External visual noise

@@ -382,9 +382,10 @@ switch type
        models_extra = models;
        models_extra(:,9) = 3;  % Free delta prior
        models = [models; models_extra];
-       options = setoptions(options,'nstarts',5,1);
+       options = setoptions(options,'nstarts',1,1);
        options = setoptions(options,'nsobol',1,1);
-       options.loadinitfromconst = 1;
+       % options.loadinitfromconst = 1;
+       options.loadinitfromdisc = 1;
        
    case {314} % Bisensory non-Bayesian models with *sinusoidal* noise, deterministic decision making and lapse, NO SIGMA -- CORRELATED PRIORS
         % THIS MODEL BELONGS TO THE FINAL MODEL SET
@@ -401,9 +402,10 @@ switch type
        models_extra = models;
        models_extra(:,9) = 3;  % Free delta prior
        models = [models; models_extra];
-       options = setoptions(options,'nstarts',5,1);
+       options = setoptions(options,'nstarts',1,1);
        options = setoptions(options,'nsobol',1,1);
-       options.loadinitfromconst = 1;
+       % options.loadinitfromconst = 1;
+       options.loadinitfromdisc = 1;
        
       
     % CORRELATED PRIOR AND DISCRETE STIMULI
@@ -763,10 +765,12 @@ switch type
        models(:,15) = models(:,15) - 1;     % Remove softness
        dataids = [(1:11)', zeros(11,1)];
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
-       options = setoptions(options,'nstarts',5,1);
+       options = setoptions(options,'nstarts',1,1);
        options = setoptions(options,'nsobol',1,1);
        %options = setslowoptions(options); % Slow computation       
-       options.loadinitfromconst = 1;
+       % options.loadinitfromconst = 1;
+       options.loadinitfromdisc = 1;
+       
 
    case 1401 % Bisensory Bayesian models with *constant* noise and lapse and DISCRETE CORRELATED priors
         

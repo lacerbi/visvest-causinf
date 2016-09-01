@@ -77,6 +77,7 @@ switch lower(command)
                     mfit = ModelBag_get(temp.mbag,options.dataid,model_const,cnd);                    
                 end
                 if ~isempty(mfit) && ~isempty(mfit.mp)
+                    fprintf('Loading initial point from constant noise model.\n');
                     Nrep = 1e3;
                     maptheta_const = mfit.maptheta;
                     params_const = mfit.mp.params;
@@ -105,6 +106,29 @@ switch lower(command)
                 end
                     
             end
+            
+            if options.loadinitfromdisc && numel(options.dataid) > 1
+                model_disc = model;
+                % Set discrete prior model
+                model_disc(9) = model_disc(9) + 2;
+                if model_disc(9) < 4 || model_disc(9) > 5; model_disc(9) = 5; end
+                if options.dataid(2) == 4
+                    temp = load('VestBMS_starting_points_unity');
+                elseif options.dataid(2) == 8
+                    temp = load('VestBMS_starting_points_localization');
+                else
+                    temp = [];
+                end
+                if ~isempty(temp)
+                    mfit = ModelBag_get(temp.mbag,options.dataid,model_disc,cnd);                    
+                end
+                if ~isempty(mfit) && ~isempty(mfit.mp)
+                    fprintf('Loading initial point from discrete-prior model.\n');
+                    x0 = mfit.maptheta;
+                    options.startx = x0;
+                end                    
+            end
+            
             
             
             % Parameter structure from unimodal data

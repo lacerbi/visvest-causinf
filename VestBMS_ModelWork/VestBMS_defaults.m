@@ -46,8 +46,7 @@ switch lower(command)
         optlist(end+1) = struct('name', 'binweights', 'type', 'matrix', 'default', []);
         optlist(end+1) = struct('name', 'defaultprior', 'type', 'matrix', 'default', []);
         optlist(end+1) = struct('name', 'loadinitfromconst', 'type', 'matrix', 'default', 0);
-        
-        
+        optlist(end+1) = struct('name', 'loadinitfromdisc', 'type', 'matrix', 'default', 0);
         
         varargout{1} = optlist;
         

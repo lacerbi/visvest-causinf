@@ -126,6 +126,7 @@ switch lower(command)
                     fprintf('Loading initial point from discrete-prior model.\n');
                     infostruct.cnd = cnd;
                     mp = VestBMS_setupModel([],[],model,infostruct);
+                    x0 = mfit.maptheta;
                     x0 = bsxfun(@min, bsxfun(@max, x0, mp.bounds.LB + 1e-4), mp.bounds.UB - 1e-4);
                     options.startx = x0;
                 end                    

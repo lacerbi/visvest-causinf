@@ -891,6 +891,17 @@ switch type
        ];       
        dataids = [(1:11)', zeros(11,1)];
        
+   case 2402 % Full joint standard models with discrete priors and forced fusion
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+        
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_joint_fusion_disc';
+       models = [ ...
+           5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 1 6 0; ... % Bayesian model (forced fusion)
+           5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 3 6 0; ... % Fixed criterion (forced fusion)
+       ];       
+       dataids = [(1:11)', zeros(11,1)];
        
 %--------------------------------------------------------------------------
 % UNIMODAL ESTIMATION DATA FITS

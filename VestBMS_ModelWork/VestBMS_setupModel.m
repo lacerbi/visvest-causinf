@@ -81,7 +81,8 @@
 % MODEL(16) Report of unity model (Bimodal only, unused):
 % 1 Standard, 2 Separate criterion parameter (1 param), 
 % 3 Separate criterion and gamma (2 params), 4 Free probability (3 params),
-% 5 Separate criterion and sigmadelta (2 params).
+% 5 Separate criterion and sigmadelta (2 params),
+% 6 Forced fusion on localization
 
 function [mp,exitflag] = VestBMS_setupModel(mp,theta,model,infostruct)
 
@@ -543,8 +544,7 @@ function [mp, outflag] = initModel(model, infostruct)
                         pbounds{16} = [kcommon_bounds; priorsigma_bounds];
                         params{16} = {'kcommon_unity','priorsigmadelta_unity'};
                 end
-                
-                
+            case 6 % Forced fusion on localization                
             otherwise; error('Unsupported report of unity criterion model.');
         end
         
@@ -955,6 +955,13 @@ function [mp,exitflag] = updateModel(mp,theta)
                         case {3,4} % Criterion on x
                             updateparams(icnd, 16, {'exp','exp'});
                     end
+                case 6 % Forced fusion on localization
+                    switch model(15)
+                        case {1,2,6,7} % Bayesian
+                            mp.fulltheta{icnd}.pcommon_unity = mp.fulltheta{icnd}.pcommon;
+                        case {3,4} % Criterion on x
+                            mp.fulltheta{icnd}.kcommon_unity = mp.fulltheta{icnd}.kcommon;
+                    end
             end
         end
 
@@ -962,6 +969,17 @@ function [mp,exitflag] = updateModel(mp,theta)
         % mp.fulltheta{1}
     end
     
+    % Forced fusion joint fits
+    for icnd = 1:mp.ncnd
+        if model(16) == 6
+            switch model(15)
+                case {1,2,6,7} % Bayesian
+                    mp.fulltheta{icnd}.pcommon = 1;
+                case {3,4} % Criterion on x
+                    mp.fulltheta{icnd}.kcommon = Inf;
+            end            
+        end
+    end
    
     return;
     

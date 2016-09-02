@@ -101,7 +101,7 @@ switch lower(command)
                             x0(:,i) = 0.5*(mp.bounds.RLB(i) + mp.bounds.RUB(i));
                         end
                     end
-                    x0 = bsxfun(@min, bsxfun(@max, x0, mp.bounds.LB), mp.bounds.UB); 
+                    x0 = bsxfun(@min, bsxfun(@max, x0, mp.bounds.LB + 1e-4), mp.bounds.UB - 1e-4); 
                     options.startx = x0;
                 end
                     
@@ -124,7 +124,9 @@ switch lower(command)
                 end
                 if ~isempty(mfit) && ~isempty(mfit.mp)
                     fprintf('Loading initial point from discrete-prior model.\n');
-                    x0 = mfit.maptheta;
+                    infostruct.cnd = cnd;
+                    mp = VestBMS_setupModel([],[],model,infostruct);
+                    x0 = bsxfun(@min, bsxfun(@max, x0, mp.bounds.LB + 1e-4), mp.bounds.UB - 1e-4);
                     options.startx = x0;
                 end                    
             end

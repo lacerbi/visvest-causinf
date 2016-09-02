@@ -194,7 +194,7 @@ switch lower(command)
         modelstruct = varargin{2};
         options = varargin{3};
         infostruct = varargin{4};
-        
+                
         modelstruct.X = varargin{1}.X;                        
         modelstruct.nData = 0;
         

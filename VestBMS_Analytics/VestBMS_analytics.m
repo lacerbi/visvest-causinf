@@ -10,7 +10,7 @@
 % X(:, 9) Visual response
 % X(:, 10) Categorical response
 
-function [data bigdata] = VestBMS_analytics(datasets,options)
+function [data,bigdata] = VestBMS_analytics(datasets,options)
 
 if nargin < 2; options = []; end
 

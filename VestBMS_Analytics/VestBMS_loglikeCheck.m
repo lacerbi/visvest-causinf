@@ -1,7 +1,10 @@
-function [infodata,ll_est] = VestBMS_loglikeCheck(mfit,mfit_true,infodata)
+function [infodata,ll_est] = VestBMS_loglikeCheck(mfit,varargin)
 %VESTBMS_LOGLIKECHECK Check validity of computation and data generation.
 %   VESTBMS_LOGLIKECHECK(MFIT) tests the computation of the log likelihood
 %   and fake data generation for provided model structure MFIT.
+%
+%   VESTBMS_LOGLIKECHECK(MFIT,N) uses N function evaluations (default N=1e3).
+%
 %
 %   See also MODELWORK_LOGLIKECHECK.
 
@@ -11,10 +14,13 @@ if nargin < 1
 end
 
 if nargin < 2 || ...
-        ( nargin == 2 && isnumeric(mfit_true) && isscalar(mfit_true) && isempty(mfit_true))
-    if nargin < 2 || isempty(mfit_true); N = []; else N = mfit_true; end
+        ( nargin == 2 && isnumeric(varargin{1}) && isscalar(varargin{1}) && isempty(varargin{1}))
+    if nargin < 2 || isempty(varargin{1}); N = []; else N = varargin{1}; end
     ModelWork_loglikeCheck('VestBMS',mfit,N);
     return;
+else
+    mfit_true = varargin{1};
+    infodata = varargin{2};
 end
 
 lambda = 0.0001;

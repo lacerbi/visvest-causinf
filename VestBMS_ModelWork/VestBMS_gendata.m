@@ -220,15 +220,27 @@ for iicnd = 1:length(cnd)
                 R = [];
                 % Convert from response matrix to trial matrix
                 for iMat = 1:N
-                    mat = Rmat(:,:,iMat);
-                    temp = [];
-                    for t = 1:size(mat,1)
-                        nTot = sum(mat(t,:),2);
-                        resp = [-ones(mat(t,1),1); ones(mat(t,2),1)];
-                        D = [zeros(nTot,1), 2*ones(nTot,1), infostruct.bincenters_bim{2}(t)*ones(nTot,1), infostruct.bincenters_bim{1}(t)*ones(nTot,1), resp];
-                        temp = [temp; D];           
+                    mat = Rmat(:,:,iMat)';
+                    if 0
+                        temp = [];
+                        for t = 1:size(mat,1)
+                            nTot = sum(mat(t,:),2);
+                            resp = [-ones(mat(t,1),1); ones(mat(t,2),1)];
+                            D = [zeros(nTot,1), 2*ones(nTot,1), infostruct.bincenters_bim{2}(t)*ones(nTot,1), infostruct.bincenters_bim{1}(t)*ones(nTot,1), resp];
+                            temp = [temp; D];           
+                        end
+                    else
+                        nTot = sum(mat,1);
+                        nTotal = sum(nTot);
+                        Rtemp = zeros(nTotal,5);
+                        Rtemp(:,2) = 2;     % Task
+                        Rtemp(:,3) = repelem(infostruct.bincenters_bim{2},nTot);
+                        Rtemp(:,4) = repelem(infostruct.bincenters_bim{1},nTot);
+                        Rlist = [-ones(1,size(mat,2)); ones(1,size(mat,2))];
+                        Rtemp(:,5) = repelem(Rlist(:),mat(:));
+                        R(:,:,iMat) = Rtemp;
                     end
-                    R(:,:,iMat) = temp;
+                    R(:,:,iMat) = Rtemp;
                 end
 
                 D = zeros(size(R, 1), 10, size(R, 3));
@@ -255,15 +267,27 @@ for iicnd = 1:length(cnd)
                 R = [];
                 % Convert from response matrix to trial matrix
                 for iMat = 1:N
-                    mat = Rmat_unity(:,:,iMat);
-                    temp = [];
-                    for t = 1:size(mat,1)
-                        nTot = sum(mat(t,:),2);
-                        resp = [ones(mat(t,1),1); zeros(mat(t,2),1)];
-                        Du = [zeros(nTot,1), 3*ones(nTot,1), infostruct.bincenters_bim{2}(t)*ones(nTot,1), infostruct.bincenters_bim{1}(t)*ones(nTot,1), resp];
-                        temp = [temp; Du];           
+                    mat = Rmat_unity(:,:,iMat)';
+                    if 0
+                        temp = [];
+                        for t = 1:size(mat,1)
+                            nTot = sum(mat(t,:),2);
+                            resp = [ones(mat(t,1),1); zeros(mat(t,2),1)];
+                            Du = [zeros(nTot,1), 3*ones(nTot,1), infostruct.bincenters_bim{2}(t)*ones(nTot,1), infostruct.bincenters_bim{1}(t)*ones(nTot,1), resp];
+                            temp = [temp; Du];           
+                        end
+                        R(:,:,iMat) = temp;
+                    else
+                        nTot = sum(mat,1);
+                        nTotal = sum(nTot);
+                        Rtemp = zeros(nTotal,5);
+                        Rtemp(:,2) = 3;     % Task
+                        Rtemp(:,3) = repelem(infostruct.bincenters_bim{2},nTot);
+                        Rtemp(:,4) = repelem(infostruct.bincenters_bim{1},nTot);
+                        Rlist = [ones(1,size(mat,2)); zeros(1,size(mat,2))];
+                        Rtemp(:,5) = repelem(Rlist(:),mat(:));                        
+                        R(:,:,iMat) = Rtemp;
                     end
-                    R(:,:,iMat) = temp;
                 end
 
                 Du = zeros(size(R, 1), 10, size(R, 3));

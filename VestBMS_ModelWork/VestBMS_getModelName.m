@@ -12,6 +12,10 @@ switch model(15)
     case 7; string = 'BPT';
 end
 
+if model(16) == 6
+    string = [string 'F'];
+end
+
 if model(11) == 3
     string = [string 'P'];
 end

@@ -902,6 +902,38 @@ switch type
            5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 3 6 0; ... % Fixed criterion (forced fusion)
        ];       
        dataids = [(1:11)', zeros(11,1)];
+
+       
+%--------------------------------------------------------------------------        
+% SEMI-JOINT DATA FITS (NO UNISENSORY DATA)
+       
+   case 3401 % Semi-joint standard models with discrete priors
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+        
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_semi_disc';
+       models = [ ...
+           5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 1 1 0; ... % Bayesian model (same pararameters)
+           5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 3 1 0; ... % Fixed criterion (same pararameters)
+           5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 1 5 0; ... % Bayesian model (distinct pararameters)
+           5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 3 2 0; ... % Fixed criterion (distinct pararameters)
+       ];       
+       dataids = [(1:11)', zeros(11,1)];
+       dataids(:,2) = setflag(dataids(:,2), 7);     % No unisensory trials
+       
+   case 3402 % Semi-joint standard models with discrete priors and forced fusion
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+        
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_semi_fusion_disc';
+       models = [ ...
+           5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 1 6 0; ... % Bayesian model (forced fusion)
+           5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 3 6 0; ... % Fixed criterion (forced fusion)
+       ];       
+       dataids = [(1:11)', zeros(11,1)];
+       dataids(:,2) = setflag(dataids(:,2), 7);     % No unisensory trials
        
 %--------------------------------------------------------------------------
 % UNIMODAL ESTIMATION DATA FITS

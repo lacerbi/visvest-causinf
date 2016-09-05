@@ -1,24 +1,34 @@
 %VESTBMS_COMPAREJOINTFITS Compare joint vs separate fits.
-function [msep,mjoint] = VestBMS_compareJointFits()
+function [msep,mjoint] = VestBMS_compareJointFits(type)
 
-[~,modelsummary{1}] = ModelWork_collectFits('VestBMS','uni*',[],[]);
-[~,modelsummary{2}] = ModelWork_collectFits('VestBMS','bim-l*',[],[]);
-[~,modelsummary{3}] = ModelWork_collectFits('VestBMS','bim-u*',[],[]);
-[~,modelsummary{4}] = ModelWork_collectFits('VestBMS','joint*',[],[]);
+mfits = load('VestBMS_modelFits.mat');
+subjs = 1:11;     % Humans only
 
-metric = 'bic';
-idx = 1:11;     % Humans only
+switch lower(type(1))
+    case 'f'; modelnames = {'BP','CXD','CX','CXD'};
+    case 'b'; modelnames = {'BP','BPD','BPD','BPD'};
+    otherwise; error('Available type are (B)ayesian and (F)ixed criterion.');
+end
+tasks = {'uni','biml','bimu','joint'};
 
-m1 = modelsummary{1}.(metric)(idx,1);
-m2 = modelsummary{2}.(metric)(idx,1:2);
-m3 = modelsummary{3}.(metric)(idx,1:2);
+metrics = {'aic','aicc','bic','dic','loocv','maploglike','marginallike_rlr','marginallike_whmg','marginallike_whmu'};
 
-msep = bsxfun(@plus, m1, m2 + m3);
-mjoint = modelsummary{4}.(metric)(idx,1:2);
+for j = 1:numel(metrics)
+
+    score = NaN(numel(subjs),numel(tasks));
+    for i = 1:numel(tasks)
+        m = mfits.(['modelsummary_',tasks{i}]);
+        idx = find(strcmp(m.modelnames,modelnames{i}));
+        if isempty(idx) || ~isscalar(idx)
+            error(['Cannot find a single model for model name ' modelnames{i} ' in ' ['modelsummary_',tasks{i}] '.']);
+        end
+        score(:,i) = m.(metrics{j})(subjs,idx);
+    end
+
+    msep.(metrics{j}) = sum(score(:,1:3),2);
+    mjoint.(metrics{j}) = score(:,4);
+end
 
 [msep,mjoint]
-
-
-
 
 end

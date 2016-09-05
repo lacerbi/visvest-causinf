@@ -206,7 +206,7 @@ switch lower(command)
     % Flag 4: Include categorization trials (0), Exclude them (1)
     % Flag 5: Include zero disparities (0), Exclude them (1)
     % Flag 6: Include large disparities (0), Exclude them (1)
-    % Flag 7: Available
+    % Flag 7: Include unisensory trials (0), Exclude them (1)
     %----------------------------------------------------------------------
         
         options.dataid = [options.dataid 0];
@@ -274,6 +274,11 @@ switch lower(command)
                     modelstruct.X.bimodalall{iNoise}(modelstruct.X.bimodalall{iNoise}(:, 2) == iType, :) = [];                
                 end                    
             end
+        end
+        
+        % Exclude unisensory trials
+        if dataflags(7)
+            for iNoise = 1:4; modelstruct.X.unimodal{iNoise} = []; end
         end
 
         % Remove trials with SMALL disparity (5 deg or less)

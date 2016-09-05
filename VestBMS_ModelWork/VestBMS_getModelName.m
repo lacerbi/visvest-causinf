@@ -34,6 +34,7 @@ end
 
 switch model(16)
     case 1; % Nothing
+    case 4;
     otherwise; string = [string 's'];
 end
 

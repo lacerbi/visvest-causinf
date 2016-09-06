@@ -926,7 +926,7 @@ switch type
         % THIS MODEL BELONGS TO THE FINAL MODEL SET
         
        options = VestBMS(options,2,0);
-       groupcnd = 1:7;
+       groupcnd = 5:7;
        options.jobname = 'vest_semi_disc';
        models = [ ...
            5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 1 1 0; ... % Bayesian model (same pararameters)
@@ -941,7 +941,7 @@ switch type
         % THIS MODEL BELONGS TO THE FINAL MODEL SET
         
        options = VestBMS(options,2,0);
-       groupcnd = 1:7;
+       groupcnd = 5:7;
        options.jobname = 'vest_semi_fusion_disc';
        models = [ ...
            5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 1 6 0; ... % Bayesian model (forced fusion)

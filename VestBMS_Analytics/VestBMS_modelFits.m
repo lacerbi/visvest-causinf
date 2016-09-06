@@ -6,6 +6,7 @@ function VestBMS_modelFits
 [mbag_biml,modelsummary_biml] = ModelWork_collectFits('VestBMS','bisensory-l*',[],[]);
 [mbag_bimu,modelsummary_bimu] = ModelWork_collectFits('VestBMS','bisensory-u*',[],[]);
 [mbag_joint,modelsummary_joint] = ModelWork_collectFits('VestBMS','joint*',[],[]);
+[mbag_semi,modelsummary_semi] = ModelWork_collectFits('VestBMS','semi*',[],[]);
 
 save('VestBMS_modelfits.mat');
 

@@ -903,6 +903,21 @@ switch type
        ];       
        dataids = [(1:11)', zeros(11,1)];
 
+   case 2403 % Full joint standard models with discrete priors and CONSTANT noise
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+        
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_joint_disc_const';
+       models = [ ...
+           1 1 1 1, 1 1 1 2, 5 1 1 1, 2 1 1 1 0; ... % Bayesian model (same pararameters)
+           1 1 1 1, 1 1 1 2, 5 1 1 1, 2 1 3 1 0; ... % Fixed criterion (same pararameters)
+           1 1 1 1, 1 1 1 2, 5 1 1 1, 2 1 1 5 0; ... % Bayesian model (distinct pararameters)
+           1 1 1 1, 1 1 1 2, 5 1 1 1, 2 1 3 2 0; ... % Fixed criterion (distinct pararameters)
+           1 1 1 1, 1 1 1 2, 5 1 1 1, 2 1 1 6 0; ... % Bayesian model (forced fusion)
+           1 1 1 1, 1 1 1 2, 5 1 1 1, 2 1 3 6 0; ... % Fixed criterion (forced fusion)
+       ];       
+       dataids = [(1:11)', zeros(11,1)];
        
 %--------------------------------------------------------------------------        
 % SEMI-JOINT DATA FITS (NO UNISENSORY DATA)

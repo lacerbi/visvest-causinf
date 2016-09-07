@@ -168,6 +168,17 @@ srange_uni = srange_vis(idx);           % C = 1
 srange_vis = srange_vis(~idx);          % C = 2, vis
 srange_vest = srange_vest(~idx);        % C = 2, vest
 
+%--------------------------------------------------------------------------
+% Plot stimuli
+if DEBUG
+    scatter(srange_uni,srange_uni); hold on;
+    scatter(srange_vis,srange_vest);
+    xlabel('s_{vis}'); ylabel('s_{vest}'); axis square;
+    stdfig();
+    pause
+end
+%--------------------------------------------------------------------------
+
 % Compute sensory likelihood std for vision
 if wlike_vis >= 0; likemodel_vis = 'A'; else likemodel_vis = 'C'; end
 sigmasprime_vis = VestBMS_sensoryNoise(likemodel_vis,srange_vis,sigmalikezero_vis,wlike_vis);
@@ -360,9 +371,11 @@ else
     if do_estimation
         if model(15) == 6   % Posterior model probability matching
             % Compute the probability of each causal structure separately
-            postright_c1 = 1./(1 + ((1-postright_c1)./postright_c1).^beta_softmax);
+            % postright_c1 = 1./(1 + ((1-postright_c1)./postright_c1).^beta_softmax);
+            postright_c1 = 1./(1 + ((1-postright_c1)./postright_c1));
             postright_c1(isnan(postright_c1)) = 0.5;
-            postright_c2 = 1./(1 + ((1-postright_c2)./postright_c2).^beta_softmax);
+            % postright_c2 = 1./(1 + ((1-postright_c2)./postright_c2).^beta_softmax);
+            postright_c2 = 1./(1 + ((1-postright_c2)./postright_c2));
             postright_c2(isnan(postright_c2)) = 0.5;
             % Combine with probability matching
             prright = bsxfun(@times, w1, postright_c1) + bsxfun(@times, 1 - w1, postright_c2);

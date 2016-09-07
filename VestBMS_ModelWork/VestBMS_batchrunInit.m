@@ -866,7 +866,6 @@ switch type
        dataids = [(1:11)', zeros(11,1)];
 
    case 2101 % Full joint standard models with lapse (humans)
-        % THIS MODEL BELONGS TO THE FINAL MODEL SET
         
        options = VestBMS(options,2,0);
        groupcnd = 1:7;
@@ -877,7 +876,36 @@ switch type
        ];       
        dataids = [(1:11)', zeros(11,1)];
        
-   case 2401 % Full joint standard models with discrete priors
+    case 2201   % Full joint standard models with UNCORRELATED priors and ECCENTRIC noise
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_joint_unc';
+       models = [ ...
+           5 3 1 1, 1 1 1 2, 1 1 1 1, 2 1 1 1 0; ... % Bayesian model (same pararameters)
+           5 3 1 1, 1 1 1 2, 1 1 1 1, 2 1 3 1 0; ... % Fixed criterion (same pararameters)
+           5 3 1 1, 1 1 1 2, 1 1 1 1, 2 1 1 6 0; ... % Bayesian model (forced fusion)
+           5 3 1 1, 1 1 1 2, 1 1 1 1, 2 1 3 6 0; ... % Fixed criterion (forced fusion)
+       ];       
+       dataids = [(1:11)', zeros(11,1)];
+       
+    case 2202   % Full joint standard models with UNCORRELATED priors and CONSTANT noise
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_joint_unc_const';
+       models = [ ...
+           1 1 1 1, 1 1 1 2, 1 1 1 1, 2 1 1 1 0; ... % Bayesian model (same pararameters)
+           1 1 1 1, 1 1 1 2, 1 1 1 1, 2 1 3 1 0; ... % Fixed criterion (same pararameters)
+           1 1 1 1, 1 1 1 2, 1 1 1 1, 2 1 1 6 0; ... % Bayesian model (forced fusion)
+           1 1 1 1, 1 1 1 2, 1 1 1 1, 2 1 3 6 0; ... % Fixed criterion (forced fusion)
+       ];       
+       dataids = [(1:11)', zeros(11,1)];
+
+       
+    case 2401 % Full joint standard models with discrete priors
         % THIS MODEL BELONGS TO THE FINAL MODEL SET
         
        options = VestBMS(options,2,0);
@@ -902,7 +930,7 @@ switch type
            5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 3 6 0; ... % Fixed criterion (forced fusion)
        ];       
        dataids = [(1:11)', zeros(11,1)];
-
+       
    case 2403 % Full joint standard models with discrete priors and CONSTANT noise
         % THIS MODEL BELONGS TO THE FINAL MODEL SET
         
@@ -918,6 +946,19 @@ switch type
            1 1 1 1, 1 1 1 2, 5 1 1 1, 2 1 3 6 0; ... % Fixed criterion (forced fusion)
        ];       
        dataids = [(1:11)', zeros(11,1)];
+       
+   case 2404 % Full joint standard models with discrete priors and Bayesian probability matching
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+        
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_joint_probmatch_disc';
+       models = [ ...
+           5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 6 1 0; ... % Bayesian probability matching (eccentric)
+           1 1 1 1, 1 1 1 2, 5 1 1 1, 2 1 6 1 0; ... % Bayesian probability matching (constant)
+       ];       
+       dataids = [(1:11)', zeros(11,1)];
+       
        
 %--------------------------------------------------------------------------        
 % SEMI-JOINT DATA FITS (NO UNISENSORY DATA)

@@ -11,7 +11,7 @@ function varargout = VestBMS_defaults(command,varargin)
 %   returns the project-dependent model string and data id string for
 %   a given MODEL and DATAID.
 %
-%   See also MODELWORK_DEFAULTS, PARSEOPTIONS.
+%   See also MODELWORK_DEFAULTS, PARSEOPTS.
 
 switch lower(command)
     case 'options'

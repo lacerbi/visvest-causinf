@@ -122,6 +122,7 @@ options.robustfitflag = 1;
 options.quickplotflag = 0;
 options.bincenters = bincenters;
 options.psycholeftright = 1;
+options.psycholeftrightdelta = 1;
 options.bindata = 1;
 options.flatten = 1;
 

@@ -111,7 +111,7 @@ if (isnumeric(BMS) || islogical(BMS)) && BMS == 0
     bms = [];
 else        % Bayesian Model Selection for group studies
     alpha0 = priorweight./sum(priorweight); %/ sqrt(M);
-    if (isnumeric(BMS) || islogical(BMS)) && BMS == 1; plottype = 'checker'; else plottype = 'factors'; alpha0 = BMS; end
+    if (isnumeric(BMS) || islogical(BMS)) && BMS == 1; plottype = 'checker'; else plottype = 'factors'; alpha0 = alpha0; end
     modelsummary.groupnames = groupnames;
     [models,tab,bms] = ModelWork_plotModelComparison(modelsummary,metric,alpha0, ...
         'PlotType',plottype,'ModelList',modelnames,'SSorder',1,'BMSorder',0,'Factors',factors);

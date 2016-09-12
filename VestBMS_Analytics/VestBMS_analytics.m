@@ -21,6 +21,7 @@ defopts.quickplotflag = 1;          % Quick plot, skip some analysis
 defopts.bincenters = [-45,-40,-35,-30:2.5:-2.5,-1.25:0.625:1.25,2.5:2.5:30,35,40,45];    % Bins
 defopts.flatten = 1;                % Build flattened data
 defopts.psycholeftright = 0;        % Build left/right psychometric curves
+defopts.psycholeftrightdelta = 0;   % Build left/right psychometric curves based on disparity
 defopts.bindata = 0;                % Build binned data
 
 for f = fields(defopts)'
@@ -225,6 +226,33 @@ for ii = 1:length(datasets)
             end
         end
         D.psyright_mu(abs(D.psyright_mu) > 45) = NaN;
+        fprintf(' done.\n');
+    end
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Build psychometric curves for bisensory left/right as a function of disparity (vestibular only)
+    
+    if options.psycholeftrightdelta  
+        fprintf(['Building psychometric curves for subject #' num2str(ii) '...']);
+        DELTAS = [-40 -20 -10:5:10 20 40];
+        iMod = BIMAUDIO;
+        D.psyrightdelta_mu = NaN(3,numel(DELTAS));
+        D.psyrightdelta_sigma = NaN(3,numel(DELTAS));
+        for iNoise = 1:3    
+            if ~isempty(D.X.bimodal{iNoise}{iMod})
+                for ss = 1:numel(DELTAS)
+                    idx = (D.X.bimodal{iNoise}{iMod}(:,3) - D.X.bimodal{iNoise}{iMod}(:,4)) == DELTAS(ss);
+                    xxx = D.X.bimodal{iNoise}{iMod}(idx,3);
+                    yyy = D.X.bimodal{iNoise}{iMod}(idx,end) == 1;
+                    try
+                        [D.psyrightdelta_mu(iNoise,ss),D.psyrightdelta_sigma(iNoise,ss)] = psychofit(xxx,yyy);                
+                    catch
+                        % Continue
+                    end
+                end
+            end
+        end
+        % D.psyrightdelta_mu(abs(D.psyrightdelta_mu) > 45) = NaN;
         fprintf(' done.\n');
     end
     

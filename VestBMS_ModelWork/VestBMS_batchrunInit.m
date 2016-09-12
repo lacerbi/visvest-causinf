@@ -918,6 +918,20 @@ switch type
            1 1 1 1, 1 1 1 2, 5 1 1 1, 2 1 6 1 0; ... % Constant noise, discrete prior(same pararameters)
        ];       
        dataids = [(1:11)', zeros(11,1)];
+
+    case 2212   % Full joint standard models with UNCORRELATED/DISCRETE priors and CONSTANT/ECCENTRIC noise and Bayesian model selection
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_joint_modelselect';
+       models = [ ...
+           5 3 1 1, 1 1 1 2, 1 1 1 1, 2 1 8 1 0; ... % Eccentric noise, uncorrelated prior (same pararameters)
+           1 1 1 1, 1 1 1 2, 1 1 1 1, 2 1 8 1 0; ... % Constant noise, uncorrelated prior (same pararameters)
+           5 3 1 1, 1 1 1 2, 5 1 1 1, 2 1 8 1 0; ... % Eccentric noise, discrete prior (same pararameters)
+           1 1 1 1, 1 1 1 2, 5 1 1 1, 2 1 8 1 0; ... % Constant noise, discrete prior(same pararameters)
+       ];       
+       dataids = [(1:11)', zeros(11,1)];
        
        
        

@@ -348,7 +348,7 @@ else
 
     % Compute marginal likelihood, p(x_vis, x_vest|C)
 
-    if model(15) == 1 || model(15) == 2 || model(15) == 6 || model(15) == 7 % (Generalized) Bayesian posterior
+    if model(15) == 1 || model(15) == 2 || model(15) == 6 || model(15) == 7 || model(15) == 8 % (Generalized) Bayesian posterior
         % CASE C=2, Independent likelihoods
         if gaussianflag
             if priorsigmadelta == 0
@@ -454,7 +454,13 @@ else
 
         case 5 % Forced fusion
             w1 = 1;
-
+            
+        case 8 % Posterior model selection
+            w1 = double(likec1*priorc1 >= likec2*(1-priorc1));
+            if distinct_criteria
+                w1_unity = likec1*priorc1_unity./(likec1*priorc1_unity + likec2*(1-priorc1_unity));
+            end
+            
     end
 
     % NaNs can emerge as 0/0 - assume that the response becomes random

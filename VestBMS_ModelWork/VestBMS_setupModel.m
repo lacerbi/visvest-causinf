@@ -76,7 +76,7 @@
 % 1 Bayesian posterior (1 param), Generalized Bayesian posterior (2 params),
 % 3 Criterion on x (1 param), 4 Soft criterion on x (2 params),
 % 5 Forced fusion, 6 Bayesian posterior probability matching (1 param)
-% 7 Bayesian posterior, true p_common
+% 7 Bayesian posterior, true p_common, 8 Bayesian posterior model selection (1 param)
 %--------------------------------------------------------------------------
 % MODEL(16) Report of unity model (Bimodal only, unused):
 % 1 Standard, 2 Separate criterion parameter (1 param), 
@@ -478,7 +478,7 @@ function [mp, outflag] = initModel(model, infostruct)
         end
 
         switch model(15)
-            case {1,6} % Bayesian posterior
+            case {1,6,8} % Bayesian posterior
                 mp.nparams(15) = 1;
                 pbounds{15} = [0 1, 0.1 0.9, 0.1];
                 params{15} = {'pcommon'};
@@ -509,7 +509,7 @@ function [mp, outflag] = initModel(model, infostruct)
             case 1 % Standard
             case 2 % Separate criterion (based on 15)                
                 switch model(15)
-                    case {1,2,6,7} % Bayesian (1-param)
+                    case {1,2,6,7,8} % Bayesian (1-param)
                         mp.nparams(16) = 1;
                         pbounds{16} = [0 1, 0.1 0.9, 0.1];
                         params{16} = {'pcommon_unity'};
@@ -520,7 +520,7 @@ function [mp, outflag] = initModel(model, infostruct)
                 end
             case 3 % Separate criterion and gamma (based on 15)
                 switch model(15)
-                    case {1,2,6,7} % Bayesian (2-params)
+                    case {1,2,6,7,8} % Bayesian (2-params)
                         mp.nparams(16) = 2;
                         pbounds{16} = [0 1, 0.1 0.9, 0.1; softmax_bounds];
                         params{16} = {'pcommon_unity','invgamma_causinf_unity'};
@@ -535,7 +535,7 @@ function [mp, outflag] = initModel(model, infostruct)
                 params{16} = {'random_unity_low','random_unity_med','random_unity_high'};
             case 5  % Separate criterion and priorsigmadelta
                 switch model(15)
-                    case {1,2,6,7} % Bayesian (2-params)
+                    case {1,2,6,7,8} % Bayesian (2-params)
                         mp.nparams(16) = 2;
                         pbounds{16} = [0 1, 0.1 0.9, 0.1; priorsigma_bounds];
                         params{16} = {'pcommon_unity','priorsigmadelta_unity'};
@@ -911,7 +911,7 @@ function [mp,exitflag] = updateModel(mp,theta)
 
             % Model weighting model (Bimodal only)
             switch model(15)
-                case {1,6} % Bayesian posterior
+                case {1,6,8} % Bayesian posterior
                     updateparams(icnd, 15, {'id'});
                 case 2
                     updateparams(icnd, 15, {'id','exp'});
@@ -931,7 +931,7 @@ function [mp,exitflag] = updateModel(mp,theta)
                     end
                 case 2  % Separate criterion parameter
                     switch model(15)
-                        case {1,2,6,7} % Bayesian
+                        case {1,2,6,7,8} % Bayesian
                             updateparams(icnd, 16, {'id'});
                         case {3,4} % Criterion on x
                             updateparams(icnd, 16, {'exp'});
@@ -941,7 +941,7 @@ function [mp,exitflag] = updateModel(mp,theta)
                     end
                 case 3  % Separate criterion and gamma parameter
                     switch model(15)
-                        case {1,2,6,7} % Bayesian
+                        case {1,2,6,7,8} % Bayesian
                             updateparams(icnd, 16, {'id','exp'});
                         case {3,4} % Criterion on x
                             updateparams(icnd, 16, {'exp','exp'});
@@ -950,14 +950,14 @@ function [mp,exitflag] = updateModel(mp,theta)
                     updateparams(icnd, 16, {'id','id','id'});
                 case 5 % Separate criterion and priorsigmadelta parameter
                     switch model(15)
-                        case {1,2,6,7} % Bayesian
+                        case {1,2,6,7,8} % Bayesian
                             updateparams(icnd, 16, {'id','exp'});
                         case {3,4} % Criterion on x
                             updateparams(icnd, 16, {'exp','exp'});
                     end
                 case 6 % Forced fusion on localization
                     switch model(15)
-                        case {1,2,6,7} % Bayesian
+                        case {1,2,6,7,8} % Bayesian
                             mp.fulltheta{icnd}.pcommon_unity = mp.fulltheta{icnd}.pcommon;
                         case {3,4} % Criterion on x
                             mp.fulltheta{icnd}.kcommon_unity = mp.fulltheta{icnd}.kcommon;
@@ -973,7 +973,7 @@ function [mp,exitflag] = updateModel(mp,theta)
     for icnd = 1:mp.ncnd
         if model(16) == 6
             switch model(15)
-                case {1,2,6,7} % Bayesian
+                case {1,2,6,7,8} % Bayesian
                     mp.fulltheta{icnd}.pcommon = 1;
                 case {3,4} % Criterion on x
                     mp.fulltheta{icnd}.kcommon = Inf;

@@ -10,6 +10,7 @@ switch model(15)
     case 5; string = 'FF';
     case 6; string = 'BPM';
     case 7; string = 'BPT';
+    case 8; string = 'BPS';
 end
 
 if model(16) == 6

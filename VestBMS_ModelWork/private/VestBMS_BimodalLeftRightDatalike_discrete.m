@@ -368,6 +368,9 @@ else
                 w1_unity = likec1*priorc1_unity./(likec1*priorc1_unity + likec2*(1-priorc1_unity));
             end
             
+        case 9 % Probabilistic fusion
+            w1 = priorc1;
+            
     end
 
     % NaNs can emerge as 0/0 - assume that the response becomes random
@@ -375,13 +378,11 @@ else
 
     % Bisensory estimation
     if do_estimation
-        if model(15) == 6   % Posterior model probability matching
+        if model(15) == 6 || model(15) == 9  % Posterior model probability matching or probabilistic fusion
             % Compute the probability of each causal structure separately
             % postright_c1 = 1./(1 + ((1-postright_c1)./postright_c1).^beta_softmax);
-            postright_c1 = 1./(1 + ((1-postright_c1)./postright_c1));
             postright_c1(isnan(postright_c1)) = 0.5;
             % postright_c2 = 1./(1 + ((1-postright_c2)./postright_c2).^beta_softmax);
-            postright_c2 = 1./(1 + ((1-postright_c2)./postright_c2));
             postright_c2(isnan(postright_c2)) = 0.5;
             % Combine with probability matching
             prright = bsxfun(@times, w1, postright_c1) + bsxfun(@times, 1 - w1, postright_c2);

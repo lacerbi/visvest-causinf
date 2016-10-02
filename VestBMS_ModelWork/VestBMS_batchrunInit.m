@@ -574,6 +574,17 @@ switch type
        models(:,9) = 4; % Uniform discrete prior on DELTA
        
        
+   case {421} % Bisensory probabilistic-fusion models with deterministic decision making and lapse
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       [options,~,groupcnd] = VestBMS(options,2,0);
+       models = [1 1 1 1, 1 1 1 5, 5 1 1 1, 2 1 9 1; ...
+                 1 1 1 1, 1 1 1 2, 1 1 1 1, 2 1 9 1; ...
+                 5 3 1 1, 1 1 1 5, 5 1 1 1, 2 1 9 1; ...
+                 5 3 1 1, 1 1 1 2, 1 1 1 1, 2 1 9 1;];
+       options.jobname = 'vest_probfusion';
+       dataids(:,2) = setflag(dataids(:,2), 4);     % No categorical trials       
+       
     % LARGE-DISPARITY TRIALS ONLY   
        
     case 501 % Bisensory models

@@ -73,6 +73,7 @@ priorweight = [];
 % modelnames = {'BPD','BPDs','CXD','CXDs','BPFDs','CXFDs','CXs'};
 % modelnames = {'BPD','CXD','BPFDs','CXFDs'};
 modelnames = {'BPD-C','CXD-C','BPFD-Cs','CXFD-Cs','BPD','CXD','BPFDs','CXFDs','BP-C','BPF-Cs','CX-C','CXF-Cs','BP','BPFs','CX','CXFs'};
+% modelnames = {'BPMD-C','CXD-C','BPFD-Cs','CXFD-Cs','BPMD','CXD','BPFDs','CXFDs','BPM-C','BPF-Cs','CX-C','CXF-Cs','BPM','BPFs','CX','CXFs'};
 M = numel(modelnames);
 bms = plotcomparison(modelsummary_joint,metric,modelnames,M,'BPD',priorweight,BMS>0);
 title('Joint fits');

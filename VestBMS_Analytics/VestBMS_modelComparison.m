@@ -1,131 +1,115 @@
+function [bms,fac,mfits] = VestBMS_modelComparison(metric,type,mfits,metricname)
 %VESTBMS_MODELCOMPARISON Main model comparison.
-function VestBMS_modelComparison(metric,BMS)
 
 if nargin < 1 || isempty(metric); metric = 'aicc'; end
-if nargin < 2 || isempty(BMS); BMS = 0; end
+if nargin < 2 || isempty(type); type = 1; end
+if nargin < 3 || isempty(mfits); mfits = []; end
+if nargin < 4 || isempty(metricname); metricname = metric; end
 
-load('VestBMS_modelfits');
+if isempty(mfits)
+    mfits = load('VestBMS_modelfits');
+end
 
-if BMS == 2
-    h = plotify([repmat([1 1 1, 2 2 2, 3 3 3],3,1); [4 5 6, 7 8 9, 10 11 12]],'gutter',[0.05,0.1],'margins',[0.05 0.05,0.1 0.05],'labels',{'a','b','c'});
-else
-    h = plotify([1 2 3],'margins',[0.05 0.05,0.1 0.05],'labels',{'a','b','c'});    
+metricString = [' (' metricname ')'];
+
+switch type
+    case 0
+        h = plotify([1 2 3],'margins',[0.05 0.05,0.1 0.05],'labels',{'a','b','c'});
+        titleaxes = [1 2 3];
+    case 1
+        h = plotify([repmat([1 1 1, 2 2 2, 3 3 3],3,1); [4 5 6, 7 8 9, 10 11 12]],'gutter',[0.05,0.1],'margins',[0.05 0.05,0.1 0.05],'labels',{'a','b','c'});
+        titleaxes = [1 2 3];
+    case 2
+        nrows = 5; ncols = 3; padding = 5;
+        grid = [makepanel(nrows,ncols,padding), zeros(nrows,1), makepanel(nrows,ncols,padding)+15, zeros(nrows,1), makepanel(nrows,ncols,padding)+30];        
+        h = plotify(grid,'gutter',[0.03,0.03],'margins',[0.05 0.05,0.1 0.05]);
+        titleaxes = [2 17 32];
 end
 
 %% BISENSORY ESTIMATION TASK
+if 1
+    modelnames = {'BPD-C','FFD-C','CXD-C','BPD','FFD','CXD','BP-C','FF-C','CX-C','BP','FF','CX'}; 
+    M = numel(modelnames); priorweight = ones(1,M);
+    factornames{1} = {'Const','Ecc'};
+    factors{1} = [1 1 1 0 0 0 1 1 1 0 0 0; 0 0 0 1 1 1 0 0 0 1 1 1];
+    factornames{2} = {'Bayes','Fixed','Fusion'};
+    factors{2} = [1 0 0, 1 0 0, 1 0 0, 1 0 0; 0 0 1, 0 0 1, 0 0 1, 0 0 1; 0 1 0, 0 1 0, 0 1 0, 0 1 0];
+    factornames{3} = {'Corr','Uncorr'};
+    factors{3} = [1 1 1 1 1 1, 0 0 0 0 0 0; 0 0 0 0 0 0 1 1 1 1 1 1];
+    if type == 1
+        masks = [];
+        hg = [h(1),h(4:6)];
+    else
+        masks = {ones(1,M),[1 1 1 0 0 0 1 1 1 0 0 0],[0 0 0 1 1 1 0 0 0 1 1 1],[1 1 1 1 1 1, 0 0 0 0 0 0],[0 0 0 0 0 0 1 1 1 1 1 1]};
+        hg = {[0,h(1:3)], [0,h(4:6)], [0,h(7:9)], [0,h(10:12)], [0,h(13:15)]};
+    end
 
-axes(h(1));
-priorweight = [];
-modelnames = {'BPD-C','FFD-C','CXD-C','BPD','FFD','CXD','BP-C','FF-C','CX-C','BP','FF','CX'}; 
-priorweight = 1; M = numel(modelnames);
-bms = plotcomparison(modelsummary_biml,metric,modelnames,M,'BPD',priorweight,BMS>0);
-title('Bisensory estimation only');
-
-if BMS == 2
-    axes(h(4));
-    factors = [1 1 1 0 0 0 1 1 1 0 0 0; 0 0 0 1 1 1 0 0 0 1 1 1];
-    plotcomparison(modelsummary_biml,metric,modelnames,M,'BPD',priorweight,bms,{'Const','Ecc'},factors);
-    
-    axes(h(5));
-    factors = [1 0 0, 1 0 0, 1 0 0, 1 0 0; 0 0 1, 0 0 1, 0 0 1, 0 0 1; 0 1 0, 0 1 0, 0 1 0, 0 1 0];
-    % modelnames = {{'BPD-C','BP-C','BPD','BP'},{'CXD-C','CX-C','CXD','CX'},{'FFD-C','FFD','FF-C','FF'}};
-    plotcomparison(modelsummary_biml,metric,modelnames,M,'BPD',priorweight,bms,{'Bayes','Fixed','Fusion'},factors);
-    
-    axes(h(6));
-    factors = [1 1 1 1 1 1, 0 0 0 0 0 0; 0 0 0 0 0 0 1 1 1 1 1 1];
-    % modelnames = {{'BPD-C','FFD-C','CXD-C','BPD','FFD','CXD'},{'BP-C','FF-C','CX-C','BP','FF','CX'}};
-    plotcomparison(modelsummary_biml,metric,modelnames,M,'BPD',priorweight,bms,{'Corr','Uncorr'},factors);
+    [bms{1},fac{1}] = ModelWork_factorialComparison(mfits.modelsummary_biml,metric,modelnames,'BPD',priorweight,factors,factornames,hg,masks);
+    axes(h(titleaxes(1))); title(['Bisensory estimation only', metricString]);    
+    clear factors factornames masks;
 end
 
 %% UNITY JUDGMENT TASK
 
-axes(h(2));
-priorweight = [];
-% modelnames = {'BPd-C','BPPd-C','BPD-C','BPPD-C','BPd','BPPd','BPD','BPPD','FF','CX-C','CX'};
-% modelnames = {'BPD-C','BPPD-C','CX-C','BPD','BPPD','FF','CX'};
-% modelnames = {'BPD-C','CX-C','BPD','FF','CX'};
 modelnames = {'BPD-C','CX-C','BPD','CX','BP-C','BP','FF'}; 
-priorweight = [1 2 1 2, 1 1 4]; M = numel(modelnames);
-bms = plotcomparison(modelsummary_bimu,metric,modelnames,M,'BPD',priorweight,BMS>0);
-title('Unity judgements only');
-
-if BMS == 2
-    axes(h(7));
-    factors = [1 1 0 0 1 0 1; 0 0 1 1 0 1 1];
-    plotcomparison(modelsummary_bimu,metric,modelnames,M,'BPD',priorweight,bms,{'Const','Ecc'},factors);
-    
-    axes(h(8));
-    factors = [1 0 1 0 1 1 0; 0 1 0 1 0 0 0; 0 0 0 0 0 0 1];
-    % modelnames = {{'BPD-C','BP-C','BPD','BP'},{'CXD-C','CX-C','CXD','CX'},{'FFD-C','FFD','FF-C','FF'}};
-    plotcomparison(modelsummary_bimu,metric,modelnames,M,'BPD',priorweight,bms,{'Bayes','Fixed','Fusion'},factors);
-    
-    axes(h(9));
-    factors = [1 1 1 1 0 0 1; 0 1 0 1 1 1 1];
-    % modelnames = {{'BPD-C','FFD-C','CXD-C','BPD','FFD','CXD'},{'BP-C','FF-C','CX-C','BP','FF','CX'}};
-    plotcomparison(modelsummary_bimu,metric,modelnames,M,'BPD',priorweight,bms,{'Corr','Uncorr'},factors);
+M = numel(modelnames); priorweight = [1 2 1 2, 1 1 4];
+factornames{1} = {'Const','Ecc'};
+factors{1} = [1 1 0 0 1 0 1; 0 0 1 1 0 1 1];
+factornames{2} = {'Bayes','Fixed','Fusion'};
+factors{2} = [1 0 1 0 1 1 0; 0 1 0 1 0 0 0; 0 0 0 0 0 0 1];
+factornames{3} = {'Corr','Uncorr'};
+factors{3} = [1 1 1 1 0 0 1; 0 1 0 1 1 1 1];
+if type == 1
+    masks = [];
+    hg = [h(2),h(7:9)];
+    priorweight = [1 2 1 2, 1 1 4];
+    factorfixed = [];
+else
+    masks = {ones(1,M),[1 1 0 0 1 0 1],[0 0 1 1 0 1 1],[1 1 1 1 0 0 1],[0 1 0 1 1 1 1]};
+    hg = {[0,h(16:18)], [0,h(19:21)], [0,h(22:24)], [0,h(25:27)], [0,h(28:30)]};
+    priorweight = [1 2 1 2, 1 1 4; 1 2 0 0, 1 0 2; 0 0 1 2, 0 1 2; 1 1 1 1, 0 0 2; 0 1 0 1, 1 1 2];
+    factorfixed = [0 0 0; 1 0 0; 2 0 0; 0 0 1; 0 0 2];
 end
+
+[bms{2},fac{2}] = ModelWork_factorialComparison(mfits.modelsummary_bimu,metric,modelnames,'BPD',priorweight,factors,factornames,hg,masks,factorfixed);
+axes(h(titleaxes(2))); title(['Unity judgements only', metricString]);    
+clear factors factornames;
 
 %% JOINT FIT
 
-axes(h(3));
-priorweight = [];
-% modelnames = {'BPD','BPDs','CXD','CXDs','BPFDs','CXFDs','CXs','BPMs'};
-% modelnames = {'BPD','BPDs','CXD','CXDs','BPFDs','CXFDs','CXs'};
-% modelnames = {'BPD','CXD','BPFDs','CXFDs'};
 modelnames = {'BPD-C','CXD-C','BPFD-Cs','CXFD-Cs','BPD','CXD','BPFDs','CXFDs','BP-C','BPF-Cs','CX-C','CXF-Cs','BP','BPFs','CX','CXFs'};
 % modelnames = {'BPMD-C','CXD-C','BPFD-Cs','CXFD-Cs','BPMD','CXD','BPFDs','CXFDs','BPM-C','BPF-Cs','CX-C','CXF-Cs','BPM','BPFs','CX','CXFs'};
-M = numel(modelnames);
-bms = plotcomparison(modelsummary_joint,metric,modelnames,M,'BPD',priorweight,BMS>0);
-title('Joint fits');
-
-if BMS == 2
-    axes(h(10));
-    factors = [1 1 1 1, 0 0 0 0, 1 1 1 1, 0 0 0 0; 0 0 0 0, 1 1 1 1, 0 0 0 0, 1 1 1 1];
-    %modelnames = {{'BPD-C','CXD-C','BPFD-Cs','CXFD-Cs','BP-C','BPF-Cs','CX-C','CXF-Cs'},{'BPD','CXD','BPFDs','CXFDs','BP','BPFs','CX','CXFs'}};
-    plotcomparison(modelsummary_joint,metric,modelnames,M,'BPD',priorweight,bms,{'Const','Ecc'},factors);
-    
-    axes(h(11));
-    factors = [1 0 0 0, 1 0 0 0, 1 0 0 0, 1 0 0 0; 0 1 0 0, 0 1 0 0, 0 1 0 0, 0 1 0 0; 0 0 1 0, 0 0 1 0, 0 0 1 0, 0 0 1 0; 0 0 0 1, 0 0 0 1, 0 0 0 1, 0 0 0 1];
-    %modelnames = {{'BPD-C','BPD','BP-C','BP'},{'CXD-C','CXD','CX-C','CX'},{'BPFD-Cs','BPFDs','BPF-Cs','BPFs'},{'CXFD-Cs','CXFDs','CXF-Cs','CXFs'}};
-    plotcomparison(modelsummary_joint,metric,modelnames,M,'BPD',priorweight,bms,{'Bayes','Fixed','B-Fusion','F-Fusion'},factors);
-    
-    axes(h(12));
-    factors = [1 1 1 1, 1 1 1 1, 0 0 0 0, 0 0 0 0; 0 0 0 0, 0 0 0 0, 1 1 1 1, 1 1 1 1];
-    %modelnames = {{'BPD-C','CXD-C','BPFD-Cs','CXFD-Cs','BPD','CXD','BPFDs','CXFDs'},{'BP-C','BPF-Cs','CX-C','CXF-Cs','BP','BPFs','CX','CXFs'}};
-    plotcomparison(modelsummary_joint,metric,modelnames,M,'BPD',priorweight,bms,{'Corr','Uncorr'},factors);
+M = numel(modelnames); priorweight = ones(1,M);
+factornames{1} = {'Const','Ecc'};
+factors{1} = [1 1 1 1, 0 0 0 0, 1 1 1 1, 0 0 0 0; 0 0 0 0, 1 1 1 1, 0 0 0 0, 1 1 1 1];
+factornames{2} = {'Bayes','Fixed','B-Fusion','F-Fusion'};
+factors{2} = [1 0 0 0, 1 0 0 0, 1 0 0 0, 1 0 0 0; 0 1 0 0, 0 1 0 0, 0 1 0 0, 0 1 0 0; 0 0 1 0, 0 0 1 0, 0 0 1 0, 0 0 1 0; 0 0 0 1, 0 0 0 1, 0 0 0 1, 0 0 0 1];
+factornames{3} = {'Corr','Uncorr'};
+factors{3} = [1 1 1 1, 1 1 1 1, 0 0 0 0, 0 0 0 0; 0 0 0 0, 0 0 0 0, 1 1 1 1, 1 1 1 1];
+if type == 1
+    masks = [];
+    hg = [h(3),h(10:12)];
+else
+    masks = {ones(1,M),[1 1 1 1, 0 0 0 0, 1 1 1 1, 0 0 0 0],[0 0 0 0, 1 1 1 1, 0 0 0 0, 1 1 1 1],[1 1 1 1, 1 1 1 1, 0 0 0 0, 0 0 0 0],[0 0 0 0, 0 0 0 0, 1 1 1 1, 1 1 1 1]};
+    hg = {[0,h(31:33)], [0,h(34:36)], [0,h(37:39)], [0,h(40:42)], [0,h(43:45)]};
 end
 
-
+[bms{3},fac{3}] = ModelWork_factorialComparison(mfits.modelsummary_joint,metric,modelnames,'BPD',priorweight,factors,factornames,hg,masks);
+axes(h(titleaxes(3))); title(['Joint fits', metricString]);    
+clear factors factornames;
 
 end
 
 %--------------------------------------------------------------------------
-function bms = plotcomparison(modelsummary,metric,modelnames,M,bestmodel,priorweight,BMS,groupnames,factors)
-
-if nargin < 6 || isempty(priorweight); priorweight = 1; end
-if nargin < 7 || isempty(BMS); BMS = 0; end
-if nargin < 8; groupnames = []; end
-if nargin < 9; factors = []; end
-
-if (isnumeric(BMS) || islogical(BMS)) && BMS == 0
-    ModelPlot_compare(modelsummary,metric,bestmodel,'mean',[],modelnames);
-    bms = [];
-else        % Bayesian Model Selection for group studies
-    alpha0 = priorweight./sum(priorweight); %/ sqrt(M);
-    if (isnumeric(BMS) || islogical(BMS)) && BMS == 1; plottype = 'checker'; else plottype = 'factors'; alpha0 = alpha0; end
-    modelsummary.groupnames = groupnames;
-    [models,tab,bms] = ModelWork_plotModelComparison(modelsummary,metric,alpha0, ...
-        'PlotType',plottype,'ModelList',modelnames,'SSorder',1,'BMSorder',0,'Factors',factors);
-    
-    if isstruct(BMS)
-        ylabel('');
-        set(gca,'FontSize',10,'Ytick',[0 0.5 1]);
-    else
-        bms.modelnames
-        bms.exp_r
-        h = get(gca,'xlabel');
-        set(h,'FontSize',12);
+function p = makepanel(nrows,ncols,pad)
+    p = [];
+    n = 1;
+    for i = 1:nrows
+        row = [];
+        for j = 1:ncols
+            row = [row, n*ones(1,pad)];
+            n = n + 1;
+        end    
+        p = [p; row];
     end
-end
-
 end

@@ -66,8 +66,8 @@
 % MODEL(12) Unused
 % 1 Unused
 %--------------------------------------------------------------------------
-% MODEL(13) Lapse model (unused):
-% 1 No lapse, 2 Prior lapse (1 param), 3 From data.
+% MODEL(13) Lapse model:
+% 1 No lapse, 2 Lapse (1 param), 3 From data.
 %--------------------------------------------------------------------------
 % MODEL(14) Causal inference model (Bimodal only, unused):
 % 1 Unused

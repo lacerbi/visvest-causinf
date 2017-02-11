@@ -4,11 +4,14 @@ function [fig,gendata] = VestBMS_plotBimodalData(data,type,mfit,ngen,flags,fonts
 if ~exist('mfit', 'var'); mfit = []; end
 % Number of generated datasets, per subject
 if ~exist('ngen', 'var') || isempty(ngen); ngen = 30; end
-if ~exist('flags', 'var') || isempty(flags); flags = 0; end
+if ~exist('flags', 'var') || isempty(flags); flags = [0 1]; end
 if ~exist('fontsize', 'var') || isempty(fontsize); fontsize = 14; end
 if ~exist('axesfontsize', 'var') || isempty(axesfontsize); axesfontsize = 12; end
 
 plotdata = flags(1);
+plot1d = flags(2);
+
+plots = VestBMS_defaults('plots');  % Get default plot info
 
 % Check dataset
 if isstruct(data) && isfield(data, 'X'); data = {data}; end
@@ -21,7 +24,11 @@ nNoise = 3; % Three levels of noise
 fig.prefix = 'VestBMS'; % Program name
 
 if subjs(1) == 0
-    fig.panelgraph = 1:nNoise;
+    if plot1d
+        fig.panelgraph = (1:nNoise)';
+    else
+        fig.panelgraph = 1:nNoise;
+    end
     fig.intborder = [0.05 0.1]; % Internal border noise
     nRows = 1;
 else
@@ -33,9 +40,15 @@ end
 
 stringnoise = {'Visual, low noise', 'Visual, med noise', 'Visual, high noise', 'Vestibular'};
 
-xLim = [-46.4 46.4; -25 25];
-yLim = [-46.4 46.4; -25 25];
-zLim = [-1 1; -1 1; 0 1];
+if plot1d
+    xLim = [0 100; 0 100];
+    yLim = [0 1; 0 1];
+    zLim = [-1 1; -1 1; 0 1];    
+else
+    xLim = [-46.4 46.4; -25 25];
+    yLim = [-46.4 46.4; -25 25];
+    zLim = [-1 1; -1 1; 0 1];
+end
 
 ylabels = {'Visual stimulus', 'SD'};    
 binfuns = {'@(y) nanmean(y)', '@(y) nanstd(y)'};
@@ -70,30 +83,46 @@ for iRow = 1:nRows
         if type == 3
             panel.plots{iPlot}.source.zfun = '@(x,y,z) 2-z'; 
         end
-        panel.plots{iPlot}.color = [1 0 0];
+        if plot1d
+            panel.plots{iPlot}.type = 'dots2dflat'; 
+            panel.plots{iPlot}.color = plots.NoiseColors(iNoise,:);
+        else
+            panel.plots{iPlot}.color = [1 0 0];
+        end
                         
         % Panel cosmetics        
         panel.fontsize = fontsize;
         panel.axesfontsize = axesfontsize;
+        panel.plotzero = 0;        
         panel.xLim = xLim(1, :); panel.yLim = yLim(1, :); panel.zLim = zLim(type, :);
-        panel.xTick = [-45 -30 -15 0 15 30 45];
-        panel.axissquare = 1;
-        if iRow == nRows
-            panel.xTickLabel = {'-45°','-30°','-15°','0°','15°','30°','45°'};
-        else
-            panel.xTickLabel = {'','',''};            
-        end
-        panel.yTick = [-45 -30 -15 0 15 30 45];
-        if iNoise == 1
-            panel.yTickLabel = {'-45°','-30°','-15°','0°','15°','30°','45°'};
-        else
-            panel.yTickLabel = {'','',''};            
-        end
-        panel.plotzero = 0;
+        if ~plot1d;  end
         
-        if iRow == 1; panel.title = stringnoise{iNoise}; end
-        if iRow == nRows; panel.xlabel = 'Vestibular stimulus'; end
-        if iNoise == 1 && iRow == nRows; panel.ylabel = ylabels{1}; end
+        if plot1d
+            panel.xTick = [1,10:10:90,99];
+            panel.yTick = [0 0.5 1];            
+            if iRow == nRows; panel.xlabel = 'Stimuli pairs'; end
+            panel.ylabel = 'Fraction response ''unity''';            
+
+        else
+            panel.axissquare = 1;        
+            panel.xTick = [-45 -30 -15 0 15 30 45];
+            if iRow == nRows
+                panel.xTickLabel = {'-45°','-30°','-15°','0°','15°','30°','45°'};
+            else
+                panel.xTickLabel = {'','',''};            
+            end
+        
+            panel.yTick = [-45 -30 -15 0 15 30 45];
+            if iNoise == 1
+                panel.yTickLabel = {'-45°','-30°','-15°','0°','15°','30°','45°'};
+            else
+                panel.yTickLabel = {'','',''};            
+            end
+            
+            if iRow == 1; panel.title = stringnoise{iNoise}; end
+            if iRow == nRows; panel.xlabel = 'Vestibular stimulus'; end
+            if iNoise == 1 && iRow == nRows; panel.ylabel = ylabels{1}; end            
+        end
                 
         % Add model fit to panel
         if ~isempty(mfit)
@@ -102,8 +131,13 @@ for iRow = 1:nRows
                 if ~isfield(thisplot.source, 'method')
                     copyplot = thisplot;
                     copyplot.source.type = 'model2d';
-                    % copyplot.type = 'line';
-                    copyplot.color = [0 0 0];
+                    if plot1d
+                        copyplot.type = 'line2dflat'; 
+                        copyplot.color = 0.4*plots.NoiseColors(iNoise,:) + 0.6*[1 1 1];  
+                        copyplot.linewidth = 4;
+                    else
+                        copyplot.color = [0 0 0];
+                    end
                     % copyplot.color = 'none';
                     panel.plots{end+1} = copyplot; % Add panel to figure
                 end
@@ -116,9 +150,14 @@ end
 
 [fig,gendata] = ModelPlot_drawFigure(fig,data,mfit,ngen);
 
-for iPanel = 1:numel(fig.hg)
-    axes(fig.hg(iPanel));
-    plot([0,0], ylim, 'k:', 'LineWidth', 1);
+for iPanel = 1:numel(fig.hg)-1
+    axes(fig.hg(iPanel)); hold on;
+    if plot1d
+        hp = plot(xlim, [0.5 0.5], 'k--', 'LineWidth', 1);
+    else
+        hp = plot([0,0], ylim, 'k--', 'LineWidth', 1);
+    end
+    uistack(hp,'bottom');
 end
 
 axes(fig.hg(2));

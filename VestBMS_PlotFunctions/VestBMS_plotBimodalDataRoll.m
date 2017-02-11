@@ -1,10 +1,11 @@
 % VESTBMS_PLOTBIMODALDATA plot bimodal data for one or more subjects.
-function [fig,gendata] = VestBMS_plotBimodalDataRoll(data,type,mfit,ngen,flags,fontsize,axesfontsize)
+function [fig,gendata] = VestBMS_plotBimodalDataRoll(data,type,mfit,ngen,flags,hg,fontsize,axesfontsize)
 
 if ~exist('mfit', 'var'); mfit = []; end
 % Number of generated datasets, per subject
 if ~exist('ngen', 'var') || isempty(ngen); ngen = 30; end
 if ~exist('flags', 'var') || isempty(flags); flags = 0; end
+if ~exist('hg', 'var'); hg = []; end
 if ~exist('fontsize', 'var') || isempty(fontsize); fontsize = 14; end
 if ~exist('axesfontsize', 'var') || isempty(axesfontsize); axesfontsize = 12; end
 
@@ -17,6 +18,7 @@ if isstruct(data) && isfield(data, 'X'); data = {data}; end
 
 % Plot average across all provided datasets
 subjs = 0;
+% subjs = 1:numel(data);
 
 nNoise = 3; % Three levels of noise
 
@@ -26,11 +28,11 @@ if type == 2; nEcc = 5; else nEcc = 3; end
 
 if subjs(1) == 0
     fig.panelgraph = (1:nEcc);
-    fig.intborder = [0 0.1]; % Internal border noise
+    fig.intborder = [0 0.1]; % Internal border
     nRows = 1;
 else
-    fig.panelgraph = reshape(1:nNoise*length(subjs),nNoise,length(subjs))';
-    fig.intborder = [0.05 0.015]; % Internal border noise
+    fig.panelgraph = reshape(1:nEcc*length(subjs),length(subjs),nEcc)';
+    fig.intborder = [0.01 0.015]; % Internal border
     nRows = length(subjs);
     plotdata = 0;
 end
@@ -71,8 +73,9 @@ fig.panels = [];
 for iEcc = 1:nEcc
     panel = []; iPlot = 1;
     
-    for iRow = 1:nRows
+    for iRow = 1:nRows        
         nid = subjs(iRow);
+        if subjs(1) > 0; panel = []; iPlot = 1; end
 
         for iNoise = 1:nNoise
             % panel = []; iPlot = 1;
@@ -107,7 +110,7 @@ for iEcc = 1:nEcc
             panel.plots{iPlot}.color = plots.NoiseColors(iNoise,:);
             panel.plots{iPlot}.linecolor = plots.NoiseColors(iNoise,:);
             panel.plots{iPlot}.linewidth = 2;
-            panel.plots{iPlot}.errorwidth = 0;
+            % panel.plots{iPlot}.errorwidth = 0;
             panel.plots{iPlot}.type = 'errorbar';
             panel.plots{iPlot}.binshift = 0.3*(iNoise-2);
 
@@ -161,11 +164,13 @@ for iEcc = 1:nEcc
 
             % fig.panels{end+1} = panel; % Add panel to figure
         end
+        if subjs(1) > 0; fig.panels{end+1} = panel; end % Add panel to figure
+        
     end
-    fig.panels{end+1} = panel; % Add panel to figure
+    if subjs(1) == 0; fig.panels{end+1} = panel; end; % Add panel to figure
 end
 
-
+% fig.hg = hg
 [fig,gendata] = ModelPlot_drawFigure(fig,data,mfit,ngen);
 
 for iPanel = 1:numel(fig.hg)
@@ -174,13 +179,13 @@ for iPanel = 1:numel(fig.hg)
 %    plot([0,0], ylim, 'k:', 'LineWidth', 1);
 end
 
-axes(fig.hg(end));
-for iNoise = 1:nNoise
-    col = 0.5 + 0.5*plots.NoiseColors(iNoise,:);
-    hpatch(iNoise) = patch([0 0], [0 0], col);
-end
-hl = legend(hpatch,'High coherence','Medium coherence','Low coherence');
-set(hl,'Location',legendloc,'box','off');
+% axes(fig.hg(end));
+% for iNoise = 1:nNoise
+%    col = 0.5 + 0.5*plots.NoiseColors(iNoise,:);
+%    hpatch(iNoise) = patch([0 0], [0 0], col);
+%end
+%hl = legend(hpatch,'High coherence','Medium coherence','Low coherence');
+%set(hl,'Location',legendloc,'box','off');
 
 
 % h = text(0, 0, 'Probability of rightward response');

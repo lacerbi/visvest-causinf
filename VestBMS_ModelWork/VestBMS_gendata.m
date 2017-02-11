@@ -101,7 +101,7 @@ for iicnd = 1:length(cnd)
             end
             
             % Fill data matrix
-            datafun = @(X) VestBMS_UnimodalLeftRightDatalike(X,model,theta,priorinfo,infostruct.bincenters_uni,infostruct.MAXRNG,[],SSCALE);
+            datafun = @(X) VestBMS_UnimodalLeftRightDatalike(X,model,theta,priorinfo,infostruct.bincenters_uni,infostruct.MAXRNG,[],SSCALE,[1,N]);
             if regenerate
                 Rmat = X.unibins{iindex};
             else
@@ -202,9 +202,9 @@ for iicnd = 1:length(cnd)
             
             % Fill data matrix
             if model(9) == 4 || model(9) == 5
-                datafun = @(X) VestBMS_BimodalLeftRightDatalike_discrete(X,model,theta,priorinfo,infostruct.bincenters_bim);
+                datafun = @(X) VestBMS_BimodalLeftRightDatalike_discrete(X,model,theta,priorinfo,infostruct.bincenters_bim,[],[1,N]);
             else
-                datafun = @(X) VestBMS_BimodalLeftRightDatalike(X,model,theta,priorinfo,infostruct.bincenters_bim,infostruct.MAXRNG,[],SSCALE);
+                datafun = @(X) VestBMS_BimodalLeftRightDatalike(X,model,theta,priorinfo,infostruct.bincenters_bim,infostruct.MAXRNG,[],SSCALE,[1,N]);
             end
             if regenerate
                 Rmat = X.bimbins{iNoise}{2};
@@ -336,15 +336,20 @@ end
 % Compute left/right localization
 if ~isempty(extras.responsepdf)
 
-    % Take probability of responding LEFT
-    prmat_left = extras.responsepdf(:,1);
+    if ~isfield(extras,'Rmat') || isempty(extras.Rmat)    
+        % Take probability of responding LEFT
+        prmat_left = extras.responsepdf(:,1);
 
-    Rmat = zeros(nTrialTypes,2,N);
-    for i = 1:nTrialTypes
-        left_r = rand(nTrialsPerType(i),N) < prmat_left(i);
-        Rmat(i,1,:) = sum(left_r,1);
-        Rmat(i,2,:) = nTrialsPerType(i) - Rmat(i,1,:);
+        Rmat = zeros(nTrialTypes,2,N);
+        for i = 1:nTrialTypes
+            left_r = rand(nTrialsPerType(i),N) < prmat_left(i);
+            Rmat(i,1,:) = sum(left_r,1);
+            Rmat(i,2,:) = nTrialsPerType(i) - Rmat(i,1,:);
+        end
+    else
+        Rmat = extras.Rmat;
     end
+        
 else
     Rmat = [];
 end
@@ -361,11 +366,15 @@ if nargout > 1 && ~isempty(extras.responsepdf_unity)
     
     prmat_unity = extras.responsepdf_unity(:,1);
 
-    Rmat_unity = zeros(nTrialTypes,2,N);
-    for i = 1:nTrialTypes
-        unity_r = rand(nTrialsPerType(i),N) < prmat_unity(i);
-        Rmat_unity(i,1,:) = sum(unity_r,1);
-        Rmat_unity(i,2,:) = nTrialsPerType(i) - Rmat_unity(i,1,:);
+    if ~isfield(extras,'Rmat_unity') || isempty(extras.Rmat_unity)    
+        Rmat_unity = zeros(nTrialTypes,2,N);
+        for i = 1:nTrialTypes
+            unity_r = rand(nTrialsPerType(i),N) < prmat_unity(i);
+            Rmat_unity(i,1,:) = sum(unity_r,1);
+            Rmat_unity(i,2,:) = nTrialsPerType(i) - Rmat_unity(i,1,:);
+        end
+    else
+        Rmat_unity = extras.Rmat_unity;
     end
 else
     Rmat_unity = [];

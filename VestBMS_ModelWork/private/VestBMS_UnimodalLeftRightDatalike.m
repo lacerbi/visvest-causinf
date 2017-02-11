@@ -196,7 +196,7 @@ if nargout > 1
     extras.responsepdf = prmat;
 end
 
-if sumover
+if sumover(1)
     loglike = sum(X(:).*log(prmat));
     varargout{1} = loglike;
 else    

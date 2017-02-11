@@ -1,10 +1,14 @@
-function minq = VestBMS_plotParams(nids,modelfamily,joint,noplot,poolflag)
+function minq = VestBMS_plotParams(nids,modelfamily,mbags,jointflag,noplot,poolflag)
 %VESTBMS_PLOTPARAMS Plot and compare parameters from different tasks.
 
 if nargin < 2 || isempty(modelfamily); modelfamily = 'bayes'; end
-if nargin < 3 || isempty(joint); joint = 0; end
-if nargin < 4 || isempty(noplot); noplot = 0; end
-if nargin < 5 || isempty(poolflag); poolflag = 0; end
+if nargin < 3; mbags = []; end
+if nargin < 4 || isempty(jointflag); jointflag = 0; end
+if nargin < 5 || isempty(noplot); noplot = 0; end
+if nargin < 6 || isempty(poolflag); poolflag = 0; end
+
+fontsize = 14;
+fprintf('This plotting function does not take Bayesian Model Selection into account.');
 
 switch(lower(modelfamily(1)))
     case 'b';           % Bayesian
@@ -19,7 +23,7 @@ switch(lower(modelfamily(1)))
         error('Unknown model family. Known families are (B)ayesian and (F)ixed criterion.');
 end
 
-if joint
+if jointflag
     fitnames = {'uni','biml','bimu','joint'};
 else
     fitnames = {'uni','biml','bimu'};
@@ -29,8 +33,10 @@ end
 
 fprintf('Compare parameters from the %s model family.\n', upper(family));
 
-mbags = load('VestBMS_modelfits.mat');
-
+if isempty(mbags)
+    mbags = load('VestBMS_modelfits.mat');
+end
+mbags = VestBMS_fixModels(mbags);
 ids = 1:11; % Human only
 
 for i = 1:numel(fitnames)
@@ -66,8 +72,25 @@ for i = 1:numel(nids)
         case 4
             minq(i,:) = ModelPlot_plotParameters('VestBMS',...
                 mfits{1}{nid},mfits{2}{nid},mfits{3}{nid},mfits{4}{nid},noplot);
+            hl = legend('Unisensory measurement','Bisensory localization (implicit inference)','Unity judgment (explicit inference)','Joint fits');
     end
 end
+
+for iPanel = 1:10
+    subplot(3,4,iPanel);
+    params = {'sigma-vest','sigma-vis-low','sigma-vis-med','sigma-vis-high','w-vest','w-vis','lambda','pcommon','kcommon','priorsigma','priorsigmadelta'};
+    params_txt = {'$\sigma_\mathrm{vest}$ (deg)','$\sigma_\mathrm{vis-high}$ (deg)','$\sigma_\mathrm{vis-med}$ (deg)','$\sigma_\mathrm{vis-low}$ (deg)', ...
+        '$w_\mathrm{vest}$', '$w_\mathrm{vis}$', '$\lambda$','$p_\mathrm{common}$','$k_\mathrm{common}$','$\sigma_\mathrm{prior}$ deg','$\Delta_\mathrm{prior}$ deg'};
+    xl = get(gca,'xlabel');
+    idx = find(strcmp(xl.String,params),1);
+    if isempty(idx) || idx > numel(params_txt); continue; end
+    xlabel(params_txt{idx},'Interpreter','LaTeX','FontSize',fontsize);
+    yl = get(gca,'ylabel');
+    ylabel(yl.String,'FontSize',fontsize);
+end
+
+subplot(3,4,12);
+set(hl,'Box','off','FontSize',fontsize,'Location','West');
 
 
 end

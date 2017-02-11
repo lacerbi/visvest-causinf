@@ -69,7 +69,9 @@ switch lower(command)
         % plots.NoiseColors = [1 0 0; 0 1 0; 0 0 1];
         
         % plots.NoiseColors = [166,206,227; 31,120,180; 178,223,138]*0.8/255;
-        plots.NoiseColors = [27,158,119;  117,112,179; 217,95,2 ]/255;
+        % plots.NoiseColors = [27,158,119;  117,112,179; 217,95,2 ]/255;
+        plots.NoiseColors = [66 39 0; 178 130 24; 255 210 56]/255;
+
         
         varargout{1} = plots;
 end

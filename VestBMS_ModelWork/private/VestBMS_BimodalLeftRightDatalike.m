@@ -29,6 +29,8 @@
 %
 function varargout = VestBMS_BimodalLeftRightDatalike(X,model,theta,priorinfo,bincenters,maxranges,XGRID,SSCALE,sumover,randomize)
 
+DEBUG = 0;  % Plot some debug graphs
+
 % Program constants
 if nargin < 7 || isempty(XGRID) || isnan(XGRID); XGRID = 401; end
 if nargin < 8 || isempty(SSCALE); SSCALE = 8; end
@@ -95,7 +97,7 @@ if model(16) == 4
     prmat_unity(:,1) = theta(17);
     prmat_unity(:,2) = 1 - prmat_unity(:,1);
     
-    [ll,extras] = finalize(prmat,prmat_unity,X,FIXEDLAPSEPDF,nargout > 1,sumover);
+    [ll,extras] = finalize(prmat,prmat_unity,X,FIXEDLAPSEPDF,nargout > 1,sumover(1));
     varargout{1} = ll;
     if nargout > 1; varargout{2} = extras; end
     return;
@@ -517,6 +519,27 @@ else
         % extras.postpdfc1 = postpdfc1;
     end
     
+    %----------------------------------------------------------------------
+    % Plot decision rule for unity judgments (function of x_vest, x_vis)
+    if DEBUG && do_unity
+        clf;
+        surf(xrange_vis(:), xrange_vest(:), squeeze(w1_unity),'LineStyle','none'); hold on;
+        xlabel('$x_\mathrm{vis}$ (deg)','Interpreter','LaTeX','FontSize',14); 
+        ylabel('$x_\mathrm{vest}$ (deg)','Interpreter','LaTeX','FontSize',14);
+        axis square;
+        xylims = [min(xrange_vest(1),xrange_vis(1)),max(xrange_vest(end),xrange_vis(end))];
+        xlim(xylims);
+        ylim(xylims);
+        plot3(xylims,xylims,[200 200],'--k','LineWidth',1);
+        view([0 90]);
+        hold off;
+        title(['$\sigma^0_\mathrm{vis} = ' num2str(sigmazero_vis,'%.2f') '$ deg, $w_\mathrm{vis} = ' num2str(abs(w_vis),'%.2f') '$' ...
+            ', $\sigma^0_\mathrm{vest} = ' num2str(sigmazero_vest,'%.2f') '$ deg, $w_\mathrm{vest} = ' num2str(abs(w_vest),'%.2f') '$'], ...
+            'FontSize',14,'Interpreter','LaTeX');
+        pause;
+    end
+    %----------------------------------------------------------------------    
+    
     % Clean up memory
     clear postright w1 postpdf_c2 postright_c1 postright_c2 ...
         likec1 likec2 likec2_vis postpdfc1 lratio;
@@ -578,7 +601,7 @@ prmat_unity = min(max(prmat_unity,0),1);
 prmat = lambda/2 + (1-lambda)*prmat;
 prmat_unity = lambda/2 + (1-lambda)*prmat_unity;
 
-[ll,extras] = finalize(prmat,prmat_unity,X,FIXEDLAPSEPDF,nargout > 1,sumover);
+[ll,extras] = finalize(prmat,prmat_unity,X,FIXEDLAPSEPDF,nargout > 1,sumover(1));
 varargout{1} = ll;
 if nargout > 1; varargout{2} = extras; end
 

@@ -12,7 +12,7 @@ filetype = {'pdf','png'};
 
 for m = 1:numel(metrics)
     figure;
-    mfits = VestBMS_modelComparison(metrics{m},type,mfits,metricnames{m});
+    [~,~,mfits] = VestBMS_modelComparison(metrics{m},type,mfits,metricnames{m});
     filename = ['factorial-pxp-' metricsfile{m}];
     
     set(gcf, 'Visible', 'on', 'Position', [1 35 1920 958]);

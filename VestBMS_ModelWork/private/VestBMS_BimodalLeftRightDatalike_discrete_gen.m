@@ -27,16 +27,14 @@
 % d = data{1, 3}; model = [6 3 5 2 1]; theta = [0.03 -0.055, 0.06 0.14, 10 0 0.2];
 % ParticleCatch_datalike(d.niceData, d.priormix, model, theta, d.priorsinglegauss)
 %
-function varargout = VestBMS_BimodalLeftRightDatalike_discrete(X,model,theta,priorinfo,bincenters,XGRID,sumover,randomize)
+function varargout = VestBMS_BimodalLeftRightDatalike_discrete_gen(X,model,theta,priorinfo,bincenters,XGRID,sumover,randomize)
 
-DEBUG = 0;  % Plot some debug graphs
+DEBUG = 1;  % Plot some debug graphs
 
 % Program constants
 if nargin < 6 || isempty(XGRID) || isnan(XGRID); XGRID = 401; end
 if nargin < 7 || isempty(sumover); sumover = 1; end
 if nargin < 8 || isempty(randomize); randomize = 0; end
-
-extras = [];
 
 % When integrating a Gaussian, go up to this SDs away
 MAXSD = 5;
@@ -106,7 +104,7 @@ if model(16) == 4
     prmat_unity(:,1) = theta(17);
     prmat_unity(:,2) = 1 - prmat_unity(:,1);
     
-    [ll,extras] = finalize(prmat,prmat_unity,X,FIXEDLAPSEPDF,nargout > 1,extras,sumover);
+    [ll,extras] = finalize(prmat,prmat_unity,X,FIXEDLAPSEPDF,nargout > 1,sumover);
     varargout{1} = ll;
     if nargout > 1; varargout{2} = extras; end
     return;
@@ -452,81 +450,24 @@ else
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Sample data (only used for debugging)
-
-% if nargout > 1
-%     if numel(sumover) > 1; N = sumover(2); else N = 1; end
-%     
-%     if do_estimation
-%         Rmat = gendata(X{2},N,prright,xrange_vis,xrange_vest,alpha_rescaling_vis,alpha_rescaling_vest,bincenters_vis,bincenters_vest,sigmas_vis,sigmas_vest,lambda);
-%     else
-%         Rmat = [];
-%     end
-% 
-%     if do_unity
-%         Rmat_unity = gendata(X{3},N,w1_unity,xrange_vis,xrange_vest,alpha_rescaling_vis,alpha_rescaling_vest,bincenters_vis,bincenters_vest,sigmas_vis,sigmas_vest,lambda);
-%     else
-%         Rmat_unity = [];
-%     end
-%     
-%     extras.Rmat = Rmat;
-%     extras.Rmat_unity = Rmat_unity;
-% end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Marginalize over noisy measurements
 
-if ~fixed_criterion_analytic
-    xpdf_vis = bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis,alpha_rescaling_vis*sigmas_vis);
-    if wraparound
-        xpdf_vis = xpdf_vis + ...
-            bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis + 360,alpha_rescaling_vis*sigmas_vis) ...
-            + bsxfun_normpdf(xrange_vis, alpha_rescaling_vis*bincenters_vis - 360,alpha_rescaling_vis*sigmas_vis);        
-    end
-    xpdf_vis = bsxfun(@rdivide, xpdf_vis, qtrapz(xpdf_vis, 2)); % Not multiplying by volume element
-    do_symmetrize = 0;
-    if do_symmetrize
-        mid = ceil(0.5*size(xpdf_vis,1));
-        xpdf_vis(mid,:) = 0.5*(xpdf_vis(mid,:) + fliplr(xpdf_vis(mid,:)));
-    end
-    
-    xpdf_vest = bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest,alpha_rescaling_vest*sigmas_vest);    
-    if wraparound
-        xpdf_vest = xpdf_vest + ...
-            bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest + 360,alpha_rescaling_vest*sigmas_vest) ...
-            + bsxfun_normpdf(xrange_vest, alpha_rescaling_vest*bincenters_vest - 360,alpha_rescaling_vest*sigmas_vest);        
-    end    
-    xpdf_vest = bsxfun(@rdivide, xpdf_vest, qtrapz(xpdf_vest, 3));  % Not multiplying by volume element
-    if do_symmetrize
-        xpdf_vest(mid,1,:) = 0.5*(xpdf_vest(mid,1,:) + xpdf_vest(mid,1,end:-1:1));
-    end
-    
-    %----------------------------------------------------------------------
-    if DEBUG % Plot noisy measurements distributions
-        subplot(1,2,1); hold off;
-        for i = 1:3:numel(bincenters_vis); plot(xrange_vis(:),xpdf_vis(i,:),'k','LineWidth',1); hold on; end
-        subplot(1,2,2); hold off;
-        for i = 1:3:numel(bincenters_vest); plot(xrange_vest(:),xpdf_vest(i,:),'k','LineWidth',1); hold on; end
-        stdfig();
-        pause
-    end
-    %----------------------------------------------------------------------    
 
-    if do_estimation
-        prmat = zeros(numel(bincenters_vest), 2);
-        prmat(:,2) = VestBMS_finalqtrapz(xpdf_vis,xpdf_vest,prright);   % Not multiplying by volume element (xpdfs did not)
-        prmat(:,1) = 1 - prmat(:,2);
-    else
-        prmat = [];
-    end
+if do_estimation
+end
 
-    if do_unity
-        prmat_unity = zeros(numel(bincenters_vest), 2);
-        prmat_unity(:,1) = VestBMS_finalqtrapz(xpdf_vis,xpdf_vest,w1_unity);    % Not multiplying by volume element (xpdfs did not)
-        prmat_unity(:,2) = 1 - prmat_unity(:,1);
-    else
-        prmat_unity = [];
-    end
+if do_estimation
+    Rmat = gendata(X{2},prright,xrange_vis,xrange_vest,alpha_rescaling_vis,alpha_rescaling_vest,bincenters_vis,bincenters_vest,sigmas_vis,sigmas_vest);
+else
+    Rmat = [];
+end
+
+if do_unity
+    prmat_unity = zeros(numel(bincenters_vest), 2);
+    prmat_unity(:,1) = VestBMS_finalqtrapz(xpdf_vis,xpdf_vest,w1_unity);    % Not multiplying by volume element (xpdfs did not)
+    prmat_unity(:,2) = 1 - prmat_unity(:,1);
+else
+    Rmat_unity = [];
 end
 
 % Fix probabilities
@@ -539,14 +480,14 @@ prmat_unity = min(max(prmat_unity,0),1);
 prmat = lambda/2 + (1-lambda)*prmat;
 prmat_unity = lambda/2 + (1-lambda)*prmat_unity;
 
-[ll,extras] = finalize(prmat,prmat_unity,X,FIXEDLAPSEPDF,nargout > 1,extras,sumover);
+[ll,extras] = finalize(prmat,prmat_unity,X,FIXEDLAPSEPDF,nargout > 1,sumover);
 varargout{1} = ll;
 if nargout > 1; varargout{2} = extras; end
 
 end
 
 %--------------------------------------------------------------------------
-function [ll,extras] = finalize(prmat,prmat_unity,X,epsilon,extrasflag,extras,sumoverflag)
+function [ll,extras] = finalize(prmat,prmat_unity,X,epsilon,extrasflag,sumoverflag)
 %FINALIZE Finalize log likelihood
 
 prmat = 0.5*epsilon + (1-epsilon)*prmat;
@@ -562,7 +503,7 @@ end
 prmat = [prmat(:); prmat_unity(:)];
 xx = [X{1}(:); X{2}(:); X{3}(:)];
 
-if sumoverflag(1)
+if sumoverflag
     ll = sum(xx.*log(prmat));
 else
     ll = loglikmat2vec(log(prmat),xx);
@@ -572,25 +513,22 @@ end
 
 
 %--------------------------------------------------------------------------
-function Rmat = gendata(X,N,Phat,xrange_vis,xrange_vest,alpha_rescaling_vis,alpha_rescaling_vest,bincenters_vis,bincenters_vest,sigmas_vis,sigmas_vest,lambda)
+function Rmat = gendata(X,Phat,xrange_vis,xrange_vest,alpha_rescaling_vis,alpha_rescaling_vest,bincenters_vis,bincenters_vest,sigmas_vis,sigmas_vest)
 %GENDATA Generate simulated responses.
 
-    Rmat = zeros(numel(bincenters_vest),2,N);
+    Rmat = zeros(numel(bincenters_vest),2);
     Ntrials = sum(X,2);
     mu_vis = alpha_rescaling_vis*bincenters_vis;
     sigma_vis = alpha_rescaling_vis*sigmas_vis;
     mu_vest = alpha_rescaling_vest*bincenters_vest;
     sigma_vest = alpha_rescaling_vest*sigmas_vest;
-    for iBin = 1:size(X,1)        
-        x_vis = mod(180 + sigma_vis(iBin)*randn(Ntrials(iBin)*N,1) + mu_vis(iBin),360) - 180;
-        x_vest = mod(180 + sigma_vest(iBin)*randn(Ntrials(iBin)*N,1) + mu_vest(iBin),360) - 180;        
-        Phat_x = interp2(xrange_vis(:),xrange_vest(:),squeeze(Phat)',x_vis,x_vest);
-        Phat_x = reshape(Phat_x,[N,Ntrials(iBin)]);
+    for iBin = 1:size(X,1)
+        x_vis = mod(180 + sigma_vis(iBin)*randn(Ntrials(iBin),1) + mu_vis(iBin),360) - 180;
+        x_vest = mod(180 + sigma_vest(iBin)*randn(Ntrials(iBin),1) + mu_vest(iBin),360) - 180;        
+        Phat_x = interp2(xrange_vis,xrange_vest,Phat,x_vis,x_vest);
         R = rand(size(Phat_x)) < Phat_x;
-        lapse_idx = rand(size(Phat_x)) < lambda;
-        R(lapse_idx) = rand(1,sum(lapse_idx(:))) < 0.5;
-        Rmat(iBin,1,:) = sum(R == 1,2);
-        Rmat(iBin,2,:) = sum(R == 0,2);        
+        Rmat(iBin,1) = sum(R == 1);
+        Rmat(iBin,2) = sum(R == 0);        
     end
         
 end

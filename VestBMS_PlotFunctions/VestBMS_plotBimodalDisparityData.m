@@ -1,14 +1,16 @@
 % VESTBMS_PLOTBIMODALDISPARITYDATA plot bimodal data for one or more subjects by disparity.
-function [fig,gendata] = VestBMS_plotBimodalDisparityData(data,type,mfit,ngen,flags,fontsize,axesfontsize)
+function [fig,gendata] = VestBMS_plotBimodalDisparityData(data,type,mfit,ngen,flags,fontsize,axesfontsize,hg)
 
 if ~exist('mfit', 'var'); mfit = []; end
 % Number of generated datasets, per subject
 if ~exist('ngen', 'var') || isempty(ngen); ngen = 30; end
-if ~exist('flags', 'var') || isempty(flags); flags = 0; end
+if ~exist('flags', 'var') || isempty(flags); flags = [0 0]; end
 if ~exist('fontsize', 'var') || isempty(fontsize); fontsize = 18; end
 if ~exist('axesfontsize', 'var') || isempty(axesfontsize); axesfontsize = 14; end
+if ~exist('hg', 'var'); hg = []; end
 
 plotdata = flags(1);
+plotsbar = flags(2);
 
 % Check dataset
 if isstruct(data) && isfield(data, 'X'); data = {data}; end
@@ -22,6 +24,11 @@ else
 end
 
 nNoise = 3; % Three levels of noise
+plots = VestBMS_defaults('plots');  % Get default plot info
+col = plots.NoiseColors;            % Colors for different noise levels
+
+% Use provided figure handle
+if ~isempty(hg); fig.hg = hg; end
 
 fig.prefix = 'VestBMS'; % Program name
 
@@ -53,7 +60,11 @@ for iRow = 1:nRows
     for iNoise = 1:nNoise
         panel = []; iPlot = 1;
         
-        xsource = ['thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,3) - thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,4)'];
+        if plotsbar
+            xsource = ['0.5*(thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,3) + thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,4))'];
+        else
+            xsource = ['thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,3) - thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,4)'];
+        end
         ysource = ['thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,5)'];
                 
         if plotdata && 0
@@ -76,7 +87,11 @@ for iRow = 1:nRows
         else
             panel.plots{iPlot}.source.yfun = '@(x,y) 0.5*(y+1)';
         end
-                        
+        panel.plots{iPlot}.color = col(iNoise,:);
+        panel.plots{iPlot}.type = 'errorbar';
+        panel.plots{iPlot}.binshift = 0.25*(iNoise-2);
+        panel.plots{iPlot}.linewidth = 4;
+                                
         % Panel cosmetics        
         panel.fontsize = fontsize;
         panel.axesfontsize = axesfontsize;
@@ -109,8 +124,10 @@ for iRow = 1:nRows
                     copyplot.source.type = 'model';
                     copyplot.type = 'line';
                     copyplot.color = NaN;
-                    copyplot.errColor = 0.8*[1 1 1];
+                    % copyplot.errColor = 0.8*[1 1 1];
+                    copyplot.errColor = col(iNoise,:);
                     copyplot.priority = -1;
+                    copyplot.facealpha = 0.4;
                     copyplot.source.dataids = nid;
                     panel.plots{end+1} = copyplot; % Add panel to figure                    
                 end
@@ -123,6 +140,10 @@ end
 
 options.flatten = 0;    % Do not compute flattened bins
 [fig,gendata] = ModelPlot_drawFigure(fig,data,mfit,ngen,options);
+
+plot(xlim,[0.5 0.5],'k--','LineWidth',1);
+set(gca,'YTick',0:0.25:1,'YTickLabel',0:0.25:1);
+
 
 return;
 

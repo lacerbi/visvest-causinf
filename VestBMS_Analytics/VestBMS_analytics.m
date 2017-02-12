@@ -99,17 +99,17 @@ for ii = 1:length(datasets)
     % Discard trials
     
     % Remove trials with response 40 deg away from the mean
-    f = (abs(X(:, 8)) > 40 & X(:, 4) == 2) | (abs(X(:, 9)) > 40 & X(:, 4) == 1);   
+    % f = (abs(X(:, 8)) > 40 & X(:, 4) == 2) | (abs(X(:, 9)) > 40 & X(:, 4) == 1);   
 
     % Remove trials with visual stimulus outside a certain range, unless
     % they are standard fare    
-    if sum(sum(abs(X(:,[5 6]) > 20))) > 20; kalpanasdataset = 1; else kalpanasdataset = 0; end
-    if ~kalpanasdataset; f = f | (abs(X(:, 6)) > 20); end
+    % if sum(sum(abs(X(:,[5 6]) > 20))) > 20; kalpanasdataset = 1; else kalpanasdataset = 0; end
+    % if ~kalpanasdataset; f = f | (abs(X(:, 6)) > 20); end
         
-    X(f, :) = [];    
+    % X(f, :) = [];    
     
     D.X.all = X;
-    D.botched = sum(f);
+    % D.botched = sum(f);
         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Divide dataset by condition

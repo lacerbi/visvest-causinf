@@ -278,7 +278,12 @@ switch fig
         
         % Plot Bayesian model selection results
         plotfactors(bms{3}.factor,factornames,hg([1,11,12]),axesfontsize);
+                
+        % Plot legend
         axes(hg(2));
+        for iCol = 1:3; hcol(iCol) = plot(0,0,'-','Color',plots.NoiseColors(iCol,:),'LineWidth',4); hold on; end
+        hl = legend(hcol,'High reliability','Medium reliability','Low reliability');
+        set(hl,'Box','off','FontSize',axesfontsize,'Location','SouthWest');
         axis off;
         
         set(gcf,'Position',[1,41,1920,958],'PaperPositionMode','auto');

@@ -46,13 +46,15 @@ if flags(1)
         case 1
             masks = [];
             hg = [h(1),h(4:6)];
+            factorfixed = [];
         case 2
             masks = {ones(1,M),[1 1 1 0 0 0 1 1 1 0 0 0],[0 0 0 1 1 1 0 0 0 1 1 1],[1 1 1 1 1 1, 0 0 0 0 0 0],[0 0 0 0 0 0 1 1 1 1 1 1]};
             hg = {[0,h(1:3)], [0,h(4:6)], [0,h(7:9)], [0,h(10:12)], [0,h(13:15)]};
+            factorfixed = [0 0 0; 1 0 0; 2 0 0; 0 0 1; 0 0 2];
     end
     
     if do_bms
-        [bms{1},fac{1}] = ModelWork_factorialComparison(mfits.modelsummary_biml,metric,modelnames,'BPD',priorweight,factors,factornames,hg,masks,[],priorstrength);
+        [bms{1},fac{1}] = ModelWork_factorialComparison(mfits.modelsummary_biml,metric,modelnames,'BPD',priorweight,factors,factornames,hg,masks,factorfixed,priorstrength);
         bms{1}.factor = fac{1};
         axes(h(titleaxes(1))); title(['Bisensory estimation only', metricString]);
     else
@@ -114,14 +116,16 @@ if flags(3)
     switch type
         case 1
             masks = [];
+            factorfixed = [];
             hg = [h(3),h(10:12)];
         case 2
             masks = {ones(1,M),[1 1 1 1, 0 0 0 0, 1 1 1 1, 0 0 0 0],[0 0 0 0, 1 1 1 1, 0 0 0 0, 1 1 1 1],[1 1 1 1, 1 1 1 1, 0 0 0 0, 0 0 0 0],[0 0 0 0, 0 0 0 0, 1 1 1 1, 1 1 1 1]};
+            factorfixed = [0 0 0; 1 0 0; 2 0 0; 0 0 1; 0 0 2];
             hg = {[0,h(31:33)], [0,h(34:36)], [0,h(37:39)], [0,h(40:42)], [0,h(43:45)]};
     end
 
     if do_bms
-        [bms{3},fac{3}] = ModelWork_factorialComparison(mfits.modelsummary_joint,metric,modelnames,'BPD',priorweight,factors,factornames,hg,masks,[],priorstrength);
+        [bms{3},fac{3}] = ModelWork_factorialComparison(mfits.modelsummary_joint,metric,modelnames,'BPD',priorweight,factors,factornames,hg,masks,factorfixed,priorstrength);
         bms{3}.factor = fac{3};
         axes(h(titleaxes(3))); title(['Joint fits', metricString]);
     else

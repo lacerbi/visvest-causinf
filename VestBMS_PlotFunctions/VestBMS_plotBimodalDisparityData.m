@@ -10,7 +10,8 @@ if ~exist('axesfontsize', 'var') || isempty(axesfontsize); axesfontsize = 14; en
 if ~exist('hg', 'var'); hg = []; end
 
 plotdata = flags(1);
-plotsbar = flags(2);
+% plotsbar = flags(2);
+plotsvis = flags(2);
 
 % Check dataset
 if isstruct(data) && isfield(data, 'X'); data = {data}; end
@@ -60,8 +61,9 @@ for iRow = 1:nRows
     for iNoise = 1:nNoise
         panel = []; iPlot = 1;
         
-        if plotsbar
-            xsource = ['0.5*(thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,3) + thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,4))'];
+        if plotsvis
+            xsource = ['thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,4)'];            
+            % xsource = ['0.5*(thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,3) + thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,4))'];
         else
             xsource = ['thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,3) - thisdata.X.bimodal{' num2str(iNoise) '}{' num2str(tt) '}(:,4)'];
         end
@@ -82,6 +84,10 @@ for iRow = 1:nRows
         
         % Mean data plot
         panel.plots{iPlot} = newdataplot(xsource,ysource,nid,binfuns{1});        
+        if plotsvis
+            panel.plots{iPlot}.source.bincenters = [-35,-20,-10,-5,0,5,10,20,35];
+        end            
+        
         if tt == 3
             panel.plots{iPlot}.source.yfun = '@(x,y) 2-y'; 
         else

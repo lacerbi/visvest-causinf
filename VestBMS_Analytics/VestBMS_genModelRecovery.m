@@ -68,8 +68,17 @@ switch lower(task(1))
             mbag.bag{i} = m;
         end
         
+    case 'j'    % Generate datasets for joint fits
+        
+        % We consider six models:
+        % (best four model according to BMS with LOO, two variants of the
+        %  best model wrt sensory noise and prior)
+        modelnames = {'CXD','BPD','BPFs','CXF-Cs','CX','CXD-C'};
+        filename = 'VestBMS_fakedata_joint';
+        
+        
     otherwise
-        error('Unknown task. Specify either (U)nity judgment or bimodal (L)ocalization.');
+        error('Unknown task. Specify either (U)nity judgment, bimodal (L)ocalization, or (J)oint fits.');
 end
 
 % data = [];

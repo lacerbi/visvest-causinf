@@ -200,7 +200,7 @@ if sumover(1)
     loglike = sum(X(:).*log(prmat));
     varargout{1} = loglike;
 else    
-    varargout{1} = loglikmat2vec(log(prmat),X);
+    varargout{1} = loglikmat2vec(log(prmat),X(:));
     % varargout{1} = prmat.^X(:);
 end    
 if nargout > 1; varargout{2} = extras; end

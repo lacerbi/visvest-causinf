@@ -1114,6 +1114,31 @@ switch type
        dataids = [dataids, zeros(numel(dataids),1)];
        dataids(:,2) = setflag(dataids(:,2), 3);     % No estimation trials
                
+       
+    case 22001   % Joint fits model recovery
+        % THIS MODEL BELONGS TO THE FINAL MODEL SET
+       
+       options = VestBMS(options,2,0);
+       groupcnd = 1:7;
+       options.jobname = 'vest_modrec_joint';
+       models = [ ...
+           5 3 1 1 1 1 1 2 5 1 1 1 2 1 3 1; ...     % CXD
+           5 3 1 1 1 1 1 2 5 1 1 1 2 1 1 1; ...     % BPD
+           5 3 1 1 1 1 1 2 1 1 1 1 2 1 1 6; ...     % BPFs
+           1 1 1 1 1 1 1 2 1 1 1 1 2 1 3 6; ...     % CXF-CS
+           5 3 1 1 1 1 1 2 1 1 1 1 2 1 3 1; ...     % CX
+           1 1 1 1 1 1 1 2 5 1 1 1 2 1 3 1 ...      % CXD-C
+           ];
+       
+        Nfake = 10;     % Ten fake datasets per subject
+        Nsubjs = 11;    % Eleven real subjects in total
+        dataids = [];   % Take only first four fake datasets per subject
+        for k = 1:size(models,1)
+            temp = bsxfun(@plus, (1:4)', ((1:Nsubjs)-1)*Nfake) + (k-1)*(Nfake*Nsubjs);
+            dataids = [dataids; temp(:)];
+        end
+       dataids = [dataids, zeros(size(dataids,1),1)];
+       
 end
 
 % Set speed test values

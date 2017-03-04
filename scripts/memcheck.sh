@@ -1,5 +1,5 @@
 #!/bin/bash
-USERID="la67"
+USERID=${USER}
 
 #Get list of memory usage in all running jobs (expand job arrays)
 LIST="$(qstat -u ${USERID} -f -t | grep resources_used.mem)"

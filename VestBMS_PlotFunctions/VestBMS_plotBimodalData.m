@@ -1,10 +1,11 @@
 % VESTBMS_PLOTBIMODALDATA plot bimodal data for one or more subjects.
-function [fig,gendata] = VestBMS_plotBimodalData(data,type,mfit,ngen,flags,fontsize,axesfontsize)
+function [fig,gendata] = VestBMS_plotBimodalData(data,type,mfit,ngen,flags,hg,fontsize,axesfontsize)
 
 if ~exist('mfit', 'var'); mfit = []; end
 % Number of generated datasets, per subject
 if ~exist('ngen', 'var') || isempty(ngen); ngen = 30; end
 if ~exist('flags', 'var') || isempty(flags); flags = [0 1]; end
+if ~exist('hg', 'var'); hg = []; end
 if ~exist('fontsize', 'var') || isempty(fontsize); fontsize = 14; end
 if ~exist('axesfontsize', 'var') || isempty(axesfontsize); axesfontsize = 12; end
 
@@ -12,6 +13,9 @@ plotdata = flags(1);
 plot1d = flags(2);
 
 plots = VestBMS_defaults('plots');  % Get default plot info
+
+% Use provided figure handle
+if ~isempty(hg); fig.hg = hg; end
 
 % Check dataset
 if isstruct(data) && isfield(data, 'X'); data = {data}; end

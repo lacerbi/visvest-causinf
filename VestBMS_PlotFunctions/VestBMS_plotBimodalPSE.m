@@ -41,13 +41,17 @@ yLim = [-20 20];
 allStimuli =  {-45:5:-30,-27.5:2.5:-22.5,[-20,-17.5,-15],[-12.5,-10,-7.5],[-5,-2.5],0,[2.5,5],[7.5,10,12.5],[15,17.5,20],22.5:2.5:27.5,30:5:45};
 xxx = cellfun(@mean,allStimuli);
 
-xtick = xxx;
-xticklabel = {'-37.5°','-25°','-17.5°','-10°','-3.75°','0°','3.75°','10°','17.5°','25°','37.5°'};
+% xtick = xxx;
+% xticklabel = {'-37.5°','-25°','-17.5°','-10°','-3.75°','0°','3.75°','10°','17.5°','25°','37.5°'};
+xtick = [-40,-20,0,20,40];
+xticklabel = {'-40°','-20°','0°','20°','40°'};
+
 % xstring = '$\left\langle s_\mathrm{vis} \right\rangle$';
 xstring = '$s_\mathrm{vis}$';
 xinterpreter = 'LaTeX';
 ystring = 'PSE';
-xLim = [-40 40; -40 40; -40 40];
+%xLim = [-40 40; -40 40; -40 40];
+xLim = [-50 50; -50 50; -50 50];
 legendloc = 'NorthEast';
 
 binfuns = {'@(y) nanmean(y)', '@(y) nanstd(y)'};

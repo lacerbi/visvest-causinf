@@ -6,7 +6,10 @@ if nargin < 2 || isempty(type); type = 1; end
 if nargin < 3 || isempty(mfits); mfits = []; end
 if nargin < 4 || isempty(metricname); metricname = metric; end
 if nargin < 5 || isempty(priorstrength); priorstrength = 'factor'; end
-if nargin < 6 || isempty(flags); flags = [1 1 1 0]; end
+if nargin < 6 || isempty(flags); flags = [1 1 1 0 0]; end
+if numel(flags) < 4; flags(5) = 0; end
+
+baypmflag = flags(5);   % BAY probability matching instead of BAY model average
 
 if isempty(mfits)
     mfits = load('VestBMS_modelfits');
@@ -34,14 +37,29 @@ end
 
 %% BISENSORY ESTIMATION TASK
 if flags(1)
-    modelnames = {'BPD-C','FFD-C','CXD-C','BPD','FFD','CXD','BP-C','FF-C','CX-C','BP','FF','CX'}; 
-    M = numel(modelnames); priorweight = ones(1,M);
-    factornames{1} = {'Const','Ecc'};
-    factors{1} = [1 1 1 0 0 0 1 1 1 0 0 0; 0 0 0 1 1 1 0 0 0 1 1 1];
-    factornames{2} = {'Bayes','Fixed','Fusion'};
-    factors{2} = [1 0 0, 1 0 0, 1 0 0, 1 0 0; 0 0 1, 0 0 1, 0 0 1, 0 0 1; 0 1 0, 0 1 0, 0 1 0, 0 1 0];
-    factornames{3} = {'Corr','Uncorr'};
-    factors{3} = [1 1 1 1 1 1, 0 0 0 0 0 0; 0 0 0 0 0 0 1 1 1 1 1 1];
+    if baypmflag == 2
+        modelnames = {'BPD-C','BPMD-C','FFD-C','CXD-C','BPD','BPMD','FFD','CXD','BP-C','BPM-C','FF-C','CX-C','BP','BPM','FF','CX'};
+        M = numel(modelnames); priorweight = [0.5 0.5 1 1, 0.5 0.5 1 1, 0.5 0.5 1 1, 0.5 0.5 1 1];
+        factornames{1} = {'Constant','Eccentric'};
+        factors{1} = [1 1 1 1 0 0 0 0 1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1 0 0 0 0 1 1 1 1];
+        factornames{2} = {'Bayes','Fixed','Fusion'};
+        factors{2} = [1 1 0 0, 1 1 0 0, 1 1 0 0, 1 1 0 0; 0 0 0 1, 0 0 0 1, 0 0 0 1, 0 0 0 1; 0 0 1 0, 0 0 1 0, 0 0 1 0, 0 0 1 0];
+        factornames{3} = {'Empirical','Independent'};
+        factors{3} = [1 1 1 1 1 1 1 1, 0 0 0 0 0 0 0 0; 0 0 0 0 0 0 0 0, 1 1 1 1 1 1 1 1];
+    else
+        if baypmflag == 1
+            modelnames = {'BPMD-C','FFD-C','CXD-C','BPMD','FFD','CXD','BPM-C','FF-C','CX-C','BPM','FF','CX'};
+        else
+            modelnames = {'BPD-C','FFD-C','CXD-C','BPD','FFD','CXD','BP-C','FF-C','CX-C','BP','FF','CX'};            
+        end
+        M = numel(modelnames); priorweight = ones(1,M);
+        factornames{1} = {'Constant','Eccentric'};
+        factors{1} = [1 1 1 0 0 0 1 1 1 0 0 0; 0 0 0 1 1 1 0 0 0 1 1 1];
+        factornames{2} = {'Bayes','Fixed','Fusion'};
+        factors{2} = [1 0 0, 1 0 0, 1 0 0, 1 0 0; 0 0 1, 0 0 1, 0 0 1, 0 0 1; 0 1 0, 0 1 0, 0 1 0, 0 1 0];
+        factornames{3} = {'Empirical','Independent'};
+        factors{3} = [1 1 1 1 1 1, 0 0 0 0 0 0; 0 0 0 0 0 0 1 1 1 1 1 1];
+    end
     switch type
         case 1
             masks = [];
@@ -67,20 +85,34 @@ end
 
 %% UNITY JUDGMENT TASK
 if flags(2)
-    modelnames = {'BPD-C','CX-C','BPD','CX','BP-C','BP','FF'}; 
-    M = numel(modelnames); priorweight = [1 2 1 2, 1 1 4];
-    factornames{1} = {'Const','Ecc'};
-    factors{1} = [1 1 0 0 1 0 1; 0 0 1 1 0 1 1];
-    factornames{2} = {'Bayes','Fixed','Fusion'};
-    factors{2} = [1 0 1 0 1 1 0; 0 1 0 1 0 0 0; 0 0 0 0 0 0 1];
-    factornames{3} = {'Corr','Uncorr'};
-    factors{3} = [1 1 1 1 0 0 1; 0 1 0 1 1 1 1];
+    if baypmflag == 2
+        modelnames = {'BPD-C','BPPD-C','CX-C','BPD','BPPD','CX','BP-C','BPP-C','BP','BPP','FF'};
+        M = numel(modelnames); priorweight = [0.5 0.5 2 0.5 0.5 2, 0.5 0.5 0.5 0.5 4];
+        factornames{1} = {'Constant','Eccentric'};
+        factors{1} = [1 1 1 0 0 0 1 1 0 0 1; 0 0 0 1 1 1 0 0 1 1 1];
+        factornames{2} = {'Bayes','Fixed','Fusion'};
+        factors{2} = [1 1 0 1 1 0 1 1 1 1 0; 0 0 1 0 0 1 0 0 0 0 0; 0 0 0 0 0 0 0 0 0 0 1];
+        factornames{3} = {'Empirical','Independent'};
+        factors{3} = [1 1 1 1 1 1 0 0 0 0 1; 0 0 1 0 0 1 1 1 1 1 1];
+    else
+        if baypmflag == 1
+            modelnames = {'BPPD-C','CX-C','BPPD','CX','BPP-C','BPP','FF'};
+        else
+            modelnames = {'BPD-C','CX-C','BPD','CX','BP-C','BP','FF'};            
+        end
+        M = numel(modelnames); priorweight = [1 2 1 2, 1 1 4];
+        factornames{1} = {'Constant','Eccentric'};
+        factors{1} = [1 1 0 0 1 0 1; 0 0 1 1 0 1 1];
+        factornames{2} = {'Bayes','Fixed','Fusion'};
+        factors{2} = [1 0 1 0 1 1 0; 0 1 0 1 0 0 0; 0 0 0 0 0 0 1];
+        factornames{3} = {'Empirical','Independent'};
+        factors{3} = [1 1 1 1 0 0 1; 0 1 0 1 1 1 1];
+    end
 
     switch type
         case 1
             masks = [];
             hg = [h(2),h(7:9)];
-            priorweight = [1 2 1 2, 1 1 4];
             % priorweight = ones(1,7);
             factorfixed = [];
         case 2
@@ -104,15 +136,29 @@ end
 
 %% JOINT FIT
 if flags(3)
-    modelnames = {'BPD-C','CXD-C','BPFD-Cs','CXFD-Cs','BPD','CXD','BPFDs','CXFDs','BP-C','BPF-Cs','CX-C','CXF-Cs','BP','BPFs','CX','CXFs'};
-    % modelnames = {'BPMD-C','CXD-C','BPFD-Cs','CXFD-Cs','BPMD','CXD','BPFDs','CXFDs','BPM-C','BPF-Cs','CX-C','CXF-Cs','BPM','BPFs','CX','CXFs'};
-    M = numel(modelnames); priorweight = ones(1,M);
-    factornames{1} = {'Const','Ecc'};
-    factors{1} = [1 1 1 1, 0 0 0 0, 1 1 1 1, 0 0 0 0; 0 0 0 0, 1 1 1 1, 0 0 0 0, 1 1 1 1];
-    factornames{2} = {'Bayes','Fixed','B-Fusion','F-Fusion'};
-    factors{2} = [1 0 0 0, 1 0 0 0, 1 0 0 0, 1 0 0 0; 0 1 0 0, 0 1 0 0, 0 1 0 0, 0 1 0 0; 0 0 1 0, 0 0 1 0, 0 0 1 0, 0 0 1 0; 0 0 0 1, 0 0 0 1, 0 0 0 1, 0 0 0 1];
-    factornames{3} = {'Corr','Uncorr'};
-    factors{3} = [1 1 1 1, 1 1 1 1, 0 0 0 0, 0 0 0 0; 0 0 0 0, 0 0 0 0, 1 1 1 1, 1 1 1 1];
+    if baypmflag == 2
+        modelnames = {'BPD-C','BPMD-C','CXD-C','BPFD-Cs','CXFD-Cs','BPD','BPMD','CXD','BPFDs','CXFDs','BP-C','BPM-C','BPF-Cs','CX-C','CXF-Cs','BP','BPM','BPFs','CX','CXFs'};        
+        M = numel(modelnames); priorweight = [0.5 0.5 1 1 1, 0.5 0.5 1 1 1, 0.5 0.5 1 1 1, 0.5 0.5 1 1 1];
+        factornames{1} = {'Constant','Eccentric'};
+        factors{1} = [1 1 1 1 1, 0 0 0 0 0, 1 1 1 1 1, 0 0 0 0 0; 0 0 0 0 0, 1 1 1 1 1, 0 0 0 0 0, 1 1 1 1 1];
+        factornames{2} = {'Bayes','Fixed','Bayes/Fusion','Fixed/Fusion'};
+        factors{2} = [1 1 0 0 0, 1 1 0 0 0, 1 1 0 0 0, 1 1 0 0 0; 0 0 1 0 0, 0 0 1 0 0, 0 0 1 0 0, 0 0 1 0 0; 0 0 0 1 0, 0 0 0 1 0, 0 0 0 1 0, 0 0 0 1 0; 0 0 0 0 1, 0 0 0 0 1, 0 0 0 0 1, 0 0 0 0 1];
+        factornames{3} = {'Empirical','Independent'};
+        factors{3} = [1 1 1 1 1, 1 1 1 1 1, 0 0 0 0 0, 0 0 0 0 0; 0 0 0 0 0, 0 0 0 0 0, 1 1 1 1 1, 1 1 1 1 1];
+    else
+        if baypmflag == 1
+            modelnames = {'BPMD-C','CXD-C','BPFD-Cs','CXFD-Cs','BPMD','CXD','BPFDs','CXFDs','BPM-C','BPF-Cs','CX-C','CXF-Cs','BPM','BPFs','CX','CXFs'};                    
+        else
+            modelnames = {'BPD-C','CXD-C','BPFD-Cs','CXFD-Cs','BPD','CXD','BPFDs','CXFDs','BP-C','BPF-Cs','CX-C','CXF-Cs','BP','BPFs','CX','CXFs'};
+        end
+        M = numel(modelnames); priorweight = ones(1,M);
+        factornames{1} = {'Constant','Eccentric'};
+        factors{1} = [1 1 1 1, 0 0 0 0, 1 1 1 1, 0 0 0 0; 0 0 0 0, 1 1 1 1, 0 0 0 0, 1 1 1 1];
+        factornames{2} = {'Bayes','Fixed','Bayes/Fusion','Fixed/Fusion'};
+        factors{2} = [1 0 0 0, 1 0 0 0, 1 0 0 0, 1 0 0 0; 0 1 0 0, 0 1 0 0, 0 1 0 0, 0 1 0 0; 0 0 1 0, 0 0 1 0, 0 0 1 0, 0 0 1 0; 0 0 0 1, 0 0 0 1, 0 0 0 1, 0 0 0 1];
+        factornames{3} = {'Empirical','Independent'};
+        factors{3} = [1 1 1 1, 1 1 1 1, 0 0 0 0, 0 0 0 0; 0 0 0 0, 0 0 0 0, 1 1 1 1, 1 1 1 1];
+    end
     switch type
         case 1
             masks = [];
@@ -140,7 +186,7 @@ end
 if flags(4)
     modelnames = {'BP-C','BP'}; 
     M = numel(modelnames); priorweight = ones(1,M);
-    factornames{1} = {'Const','Ecc'};
+    factornames{1} = {'Constant','Eccentric'};
     factors{1} = [1 0; 0 1];
     switch type
         case 1

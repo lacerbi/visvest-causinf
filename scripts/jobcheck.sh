@@ -16,7 +16,7 @@ NRUN=0
 IDS=$(seq 1 $2)
 
 # Start scan
-cd /scratch/la67/${PROJECT}/run$1
+cd ${SCRATCH}/${PROJECT}/run$1
 for i in $IDS; do
 
         # Check if the job has started

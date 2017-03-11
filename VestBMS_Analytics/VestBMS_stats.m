@@ -217,6 +217,20 @@ switch(n(1))
         printnames = {'BAY-C-E','FIX-C-E','BAY/FFU-C-E','FIX/FFU-C-E',  'BAY-X-E','FIX-X-E','BAY/FFU-X-E','FIX/FFU-X-E',    'BAY-C-I','FIX-C-I','BAY/FFU-C-I','FIX/FFU-C-I',    'BAY-X-I','FIX-X-I','BAY/FFU-X-I','FIX/FFU-X-I'};
         ModelWork_table(mfits.modelsummary_joint,modelnames,metric,'Joint fits.',printnames);
         
+    case 103    % Compute Spearman correlation
+        
+        modelnames = {'BPD-C','CXD-C','BPFD-Cs','CXFD-Cs',              'BPD','CXD','BPFDs','CXFDs',                        'BP-C','BPF-Cs','CX-C','CXF-Cs',                    'BP','BPFs','CX','CXFs'};
+        printnames = {'BAY-C-E','FIX-C-E','BAY/FFU-C-E','FIX/FFU-C-E',  'BAY-X-E','FIX-X-E','BAY/FFU-X-E','FIX/FFU-X-E',    'BAY-C-I','FIX-C-I','BAY/FFU-C-I','FIX/FFU-C-I',    'BAY-X-I','FIX-X-I','BAY/FFU-X-I','FIX/FFU-X-I'};
+        
+        for i = 1:numel(modelnames)
+            idx = find(strcmp(modelnames{i},mfits.modelsummary_joint.modelnames),1);
+            x1 = mfits.modelsummary_joint.loocv(:,idx);
+            x2 = -0.5*mfits.modelsummary_joint.aicc(:,idx);        
+            rho(i) = corr(x1,x2,'Type','Spearman');
+        end
+        
+        rho
+        mean(rho)
 end
 
 

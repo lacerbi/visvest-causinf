@@ -297,6 +297,11 @@ switch fig
             if i == 8   % Stats for pcommon
                 [h,p,~,tab] = ttest(theta)
                 mean(theta)./(tab.sd)
+%                 bms_temp = bms{3};                
+%                 empirical_flag = cellfun(@(x) any(x == 'd'), lower(bms_temp.modelnames));                
+%                 bms_temp.g(:,~empirical_flag) = 0;
+%                 [~,pdf,~,~,~,xx] = ModelPlot_parameterDistribution({mfits.mbag_joint},'pcommon',{bms_temp},[],{mfits.modelsummary_joint},0);
+%                 theta = qtrapz(bsxfun(@times, pdf{end}, xx),2)*diff(xx(1:2))
             end
         end
                 
@@ -346,6 +351,9 @@ switch fig
         if isempty(subfig); subjs = 1:11; else subjs = subfig; end
         data = data(subjs);
                 
+        [1 2 2; ...
+         1 3 3]
+        
         % Plot data
         grid = reshape(1:16,4,4)';
         grid = [1 1 11 11 12 12, 2 2 2 13 13 13; 1 1 11 11 12 12 2 2 2 13 13 13; 1 1 11 11 12 12 2 2 2 13 13 13; 3 3 3 4 4 4 5 5 5 6 6 6;  3 3 3 4 4 4 5 5 5 6 6 6; 3 3 3 4 4 4 5 5 5 6 6 6; 3 3 3 4 4 4 5 5 5 6 6 6; 7 7 7 8 8 8 9 9 9 10 10 10; 7 7 7 8 8 8 9 9 9 10 10 10; 7 7 7 8 8 8 9 9 9 10 10 10; 7 7 7 8 8 8 9 9 9 10 10 10];
@@ -506,7 +514,20 @@ switch fig
         equalticklength(hg,ticklength);         
         savefigure('figS1');
         
-    case 102    % Explicit inference: all subjects
+    case 102    % Model recovery
+        
+        fakedata = load('VestBMS_fakedata_joint.mat');
+        mbag_mrec = load('VestBMS_22001.mat');
+        modelnames = {'FIX-X-E','BAY-X-E','BAY/FFU-X-I','FIX/FFU-C-I','FIX-X-I','FIX-C-E'};
+        
+        [recomatrix,err] = ModelWork_modelRecoveryTest(fakedata.data,mbag_mrec.mbag,'aicc',modelnames);
+        recomatrix
+        
+        fprintf('Average percentage of correct recovery: %.1f%%.\n', 100*mean(diag(recomatrix)));
+        
+        savefigure('figS2',[640 413 600 565]);
+        
+    case 103    % Explicit inference: all subjects
         task = 3;
         flags = [0 0];
 

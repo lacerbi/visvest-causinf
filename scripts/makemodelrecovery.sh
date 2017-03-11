@@ -3,16 +3,16 @@ echo "Usage: makemodelrecovery job# [file#]"
 
 PROJECT="VestBMS"
 #MODELRECOVERYDATA="VestBMS_fakedata_unity"
-MODELRECOVERYDATA="VestBMS_fakedata_bimloc"
+MODELRECOVERYDATA="VestBMS_fakedata_joint"
 
-cd /scratch/la67/${PROJECT}
+cd ${SCRATCH}/${PROJECT}
 
 module purge
 #. /etc/profile.d/modules.sh
 
 # Use Intel compiler
 module load matlab
-source /home/la67/MATLAB/setpath.sh
+source ${HOME}/MATLAB/setpath.sh
 export MATLABPATH=${MATLABPATH}
 
 FILEID=${1}
@@ -49,4 +49,4 @@ ModelWork_makeJobList('$PROJECT',data,${1},${NREPLICAS},${NPROCS})
 EOF
 
 cd ..
-cd /home/la67/${PROJECT}/scripts
+cd ${HOME}/${PROJECT}/scripts

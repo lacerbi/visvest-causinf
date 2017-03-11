@@ -11,7 +11,7 @@ WORKDIR="/scratch/la67/${PROJECT}/run${RUN}"
 mkdir ${WORKDIR}
 cd ${WORKDIR}
 MAXID=$(ls -l *.job | wc -l)
-RUNTIME=24:00:00
+RUNTIME=36:00:00
 MAXRT=NaN
 VERBOSE=1
 NSAMPLES=0

@@ -6,8 +6,8 @@ function varargout = VestBMS_plotFigure(fig,subfig,mfits,bms,filetype,filesuffix
 % CueBMS_plotFigure(fig, data)
 % 
 
-fontsize = 18;
-axesfontsize = 14;
+fontsize = 24;
+axesfontsize = 18;
 uppercase = 1;
 figpos = [1,41,1920,958];   % Default figure position
 
@@ -21,6 +21,9 @@ if nargin < 2; subfig = []; end
 % Load model fit results
 if nargin < 3 || isempty(mfits); mfits = load('VestBMS_modelfits'); end
 if nargin < 4; bms = []; end
+
+% Run this
+% [bms,mfits] = VestBMS_modelComparison('loocv',1,mfits,[],[],[1 1 1 1 0]);
 
 mfits = VestBMS_fixModels(mfits);
 mfits.mbag_uni.legend = 'Unisensory discrimination';
@@ -113,7 +116,55 @@ switch fig
         xlim([0 4]);
         ylim([0 1]);        
         savefigure(['fig' num2str(fig) 'b']);
+    
+    case 2 % Decision boundaries
         
+        if isempty(subfig); subfig = 10; end
+        linewidth = 4;
+        fontsize = 24;
+        axesfontsize = 20;
+        
+        % Plot midline
+        plot([-50,50],[-50,50],'k--','LineWidth',1); hold on;        
+        
+        % Bayesian model decision rule
+        mfit = ModelBag_get(mfits.mbag_joint,'BPD');
+        clear functions;
+        [~,extras] = ModelWork_like('VestBMS',mfit{subfig});
+        for iRel = 1:3        
+            xrange_vis = extras.struct{4+iRel}.xrange_vis;
+            xrange_vest = extras.struct{4+iRel}.xrange_vest;
+            w1 = extras.struct{4+iRel}.w1;
+            [~,h(iRel)] = contour(xrange_vis(:), xrange_vest(:), squeeze(w1), [0.5 0.5], 'LineWidth', linewidth, 'Color', plots.NoiseColors(iRel,:)); hold on;            
+        end
+        
+        % Fixed decision rule
+        mfit = ModelBag_get(mfits.mbag_joint,'CX');
+        % clear functions;
+        halfk = mfit{subfig}.mp.fulltheta{4}.kcommon/2;
+        h(4) = plot([-100 100] + halfk/sqrt(2)*[1 1], [-100, 100] + halfk/sqrt(2)*[-1 -1], '-.k', 'LineWidth', linewidth); hold on;
+        plot([-100 100] + halfk/sqrt(2)*[-1 -1], [-100, 100] + halfk/sqrt(2)*[1 1], '-.k', 'LineWidth', linewidth); hold on;
+                
+        %[~,extras] = ModelWork_like('VestBMS',mfit{subfig});
+        %xrange_vis = extras.struct{4+iRel}.xrange_vis;
+        %xrange_vest = extras.struct{4+iRel}.xrange_vest;
+        %w1 = extras.struct{4+iRel}.w1;
+        %[~,h(iRel)] = contour(xrange_vis(:), xrange_vest(:), squeeze(w1), [0.5 0.5], 'LineWidth', 2, 'Color', plots.NoiseColors(iRel,:)); hold on;            
+        
+        
+        xlabel('$x_\mathrm{vis}$','Interpreter','LaTeX','FontSize',fontsize); 
+        ylabel('$x_\mathrm{vest}$','Interpreter','LaTeX','FontSize',fontsize);        
+        axis([-50 50 -50 50]);
+        ticks = [-45:15:45];
+        for i = 1:numel(ticks); ticklabel{i} = [num2str(ticks(i)), '°']; end
+        set(gca,'XTick',ticks, 'XTickLabel', ticklabel,'FontSize',axesfontsize);
+        set(gca,'YTick',ticks, 'YTickLabel', ticklabel,'TickDir','out');
+        axis square; box off;
+        set(gcf,'Color','w');
+        
+        hl = legend(h,'Bayes (High reliability)','Bayes (Medium reliability)','Bayes (Low reliability)','Fixed criterion');
+        set(hl,'Location','NorthWest','Box','off','FontSize',fontsize);
+        savefigure(['fig' num2str(fig)]);
     
     case {3,4}  % Explicit, implicit inference plot
         
@@ -159,9 +210,9 @@ switch fig
         hg = plotify(grid,'Margins',[0.1 0.1 0.125 0.05],'Labels',{panellabels{1},panellabels{2},'','',panellabels{3}},'FontSize',fontsize,'Position',figpos);
         hg_a = [hg(1),hg(1),hg(1)];
         if fig == 3
-            VestBMS_plotBimodalDisparityData(data,task,[],[],flags,[],[],hg_a);
+            VestBMS_plotBimodalDisparityData(data,task,[],[],flags,fontsize,axesfontsize,hg_a);
         elseif fig == 4
-            VestBMS_plotBimodalPSE(data,task,[],[],flags,[],[],hg(1));
+            VestBMS_plotBimodalPSE(data,task,[],[],flags,fontsize,axesfontsize,hg(1));
         end
         title(''); ylabel(ystring);
         for iCol = 1:3; hcol(iCol) = plot(0,0,'-','Color',plots.NoiseColors(iCol,:),'LineWidth',4); end
@@ -202,9 +253,9 @@ switch fig
             mfit = ModelBag_get(mbag,modelnames{m});
             if numel(subjs) == 1; mfit = mfit{subjs}; else mfit = mfit(subjs); end
             if fig == 3
-                VestBMS_plotBimodalDisparityData(data,task,mfit,Ngen,flags,[],[],[hg_c(m),hg_c(m),hg_c(m)]);
+                VestBMS_plotBimodalDisparityData(data,task,mfit,Ngen,flags,fontsize,axesfontsize,[hg_c(m),hg_c(m),hg_c(m)]);
             elseif fig == 4
-                VestBMS_plotBimodalPSE(data,task,mfit,Ngen,flags,[],[],hg_c(m));
+                VestBMS_plotBimodalPSE(data,task,mfit,Ngen,flags,fontsize,axesfontsize,hg_c(m));
                 % set(gca,'Xtick',[-40,-20,0,20,40],'XTickLabel',{'-40°','-20°','0°','20°','40°'});
                 % set(gca,'Xtick',[-37.5,-25,-10,0,10,25,37.5],'XTickLabel',{'-37.5°','-25°','-10°','0°','10°','25°','37.5°'});
             end
@@ -238,7 +289,7 @@ switch fig
 
         % color = [31,120,180; 178,223,138; 166,206,227; 51,160,44]/255;
         color = [178,223,138; 31,120,180; 166,206,227; 0,0,0]/255;
-        fontsize = 16;
+        fontsize = 24;
         plottype = 2;
         
         % Get compatibility data
@@ -257,12 +308,12 @@ switch fig
             [postpdf,pdf,comp.C3(i,:),comp.P3(i,:,:),comp.pxp3(i,:,:),xx] = ModelPlot_parameterDistribution(mbag_four,params{i},bms_four,[],modelsummary_four,plottype,color);
             cpstring = [num2str(C.pxp3(i,1),'$C_p = %.2f$')];
             if plottype == 1
-                text(0.1,1,cpstring,'Units','normalized','FontSize',axesfontsize,'Interpreter','LaTeX');
+                text(0.1,1,cpstring,'Units','normalized','FontSize',fontsize,'Interpreter','LaTeX');
             else
                 xb = xlim;
                 xxx = [xb(1) + 0.95*(xb(2) - xb(1)), xb(2), xb(2)];
-                text(xb(2),0,cpstring,'FontSize',axesfontsize,'Interpreter','LaTeX','HorizontalAlignment','center');
-                plot(xxx,[-3.5 -3.5 0],'k','LineWidth',1);
+                text(xb(2),0,cpstring,'FontSize',fontsize,'Interpreter','LaTeX','HorizontalAlignment','center');
+                plot(xxx,[-3.5 -3.5 -0.3],'k','LineWidth',1);
             end
             legend off;
             if logflag(i)
@@ -280,12 +331,12 @@ switch fig
             [postpdf,pdf,comp.C3(i,:),comp.P3(i,:,:),comp.pxp3(i,:,:),xx] = ModelPlot_parameterDistribution(mbag_three,params{i},bms_three,[],modelsummary_three,plottype,color(2:4,:));
             cpstring = [num2str(C.pxp2(i,1),'$C_p = %.2f$')];
             if plottype == 1
-                text(0.1,1,cpstring,'Units','normalized','FontSize',axesfontsize,'Interpreter','LaTeX');
+                text(0.1,1,cpstring,'Units','normalized','FontSize',fontsize,'Interpreter','LaTeX');
             else
                 xb = xlim;
                 xxx = [xb(1) + 0.95*(xb(2) - xb(1)), xb(2), xb(2)];
-                text(xb(2),0,cpstring,'FontSize',axesfontsize,'Interpreter','LaTeX','HorizontalAlignment','center');
-                plot(xxx,[-2.5 -2.5 0],'k','LineWidth',1);
+                text(xb(2),0,cpstring,'FontSize',fontsize,'Interpreter','LaTeX','HorizontalAlignment','center');
+                plot(xxx,[-2.5 -2.5 -0.3],'k','LineWidth',1);
             end
             legend off;
             if logflag(i)
@@ -327,6 +378,7 @@ switch fig
             if any(iPanel == degpanels)
                 set(gca,'XTick',log([0.3 1 3 10 30 100]),'XTickLabel',{'0.3°','1°','3°','10°','30°','100°'});
             end
+            set(gca,'FontSize',axesfontsize);
         end
         
         subplot(3,4,8);
@@ -376,10 +428,10 @@ switch fig
                     
                     
                     case 2
-                        VestBMS_plotBimodalDisparityData(data,3,mfit,Ngen,[0 0],[],[],[hg_c,hg_c,hg_c]);
+                        VestBMS_plotBimodalDisparityData(data,3,mfit,Ngen,[0 0],fontsize,axesfontsize,[hg_c,hg_c,hg_c]);
                         ystring = 'Fraction responses ''unity''';
                         legloc = 'NorthWest';   mtxtpos = 0.1;
-                        title(modelnames_text{m},'FontSize',fontsize); 
+                        title(modelnames_text{m},'FontSize',axesfontsize); 
                         if m == 1; ylabel(ystring); else ylabel(''); end
                         % if m < 3; xlabel(''); end
                         idx = find(strcmp(g_modelnames,modelnames{m}),1);
@@ -387,7 +439,7 @@ switch fig
                         text(0.8,1.1,goftxt,'Units','normalized','FontSize',axesfontsize);
                         
                     case 3
-                        VestBMS_plotBimodalPSE(data,2,mfit,Ngen,1,[],[],hg_c);
+                        VestBMS_plotBimodalPSE(data,2,mfit,Ngen,1,fontsize,axesfontsize,hg_c);
                         % set(gca,'Xtick',[-37.5,-25,-10,0,10,25,37.5],'XTickLabel',{'-37.5°','-25°','-10°','0°','10°','25°','37.5°'});
                         mtxtpos = 0.4;
                         ystring = 'Vestibular bias';
@@ -491,7 +543,7 @@ switch fig
             hg_c = [hg(idx),hg(idx+1),hg(idx+2)];            
             mfit = ModelBag_get(mbag,modelnames{m});
             if numel(subjs) == 1; mfit = mfit{subjs}; else mfit = mfit(subjs); end
-            VestBMS_plotBimodalData(data,task,mfit,Ngen,flags,hg_c,[],[]);
+            VestBMS_plotBimodalData(data,task,mfit,Ngen,flags,hg_c,fontsize,axesfontsize);
             axes(hg(idx));
             title(modelnames_text{m},'FontSize',fontsize);
             if m > 1
@@ -520,7 +572,7 @@ switch fig
         mbag_mrec = load('VestBMS_22001.mat');
         modelnames = {'FIX-X-E','BAY-X-E','BAY/FFU-X-I','FIX/FFU-C-I','FIX-X-I','FIX-C-E'};
         
-        [recomatrix,err] = ModelWork_modelRecoveryTest(fakedata.data,mbag_mrec.mbag,'aicc',modelnames);
+        [recomatrix,err] = ModelWork_modelRecoveryTest(fakedata.data,mbag_mrec.mbag,'aicc',modelnames,fontsize,axesfontsize);
         recomatrix
         
         fprintf('Average percentage of correct recovery: %.1f%%.\n', 100*mean(diag(recomatrix)));

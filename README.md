@@ -1,28 +1,15 @@
-# visvest-causinf (VestBMS)
+# Bayesian Comparison of Explicit and Implicit Causal Inference Strategies in Multisensory Heading Perception
 
-Visuo-vestibular causal inference project (with Kalpana Dokka, Dora Angelakis and Weiji Ma)
+This repository accompanies the manuscript by Acerbi, Dokka, Angelaki, and Ma (2017).
+It includes human subjects' data and the code used for fitting and comparing the models reported in the paper.
 
-## To-do list:
+We will soon post more detailed instructions on how to use this code to reproduce our results.
 
-  1. Model recovery for implicit and explicit inference models
-  2. (*Kalpana*) Learning for implicit and explicit datasets
-  3. Analyze two additional subjects (implicit inference models only)
-  
-## Model fits list:
+## Reference
 
-  1. **Explicit inference:**
-     - *Probabilistic fusion* (1031): optimized, sampled, postprocessed.
-     - *Bayesian, fixed-criterion probability matching [both noises]* (1041): optimized, **sampling**.
-     - *Bayesian, fixed-criterion deterministic [both noises]* (1061): **none**.
+1. Acerbi\*, L., Dokka\*, K., Angelaki, D. E. & Ma, W. J. (2017). Bayesian comparison of explicit and implicit causal inference strategies in  multisensory heading perception. *bioRxiv preprint*. (\* equal contribution authors)
 
-  2. **Implicit inference:**
-     - *Forced-fusion, Bayesian, fixed-criterion deterministic [eccentric noise]* (41): **optimizing**.
-     - *Forced-fusion, Bayesian, fixed-criterion deterministic [constant noise]* (141): **optimizing**.
-     - *Forced-fusion, Bayesian, fixed-criterion probability-matching [eccentric noise]*: **none**.
-     - *Forced-fusion, Bayesian, fixed-criterion probability-matching[constant noise]*: **none**.
+### License
 
-  3. **Uni-sensory localization:**
-     - *Standard BDT [both noises]* (10201): optimized, sampled, postprocessed.
+This code is released under the terms of the [GNU General Public License v3.0](https://github.com/lacerbi/visvest-causinf/blob/master/LICENSE.txt).
 
-  4. **Joint fits:**
-     - *Bayesian and fixed-criterion deterministic? [eccentric noise]*: **none**.

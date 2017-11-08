@@ -20,6 +20,7 @@ else
         case 'Q'; sigmas = sigmazero .* sqrt(1 + (w.*srange).^2);    
         case 'C'; sigmas = sigmazero .* sqrt(1 + 2*(90/pi)^2*(1 - cos(srange*pi/90)).*w.^2);
         case 'A'; sigmas = sigmazero .* (1 + (90/pi)*abs(sin(srange*pi/90)).*w);
+        case 'D'; sigmas = sigmazero .* (1 + (180/pi)*abs(sin(srange*pi/180)).*w);
         case 'q'; sigmas = sqrt(sigmazero.^2 + (w.*srange).^2);    
         case 'c'; sigmas = sqrt(sigmazero.^2 + 2*(90/pi)^2*(1 - cos(srange*pi/90)).*w.^2);
         case 'a'; sigmas = sigmazero + (90/pi)*abs(sin(srange*pi/90)).*w;

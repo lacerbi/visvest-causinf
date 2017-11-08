@@ -102,7 +102,7 @@ if model(16) == 4
     if nargout > 1; varargout{2} = extras; end
     return;
 end
-    
+
 % Use distinct criteria for localization vs unity judgement
 distinct_criteria = ...
     (priorc1_unity ~= priorc1 || kcommon_unity ~= kcommon) && do_unity;
@@ -178,7 +178,7 @@ if fixed_criterion_analytic
     mu_diff = bincenters_vest - bincenters_vis;
     sigma_diff = sqrt(sigmas_vis.^2 + sigmas_vest.^2);
     
-    prmat = [];    
+    prmat = [];
     prmat_unity = zeros(numel(bincenters_vest), 2);    
     prmat_unity(:,1) = bsxfun_normcdf(kcommon,mu_diff,sigma_diff) - bsxfun_normcdf(-kcommon,mu_diff,sigma_diff);
     if wraparound

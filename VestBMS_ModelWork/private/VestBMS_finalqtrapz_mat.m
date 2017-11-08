@@ -7,6 +7,6 @@ function prmat = VestBMS_finalqtrapz(xpdf_vis,xpdf_vest,R)
 % R: p(response|x_vis,x_vest). [1-by-K-by-K] (double)
 %
 % ================ OUTPUT VARIABLES ==================
-% PRMAT: p(r|s). [S-by-1] (double)
+% RPDF: p(r|s). [S-by-1] (double)
 
 prmat = qtrapz(qtrapz(bsxfun(@times, bsxfun(@times, xpdf_vis, xpdf_vest), R), 2), 3);

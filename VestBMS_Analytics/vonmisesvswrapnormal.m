@@ -5,7 +5,7 @@ fontsize = 16;
 kappa_min = 1/(2*pi)^2;
 kappa_max = 10^2;
 
-kappa = exp(linspace(log(kappa_min),log(kappa_max),1e3));
+kappa = exp(linspace(log(kappa_min),log(kappa_max),1e2));
 
 nMix = 3;   % Use three mixture components for wrapped normals
 x = linspace(-pi,pi,1e4);

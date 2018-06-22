@@ -3,7 +3,10 @@
 This repository accompanies the manuscript by Acerbi, Dokka, Angelaki, and Ma (2017).
 It includes human subjects' data and the code used for fitting and comparing the models reported in the paper.
 
-We will soon post more detailed instructions on how to use this code to reproduce our results.
+**Update (June 2018):** The paper has been accepted for publication in *PLoS Computational Biology*.
+
+We will soon post more detailed instructions on how to use this code and the algorithms introduced in the paper.
+In the meanwhile, please contact me at <luigi.acerbi@unige.ch> if you have any questions.
 
 ## Reference
 

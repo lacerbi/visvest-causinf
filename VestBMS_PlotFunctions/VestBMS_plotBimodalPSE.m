@@ -4,12 +4,14 @@ function [fig,gendata] = VestBMS_plotBimodalPSE(data,type,mfit,ngen,flags,fontsi
 if ~exist('mfit', 'var'); mfit = []; end
 % Number of generated datasets, per subject
 if ~exist('ngen', 'var') || isempty(ngen); ngen = 30; end
-if ~exist('flags', 'var') || isempty(flags); flags = 0; end
+if ~exist('flags', 'var') || isempty(flags); flags = [0 0]; end
 if ~exist('fontsize', 'var') || isempty(fontsize); fontsize = 18; end
 if ~exist('axesfontsize', 'var') || isempty(axesfontsize); axesfontsize = 14; end
 if ~exist('hg', 'var'); hg = []; end
 
 plotbias = flags(1);
+if numel(flags) < 2; flags(2) = 0; end
+plotsd = flags(2);
 
 plots = VestBMS_defaults('plots');  % Get default plot info
 
@@ -36,7 +38,11 @@ else
     nRows = length(subjs);
 end
 
-yLim = [-20 20];
+if plotsd
+    yLim = [0 30];    
+else
+    yLim = [-20 20];
+end
 
 allStimuli =  {-45:5:-30,-27.5:2.5:-22.5,[-20,-17.5,-15],[-12.5,-10,-7.5],[-5,-2.5],0,[2.5,5],[7.5,10,12.5],[15,17.5,20],22.5:2.5:27.5,30:5:45};
 xxx = cellfun(@mean,allStimuli);
@@ -67,7 +73,9 @@ for iRow = 1:nRows
         % panel = []; iPlot = 1;
 
         xsource = ['[' num2str(xxx) ']'];
-        if plotbias
+        if plotsd
+            ysource = ['thisdata.psyright_sigma(' num2str(iNoise) ',:)'];            
+        elseif plotbias
             ysource = ['-thisdata.psyright_mu(' num2str(iNoise) ',:)'];            
         else
             ysource = ['thisdata.psyright_mu(' num2str(iNoise) ',:)'];

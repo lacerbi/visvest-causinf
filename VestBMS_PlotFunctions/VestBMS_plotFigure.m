@@ -3,7 +3,7 @@ function varargout = VestBMS_plotFigure(fig,subfig,mfits,bms,filetype,filesuffix
 % (Supplementary figures start from 101.)
 %
 % Usage example:
-% CueBMS_plotFigure(fig, data)
+% VestBMS_plotFigure(fig,data)
 % 
 
 fontsize = 24;
@@ -13,7 +13,7 @@ figpos = [1,41,1920,958];   % Default figure position
 
 Nsubjs = 11;
 postflag = 1;           % Plot expected model frequency in BMS plots
-Ngen = 100;             % Number of generated datasets per subject
+Ngen = 20;             % Number of generated datasets per subject (100 for paper)
 ticklength = 0.0035;    % Tick length for all panels
 
 if nargin < 2; subfig = []; end
@@ -186,8 +186,9 @@ switch fig
                 mbag = mfits.mbag_biml;
                 mtxtpos = 0.4;
                 factornames = {'Sensory noise','CI strategy','Prior'};
-                flags = 1;  % Plot bias?
-                if flags
+                flags(1) = 1;  % Plot bias?
+                flags(2) = 1;  % Plot sigma
+                if flags(1)
                     ystring = 'Vestibular bias';
                     legloc = 'SouthEast';
                 else
@@ -221,7 +222,7 @@ switch fig
         drawnow;
         
         % Plot inset (Figure 4)
-        if fig == 4
+        if fig == 4 && flags(2) == 0
             bin = 10;
             D.psyright_mu = data{3}.psyright_mu;
             D.psyright_sigma = data{3}.psyright_sigma;

@@ -371,28 +371,38 @@ for ii = 1:length(datasets)
             n = n + nansum(f);
             sqerr = sqerr + nansum((x(f, 2) - x(f, 3)).^2);
         end
-        D.performance(iSession,1) = sqrt(sqerr/n);
+        if ~isempty(sqerr)
+            D.performance(iSession,1) = sqrt(sqerr/n);
+        end
         
         % Unimodal audio data
         x = D.X.unimodal{4};
         f = any(bsxfun(@eq, x(:,1), trials),2);
-        D.performance(iSession,2) = sqrt(nansum((x(f, 2) - x(f, 3)).^2)/nansum(f));
+        if any(f)
+            D.performance(iSession,2) = sqrt(nansum((x(f, 2) - x(f, 3)).^2)/nansum(f));
+        end
         
         % Bimodal data (visual, audio and categorical)
         sqerr = zeros(1,3); n = zeros(1, 3);
         for iNoise = 1:3
             x = D.X.bimodalall{iNoise};
             f = any(bsxfun(@eq, x(:,1), trials),2) & x(:, 2) == BIMVIDEO;
-            n(1) = n(1) + nansum(f);
-            sqerr(1) = sqerr(1) + nansum((x(f, 4) - x(f, end)).^2);
+            if any(f)
+                n(1) = n(1) + nansum(f);
+                sqerr(1) = sqerr(1) + nansum((x(f, 4) - x(f, end)).^2);
+            end
             f = any(bsxfun(@eq, x(:,1), trials),2) & x(:, 2) == BIMAUDIO;
-            n(2) = n(2) + nansum(f);
-            sqerr(2) = sqerr(2) + nansum((x(f, 3) - x(f, end)).^2);
+            if any(f)
+                n(2) = n(2) + nansum(f);
+                sqerr(2) = sqerr(2) + nansum((x(f, 3) - x(f, end)).^2);
+            end
             f = any(bsxfun(@eq, x(:,1), trials),2) & x(:, 2) == BIMCATEGORY;
-            n(3) = n(3) + nansum(f);
-            y = abs(x(:, 3) - x(:, 4)) < 1e-6;  % Unity trials
-            r = 2 - x(:, end);
-            sqerr(3) = sqerr(3) + nansum((y(f) - r(f)).^2);
+            if any(f)
+                n(3) = n(3) + nansum(f);
+                y = abs(x(:, 3) - x(:, 4)) < 1e-6;  % Unity trials
+                r = 2 - x(:, end);
+                sqerr(3) = sqerr(3) + nansum((y(f) - r(f)).^2);
+            end
         end
         D.performance(iSession,3:5) = sqrt(sqerr./n);
     end

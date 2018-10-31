@@ -27,17 +27,17 @@ switch(n(1))
             case 1
                 fprintf('Explicit causal inference.\n');
                 task = 3; bagidx = 2;
-                flags = [0 1 0 0];
+                flags = [0 1 0 0 0];
                 mbag = mfits.mbag_bimu;
             case 2
                 fprintf('Implicit causal inference.\n');
                 task = 2; bagidx = 1;
-                flags = [1 0 0 0];
+                flags = [1 0 0 0 0];
                 mbag = mfits.mbag_biml;
             case 3
                 fprintf('Joint fits. Explicit causal inference.\n');
                 task = [2 3 4]; bagidx = 3;
-                flags = [0 0 1 0];
+                flags = [0 0 1 0 0];
                 mbag = mfits.mbag_joint;
                 
         end

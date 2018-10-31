@@ -7,7 +7,7 @@ if nargin < 3 || isempty(mfits); mfits = []; end
 if nargin < 4 || isempty(metricname); metricname = metric; end
 if nargin < 5 || isempty(priorstrength); priorstrength = 'factor'; end
 if nargin < 6 || isempty(flags); flags = [1 1 1 0 0]; end
-if numel(flags) < 4; flags(5) = 0; end
+if numel(flags) < 5; flags(5) = 0; end
 
 baypmflag = flags(5);   % BAY probability matching instead of BAY model average
 

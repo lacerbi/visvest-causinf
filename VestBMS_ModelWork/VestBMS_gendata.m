@@ -1,60 +1,14 @@
-function [gendata,trueparams] = VestBMS_gendata(N,varargin)
+function XX = VestBMS_gendata(N,mp,X,infostruct,regenerate)
 %VESTBMS_GENDATA   Generate a number of fake datasets.
-%   GENDATA = VESTBMS_GENDATA(N,MFIT) generates N fake datasets data from 
-%   individual model struct MFIT. GENDATA is a cell array of generated data 
-%   matrices.
+%   XX = VESTBMS_GENDATA(N,MP,X,INFOSTRUCT) generates N fake datasets data 
+%   with model parameter structure MP, original dataset X and extra info
+%   struct INFOSTRUCT.
 %
-%   GENDATA = CUEBMS_GENDATA(N,X,MP,INFOSTRUCT) generates fake datasets 
-%   from data matrix X, model parameter structure MP and INFOSTRUCT.
+%   XX = VESTBMS_GENDATA(N,MP,X,INFOSTRUCT,1) regenerates the REAL dataset 
+%   (trial order might be swapped).
 %
-%   GENDATA = CUEBMS_GENDATA(...,'r') regenerate the REAL dataset (trial
-%   order might be swapped).
-%
-%   [GENDATA,TRUEPARAMS] = CUEBMS_GENDATA(...) returns parameters used to
-%   generate each fake dataset.
-%
-%  By Luigi Acerbi <luigi.acerbi@gmail.com>
-
-if nargin < 4
-    mfit = ModelWork_loadFields('VestBMS',varargin{1});
-    X = mfit.X;
-    mp = mfit.mp;
-    infostruct = mfit.infostruct;
-else
-    X = varargin{1};
-    mp = varargin{2};
-    infostruct = varargin{3};
-end
-
-if ischar(varargin{end}) && strncmpi(varargin{end},'r',1)
-    regenerate = 1;
-else
-    regenerate = 0;
-end
-
-gendata = [];
-if ~isempty(mfit.sampling) && ~isempty(mfit.sampling.samples)
-    Nsamples = size(mfit.sampling.samples,1);
-    idx = round(linspace(1,Nsamples,N));
-    trueparams = mfit.sampling.samples(idx,:);
-    for i = 1:N
-        mp = VestBMS_setupModel(mp, trueparams(i,:), mfit.model, infostruct);
-        XX = GenDatasets(1,mp,X,infostruct,regenerate);
-        gendata{i} = squeeze(XX(:, :, 1));
-    end
-else
-    trueparams = repmat(mfit.maptheta,[N 1]);
-    mp = VestBMS_setupModel(mp, mfit.maptheta, mfit.model, infostruct);    
-    XX = GenDatasets(N,mp,X,infostruct,regenerate);    
-    for i = 1:N; gendata{i} = squeeze(XX(:, :, i)); end    
-end
-
-
-end
-
-function XX = GenDatasets(N,mp,X,infostruct,regenerate)
-%GENDATASETS Generate fake datasets.
-
+%   See also MODELWORK_GENDATA.
+ 
 cnd = mp.cnd;
 model = mp.model;
 

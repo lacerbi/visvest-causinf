@@ -1,16 +1,15 @@
 # Bayesian Comparison of Explicit and Implicit Causal Inference Strategies in Multisensory Heading Perception
 
-This repository accompanies the manuscript by Acerbi, Dokka, Angelaki, and Ma (2017).
+This repository accompanies the manuscript by Acerbi et al. (2018), published in *PLoS Computational Biology* [1].
 It includes human subjects' data and the code used for fitting and comparing the models reported in the paper.
 
-**Update (June 2018):** The paper has been accepted for publication in *PLoS Computational Biology*.
 
-We will soon post more detailed instructions on how to use this code and the algorithms introduced in the paper.
-In the meanwhile, please contact me at <luigi.acerbi@unige.ch> if you have any questions.
+
+Please contact me at <luigi.acerbi@unige.ch> if you have any questions.
 
 ## Reference
 
-1. Acerbi\*, L., Dokka\*, K., Angelaki, D. E. & Ma, W. J. (2017). Bayesian comparison of explicit and implicit causal inference strategies in  multisensory heading perception. *bioRxiv preprint*. (\* equal contribution authors)
+1. Acerbi\*, L., Dokka\*, K., Angelaki, D. E. & Ma, W. J. (2018). Bayesian Comparison of Explicit and Implicit Causal Inference Strategies in Multisensory Heading Perception, *PLoS Computational Biology* 14(7): e1006110. (\*equal contribution; [link](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1006110))
 
 ### License
 

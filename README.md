@@ -24,5 +24,5 @@ Please contact me at <luigi.acerbi@unige.ch> if you have any questions.
 
 ### License
 
-This code is released under the terms of the [GNU General Public License v3.0](https://github.com/lacerbi/visvest-causinf/blob/master/LICENSE.txt).
+This code is released under the terms of the [MIT License](https://github.com/lacerbi/visvest-causinf/blob/master/LICENSE.txt).
 
